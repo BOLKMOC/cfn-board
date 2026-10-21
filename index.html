@@ -133,7 +133,7 @@
     $("pEnr").textContent = sum("Waiting For First Payment");
     $("pAct").textContent = sum("Active", "Final Payment - File Review", "Successful Program / Client Graduated");
     $("pNw").textContent = d.nationwide_loans_month ?? 0;
-    $("feed").innerHTML = d.feed.length ? d.feed.map((f) => `<li><span>${f.kind === "loan" ? "&#127974;" : "&#127942;"} ${esc(f.name)} · ${f.kind === "loan" ? "Nationwide loan" : "deal"}</span><span class="when">${ago(f.at)}</span></li>`).join("") : '<li class="empty">No wins yet. Be first.</li>';
+    $("feed").innerHTML = d.feed.length ? d.feed.map((f) => `<li><span>${f.kind === "loan" ? "&#127974;" : "&#127942;"} ${esc(f.name)} · ${f.kind === "loan" ? "Nationwide loan" : "deal"}</span><span class="when">${ago(f.at)}</span></li>`).join("") : '<li class="empty">No wins yet today. Be first.</li>';
     renderLeaders();
     // New win since last look: banner + confetti. First load just shows the latest.
     const top = d.feed.find((f) => f.kind === "deal");

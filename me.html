@@ -4,67 +4,203 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https://changefn.com; connect-src https://bseyusrbjztybfgjfbja.supabase.co; worker-src blob:; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="referrer" content="no-referrer">
-<title>My CFN Board</title>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/client; frame-src https://accounts.google.com/gsi/; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com/gsi/style; font-src https://fonts.gstatic.com; img-src 'self' data: https://changefn.com https://*.googleusercontent.com; connect-src https://bseyusrbjztybfgjfbja.supabase.co https://accounts.google.com/gsi/; base-uri 'none'; form-action 'none'; object-src 'none'">
+<title>My CFN Page</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Quicksand:wght@500;700&display=swap">
 <link rel="stylesheet" href="board.css">
+<style>
+.wrap{max-width:680px}
+.three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.mini{background:var(--tint);border-radius:10px;padding:10px}
+.mini .k{font-size:12px;color:var(--muted)} .mini .v{font-size:22px;font-weight:700;color:var(--blue);font-family:Quicksand,Inter,sans-serif}
+input.f{padding:8px 10px;border:1px solid var(--line);border-radius:8px;font:inherit;width:100%;box-sizing:border-box}
+button.go{background:var(--blue);color:#fff;border:0;border-radius:8px;padding:8px 14px;font:inherit;cursor:pointer}
+button.link{background:none;border:0;color:var(--muted);font:inherit;font-size:13px;cursor:pointer;text-decoration:underline}
+.row{display:flex;gap:8px;align-items:end;flex-wrap:wrap}
+.row > label{flex:1;min-width:140px;font-size:13px;color:var(--muted)}
+details{border-bottom:1px solid var(--tint);padding:8px 0}
+details summary{display:flex;justify-content:space-between;cursor:pointer;font-size:15px;list-style:none}
+details table{width:100%;font-size:13px;border-collapse:collapse;margin-top:8px}
+details td,details th{text-align:left;padding:4px 2px;border-bottom:1px solid var(--tint)} details th{color:var(--muted);font-weight:500}
+.neg{color:#B91C1C}
+#signin{text-align:center;padding:30px 16px}
+@media (max-width:480px){.three{grid-template-columns:1fr 1fr 1fr}.mini .v{font-size:18px}}
+</style>
 <script src="config.js"></script>
 </head>
 <body>
-<div class="wrap" style="max-width:640px">
-  <header><div class="brand"><img src="https://changefn.com/logo.png" alt="" onerror="this.remove()"><div><h1>CFN · My page</h1><div class="date" id="hello"></div></div></div></header>
+<div class="wrap">
+  <header><div class="brand"><img src="https://changefn.com/logo.png" alt="" onerror="this.remove()"><div><h1>My CFN Page</h1><div class="date" id="hello"></div></div></div>
+    <button class="link" id="logout" hidden>Sign out</button></header>
   <div id="error" class="err" hidden></div>
-  <div class="grid" style="grid-template-columns:repeat(3,minmax(0,1fr))">
-    <div class="card"><p class="label">Today</p><div class="big num" id="today">-</div><div class="note">deals</div></div>
-    <div class="card"><p class="label">This week</p><div class="big num" id="week">-</div><div class="note">deals</div></div>
-    <div class="card"><p class="label">This month</p><div class="big num" id="month">-</div><div class="note">deals</div></div>
-  </div>
-  <section class="card" style="margin-bottom:14px">
-    <p class="label">How you show on the team board</p>
-    <form id="form">
-      <label style="display:block;margin:6px 0"><input type="radio" name="mode" value="first"> First name (<span id="firstName"></span>)</label>
-      <label style="display:block;margin:6px 0"><input type="radio" name="mode" value="full"> Full name (<span id="fullName"></span>)</label>
-      <label style="display:block;margin:6px 0"><input type="radio" name="mode" value="nickname"> Nickname
-        <input id="nick" maxlength="24" placeholder="The Closer" style="margin-left:6px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;font:inherit"></label>
-      <button type="submit" style="margin-top:10px;background:var(--blue);color:#fff;border:0;border-radius:8px;padding:8px 14px;font:inherit;cursor:pointer">Save</button>
-      <span class="note" id="saved" style="margin-left:8px" aria-live="polite"></span>
-    </form>
-    <p class="note" style="margin-top:10px">The team board only ever shows your deal count. Never your pay, your debt, or client names.</p>
+
+  <section class="card" id="signin" hidden>
+    <p style="margin:0 0 6px;font-size:17px">Sign in with your <b>@changefn.com</b> Google account.</p>
+    <p class="note" style="margin:0 0 16px">Only you can see your pay. No passwords are stored here.</p>
+    <div id="gbtn" style="display:inline-block"></div>
   </section>
-  <section class="card"><p class="label">My recent deals (only you see this)</p><ul class="feed" id="recent"></ul></section>
+
+  <div id="app" hidden>
+    <section class="card" style="margin-bottom:14px" id="csCard">
+      <p class="label"><span>Your call sign</span><span id="csNow"></span></p>
+      <p class="note" id="csAsk" style="margin:0 0 8px" hidden>Pick a call sign first. It is how you show on the team board, like a fighter pilot.</p>
+      <form id="csForm" class="row">
+        <label>2 to 16 letters, numbers, spaces or dashes<input class="f" id="cs" maxlength="16" placeholder="Maverick" autocomplete="off"></label>
+        <button class="go" type="submit">Save</button>
+      </form>
+      <p class="note" id="csMsg" aria-live="polite"></p>
+      <p class="note" style="margin:6px 0 0">The board only shows your call sign and deal count. Never your pay, your debt, or client names.</p>
+    </section>
+
+    <div class="grid" style="grid-template-columns:repeat(3,minmax(0,1fr))">
+      <div class="card"><p class="label">Today</p><div class="big num" id="today">-</div><div class="note">deals</div></div>
+      <div class="card"><p class="label">This week</p><div class="big num" id="week">-</div><div class="note">deals</div></div>
+      <div class="card"><p class="label">This month</p><div class="big num" id="month">-</div><div class="note">deals</div></div>
+    </div>
+
+    <section class="card" style="margin-bottom:14px">
+      <p class="label"><span>Next paycheck</span><span id="payDate"></span></p>
+      <div class="big num" id="range">-</div>
+      <div class="note" id="projNote" style="margin:4px 0 12px"></div>
+      <div class="three">
+        <div class="mini"><div class="k">Confirmed</div><div class="v" id="confirmed">-</div><div class="note">first payment cleared</div></div>
+        <div class="mini"><div class="k">Likely</div><div class="v" id="likely">-</div><div class="note" id="likelyN"></div></div>
+        <div class="mini"><div class="k">At risk</div><div class="v" id="atRisk">-</div><div class="note" id="atRiskN"></div></div>
+      </div>
+      <p class="note" id="carry" style="margin:10px 0 0"></p>
+    </section>
+
+    <section class="card" style="margin-bottom:14px">
+      <p class="label"><span>My goals this month</span><span id="goalMonth"></span></p>
+      <div id="goalBars"></div>
+      <form id="goalForm" class="row" style="margin-top:10px">
+        <label>Deal goal<input class="f" id="gDeals" inputmode="numeric" placeholder="20"></label>
+        <label>Commission goal ($)<input class="f" id="gMoney" inputmode="decimal" placeholder="5000"></label>
+        <button class="go" type="submit">Save goals</button>
+      </form>
+      <p class="note" id="goalMsg" aria-live="polite"></p>
+    </section>
+
+    <section class="card" style="margin-bottom:14px">
+      <p class="label">Pay history (tap a pay date for its deals)</p>
+      <div id="history"></div>
+    </section>
+
+    <section class="card"><p class="label">My recent deals</p><ul class="feed" id="recent"></ul></section>
+  </div>
 </div>
 <script>
 (() => {
   const $ = (id) => document.getElementById(id);
-  const t = new URLSearchParams(location.hash.slice(1)).get("t");
+  const KEY = "cfn_session";
+  const store = { get() { try { return localStorage.getItem(KEY); } catch { return null; } },
+                  set(v) { try { v ? localStorage.setItem(KEY, v) : localStorage.removeItem(KEY); } catch {} } };
+  let session = store.get();
   const showErr = (m) => { $("error").hidden = !m; $("error").textContent = m || ""; };
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-  if (!t) { showErr("This page needs your private link. Ask a manager for it."); return; }
-  function render(d) {
-    $("hello").textContent = "Hi " + d.me.first_name + " · you show as " + d.me.shown_as;
-    $("today").textContent = d.today; $("week").textContent = d.week; $("month").textContent = d.month;
-    $("firstName").textContent = d.me.first_name; $("fullName").textContent = d.me.full_name || d.me.first_name;
-    document.querySelector(`input[name=mode][value=${d.me.display_mode}]`).checked = true;
-    if (d.me.nickname) $("nick").value = d.me.nickname;
-    $("recent").innerHTML = d.recent.length ? d.recent.map((r) => `<li><span>${new Date(r.at).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "America/New_York" })} · ${esc(r.status || "")}</span><span>$${Math.round((r.debt || 0) / 1000)}K</span></li>`).join("") : '<li class="empty">No deals yet. Your first one shows here.</li>';
-  }
-  async function call(body) {
-    const r = await fetch(window.BOARD_API + "/me" + (body ? "" : "?t=" + encodeURIComponent(t)), body ? { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ t, ...body }) } : {});
+  const money = (n) => (n < 0 ? "-$" : "$") + Math.abs(Math.round(n || 0)).toLocaleString("en-US");
+  const cents = (n) => (n < 0 ? "-$" : "$") + Math.abs(n || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const day = (d) => new Date(d + (d.length === 10 ? "T12:00:00Z" : "")).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "America/New_York" });
+
+  async function api(path, body) {
+    const r = await fetch(window.BOARD_API + path, { method: body ? "POST" : "GET",
+      headers: { Authorization: "Bearer " + session, ...(body ? { "Content-Type": "application/json" } : {}) },
+      body: body ? JSON.stringify(body) : undefined });
     const j = await r.json().catch(() => ({}));
+    if (r.status === 401) { signOut(j.error || "Please sign in again."); throw new Error(""); }
     if (!r.ok) throw new Error(j.error || "Something went wrong");
     return j;
   }
-  call().then(render).catch((e) => showErr(e.message));
-  $("form").onsubmit = async (e) => {
-    e.preventDefault();
-    const mode = new FormData($("form")).get("mode");
-    $("saved").textContent = "";
-    if (mode === "nickname" && $("nick").value.trim().length < 2) { $("saved").textContent = "Type a nickname first."; return; }
-    try { render(await call({ mode, nickname: $("nick").value })); $("saved").textContent = "Saved. The board updates in a few seconds."; }
-    catch (err) { $("saved").textContent = err.message; }
+
+  function showSignIn(msg) {
+    $("app").hidden = true; $("logout").hidden = true; $("signin").hidden = false; showErr(msg || "");
+    const start = () => {
+      if (!window.google?.accounts?.id) return setTimeout(start, 200);
+      google.accounts.id.initialize({ client_id: window.GOOGLE_CLIENT_ID, hd: "changefn.com", callback: onGoogle, auto_select: false });
+      google.accounts.id.renderButton($("gbtn"), { theme: "filled_blue", size: "large", text: "signin_with", shape: "pill" });
+    };
+    if (!document.getElementById("gsi")) { const s = document.createElement("script"); s.id = "gsi"; s.src = "https://accounts.google.com/gsi/client"; s.async = true; document.head.appendChild(s); }
+    start();
+  }
+  async function onGoogle(resp) {
+    showErr("");
+    try {
+      const r = await fetch(window.BOARD_API + "/auth", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ credential: resp.credential }) });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(j.error || "Sign-in failed");
+      session = j.session; store.set(session); load();
+    } catch (e) { showErr(e.message); }
+  }
+  function signOut(msg) {
+    if (session) fetch(window.BOARD_API + "/logout", { method: "POST", headers: { Authorization: "Bearer " + session } }).catch(() => {});
+    session = null; store.set(null); showSignIn(msg);
+  }
+
+  function render(d) {
+    $("signin").hidden = true; $("app").hidden = false; $("logout").hidden = false; showErr("");
+    $("hello").textContent = "Hi " + (d.me.first_name || "") + " · on the board you are " + d.me.shown_as;
+    $("csNow").textContent = d.me.call_sign ? "Now: " + d.me.call_sign : "Not picked yet";
+    $("csAsk").hidden = !!d.me.call_sign;
+    if (d.me.call_sign && document.activeElement !== $("cs")) $("cs").value = d.me.call_sign;
+    $("today").textContent = d.today; $("week").textContent = d.week; $("month").textContent = d.month;
+
+    const p = d.projection;
+    $("payDate").textContent = "Pay date " + day(p.pay_date);
+    $("range").textContent = p.estimate.low === p.estimate.high ? money(p.estimate.low) : money(p.estimate.low) + " to " + money(p.estimate.high);
+    $("projNote").textContent = p.note + " Counts deals on payout files " + day(p.window.start) + " to " + day(p.window.end) + ".";
+    $("confirmed").textContent = money(p.confirmed);
+    $("likely").textContent = money(p.likely); $("likelyN").textContent = p.likely_deals + " deal" + (p.likely_deals === 1 ? "" : "s") + " if first payment clears";
+    $("atRisk").textContent = money(p.at_risk); $("atRiskN").textContent = p.at_risk_deals ? p.at_risk_deals + " paid deal" + (p.at_risk_deals === 1 ? "" : "s") + " cancelled or NSF" : "nothing at risk";
+    const extra = [];
+    if (p.known_clawbacks) extra.push("Clawbacks this period: " + money(p.known_clawbacks) + ".");
+    if (p.carried_in) extra.push("Carried from last period: " + money(p.carried_in) + ".");
+    $("carry").textContent = extra.join(" ");
+
+    const g = d.goals;
+    $("goalMonth").textContent = new Date(g.month + "-15T12:00:00Z").toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" });
+    const bar = (label, have, goal, fmt, tip) => {
+      const pct = Math.min(100, Math.round((have / goal) * 100));
+      return `<p class="label" style="margin-top:6px"><span>${label}</span><span>${fmt(have)} of ${fmt(goal)}</span></p>
+        <div class="bar"><div class="fill${pct >= 100 ? " hit" : ""}" style="width:${pct}%"></div></div>${tip ? `<div class="note">${esc(tip)}</div>` : ""}`;
+    };
+    let html = "";
+    if (g.deals_goal) html += bar("Deals", g.deals_so_far, g.deals_goal, String, g.deals_so_far >= g.deals_goal ? "Goal hit. Raise it?" : (g.deals_goal - g.deals_so_far) + " more to go.");
+    if (g.commission_goal) html += bar("Commission paid", g.commission_paid_this_month, g.commission_goal, money,
+      g.deals_needed_for_commission_goal === 0 ? "Goal hit." : g.deals_needed_for_commission_goal ? "About " + g.deals_needed_for_commission_goal + " more deals at your average of " + money(g.average_per_deal) + "." : "");
+    $("goalBars").innerHTML = html || '<p class="empty">Set a goal below. Only you see it.</p>';
+    if (document.activeElement !== $("gDeals")) $("gDeals").value = g.deals_goal ?? "";
+    if (document.activeElement !== $("gMoney")) $("gMoney").value = g.commission_goal ?? "";
+
+    $("history").innerHTML = d.history.length ? d.history.map((h) => {
+      const parts = [h.bonus && "bonus " + cents(h.bonus), h.nationwide && "Nationwide " + cents(h.nationwide), h.clawback && "clawback " + cents(h.clawback)].filter(Boolean).join(" · ");
+      const rows = (h.lines || []).map((l) => `<tr><td>${l.kind === "clawback" ? "Clawback" : l.kind === "first_pay" ? esc(l.client || "?") : "Nationwide loan"}</td>
+        <td>${l.enrolled ? day(l.enrolled) : ""}</td><td>${l.debt ? money(l.debt) : ""}</td><td>${l.business_days ?? ""}</td><td>${l.rate ? l.rate + "%" : ""}</td>
+        <td class="${l.amount < 0 ? "neg" : ""}">${cents(l.amount)}</td></tr>`).join("");
+      return `<details><summary><span>${day(h.pay_date)}${h.source === "old tracker" ? ' <span class="when">(old tracker)</span>' : ""}</span><b>${cents(h.total)}</b></summary>
+        <div class="note">${esc(parts)}</div>
+        ${rows ? `<table><tr><th>Client</th><th>Enrolled</th><th>Debt</th><th>Days</th><th>Rate</th><th>Amount</th></tr>${rows}</table>` : ""}</details>`;
+    }).join("") : '<p class="empty">No paid periods yet.</p>';
+
+    $("recent").innerHTML = d.recent.length ? d.recent.map((r) => `<li><span>${day(r.at)} · ${esc(r.status || "")}</span><span>${money(r.debt)}</span></li>`).join("")
+      : '<li class="empty">No deals yet. Your first one shows here.</li>';
+  }
+  async function load() { try { render(await api("/me")); } catch (e) { if (e.message) showErr(e.message); } }
+
+  $("csForm").onsubmit = async (e) => {
+    e.preventDefault(); $("csMsg").textContent = "";
+    try { render(await api("/me/callsign", { call_sign: $("cs").value })); $("csMsg").textContent = "Saved. The board shows it within a minute."; }
+    catch (err) { $("csMsg").textContent = err.message; }
   };
-  $("nick").oninput = () => { document.querySelector("input[value=nickname]").checked = true; $("saved").textContent = ""; };
+  $("goalForm").onsubmit = async (e) => {
+    e.preventDefault(); $("goalMsg").textContent = "";
+    try { render(await api("/me/goals", { deals_goal: $("gDeals").value, commission_goal: $("gMoney").value })); $("goalMsg").textContent = "Goals saved."; }
+    catch (err) { $("goalMsg").textContent = err.message; }
+  };
+  $("logout").onclick = () => signOut("");
+
+  if (!window.GOOGLE_CLIENT_ID) showErr("Sign-in is not set up yet. Check back soon.");
+  else if (session) load(); else showSignIn();
 })();
 </script>
 </body>
