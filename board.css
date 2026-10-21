@@ -1,0 +1,58 @@
+:root{--blue:#1F4FD8;--blue-dark:#173CA6;--tint:#F2F5FD;--line:#CDD6EA;--ink:#111827;--muted:#5B6475;--win:#16A34A;--gold:#D4A017;--card:#FFFFFF;--bg:#F7F9FE}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+h1,h2,.num{font-family:Quicksand,Inter,sans-serif}
+.wrap{max-width:1100px;margin:0 auto;padding:16px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+header .brand{display:flex;align-items:center;gap:10px}
+header img{height:34px;width:auto}
+header h1{font-size:20px;margin:0;color:var(--blue);font-weight:700}
+header .date{color:var(--muted);font-size:14px}
+.live{font-size:12px;color:var(--win);display:flex;align-items:center;gap:6px}
+.live i{width:8px;height:8px;border-radius:50%;background:var(--win);display:inline-block;animation:pulse 2s infinite}
+.live.stale{color:var(--muted)} .live.stale i{background:var(--muted);animation:none}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(22,163,74,.5)}70%{box-shadow:0 0 0 8px rgba(22,163,74,0)}100%{box-shadow:0 0 0 0 rgba(22,163,74,0)}}
+.banner{background:var(--blue);color:#fff;border-radius:14px;padding:14px 16px;margin-bottom:14px;font-size:16px;display:flex;gap:10px;align-items:center;min-height:52px}
+.banner b{font-weight:700}
+.banner.idle{background:var(--tint);color:var(--blue)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin-bottom:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+.label{font-size:13px;color:var(--muted);margin:0 0 8px;display:flex;justify-content:space-between;gap:8px}
+.big{font-size:34px;font-weight:700;line-height:1.1}
+.sub{font-size:14px;color:var(--muted);font-weight:500}
+.bar{position:relative;height:18px;background:var(--tint);border-radius:9px;overflow:hidden;margin:10px 0 6px}
+.bar .fill{height:100%;background:var(--blue);border-radius:9px;transition:width .8s ease}
+.bar .fill.hit{background:var(--win)}
+.bar .pace{position:absolute;top:-2px;bottom:-2px;width:3px;background:var(--ink);border-radius:2px}
+.note{font-size:13px;color:var(--muted)}
+.tabs{display:flex;gap:6px}
+.tabs button{border:1px solid var(--line);background:#fff;color:var(--muted);border-radius:8px;padding:4px 10px;font:inherit;font-size:13px;cursor:pointer}
+.tabs button[aria-pressed=true]{background:var(--blue);color:#fff;border-color:var(--blue)}
+ol.leaders,ul.feed{list-style:none;margin:0;padding:0}
+ol.leaders li,ul.feed li{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--tint);font-size:15px}
+ol.leaders li:last-child,ul.feed li:last-child{border-bottom:0}
+.rank{display:inline-block;width:26px;color:var(--muted)}
+.crown{color:var(--gold)}
+.when{font-size:12px;color:var(--muted)}
+.empty{color:var(--muted);font-size:14px;padding:8px 0}
+.pipe{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:12px}
+.pipe div{background:var(--tint);border-radius:10px;padding:10px}
+.pipe .k{font-size:12px;color:var(--muted)} .pipe .v{font-size:22px;font-weight:700;color:var(--blue)}
+.err{background:#FEF2F2;color:#991B1B;border:1px solid #FECACA;border-radius:12px;padding:14px;margin:20px 0}
+.overlay{position:fixed;inset:0;background:rgba(23,60,166,.92);color:#fff;display:none;align-items:center;justify-content:center;text-align:center;z-index:50;padding:24px}
+.overlay.show{display:flex}
+.overlay h2{font-size:clamp(32px,6vw,72px);margin:0 0 10px}
+.overlay p{font-size:clamp(16px,2.5vw,26px);margin:0}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+@media (max-width:480px){.big{font-size:28px}.pipe{grid-template-columns:repeat(2,minmax(0,1fr))}}
+/* TV mode: bigger, two columns, no scrolling on a 16:9 screen */
+body.tv .wrap{max-width:none;padding:24px 32px}
+body.tv header h1{font-size:32px} body.tv header img{height:52px} body.tv .date{font-size:20px}
+body.tv .banner{font-size:26px;min-height:76px}
+body.tv .big{font-size:56px} body.tv .label{font-size:18px} body.tv .note{font-size:18px}
+body.tv ol.leaders li,body.tv ul.feed li{font-size:24px;padding:10px 0}
+body.tv .bar{height:28px;border-radius:14px}
+body.tv .grid{grid-template-columns:1fr 1fr}
+@media (prefers-reduced-motion:reduce){.live i{animation:none}.bar .fill{transition:none}}
+body.tv .sub{font-size:22px} body.tv .when{font-size:18px} body.tv .tabs button{font-size:18px;padding:6px 14px} body.tv .live{font-size:18px}
+body.tv ul.feed li:nth-child(n+9){display:none}

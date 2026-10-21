@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>CFN Team Board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Quicksand:wght@500;700&display=swap">
+<link rel="stylesheet" href="board.css">
+<script src="config.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.9.3/confetti.browser.min.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand"><img src="https://changefn.com/logo.png" alt="" onerror="this.remove()"><div><h1>CFN Team Board</h1><div class="date" id="date"></div></div></div>
+    <div class="live" id="live" aria-live="polite"><i></i><span>Live</span></div>
+  </header>
+  <div id="error" class="err" hidden></div>
+  <div class="banner idle" id="banner" aria-live="polite"><span id="bannerText">Let's go, team.</span></div>
+
+  <div class="grid">
+    <section class="card" aria-labelledby="t-today">
+      <p class="label"><span id="t-today">Today</span><span id="todayGoal"></span></p>
+      <div class="big num" id="todayDebt">-</div><div class="sub" id="todayDeals"></div>
+      <div class="bar" role="img" id="todayBarWrap"><div class="fill" id="todayBar" style="width:0"></div><div class="pace" id="todayPace" title="Where we should be by now"></div></div>
+      <div class="note" id="todayNote"></div>
+    </section>
+    <section class="card" aria-labelledby="t-week">
+      <p class="label"><span id="t-week">This week</span><span id="weekGoal"></span></p>
+      <div class="big num" id="weekDebt">-</div><div class="sub" id="weekDeals"></div>
+      <div class="bar" role="img" id="weekBarWrap"><div class="fill" id="weekBar" style="width:0"></div><div class="pace" id="weekPace" title="Where we should be by now"></div></div>
+      <div class="note" id="weekNote"></div>
+    </section>
+  </div>
+
+  <div class="grid">
+    <section class="card" aria-labelledby="t-top">
+      <p class="label"><span id="t-top">Top reps</span>
+        <span class="tabs" role="group" aria-label="Period"><button id="tabDay" aria-pressed="true">Today</button><button id="tabWeek" aria-pressed="false">Week</button></span></p>
+      <ol class="leaders" id="leaders"></ol>
+    </section>
+    <section class="card" aria-labelledby="t-feed">
+      <p class="label"><span id="t-feed">Live wins</span></p>
+      <ul class="feed" id="feed"></ul>
+    </section>
+  </div>
+
+  <section class="card" aria-labelledby="t-month">
+    <p class="label"><span id="t-month">This month</span><span id="monthGoal"></span></p>
+    <div class="sub" id="monthLine"></div>
+    <div class="bar"><div class="fill" id="monthBar" style="width:0"></div></div>
+    <div class="pipe">
+      <div><div class="k">Submitted</div><div class="v num" id="pSub">-</div></div>
+      <div><div class="k">Enrolled</div><div class="v num" id="pEnr">-</div></div>
+      <div><div class="k">In program</div><div class="v num" id="pAct">-</div></div>
+      <div><div class="k">Nationwide loans</div><div class="v num" id="pNw">-</div></div>
+    </div>
+  </section>
+</div>
+<div class="overlay" id="overlay" role="alert"><div><h2 id="ovTitle">GOAL HIT!</h2><p id="ovText"></p></div></div>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const params = new URLSearchParams(location.hash.slice(1));
+  const tv = params.has("tv") || new URLSearchParams(location.search).has("tv");
+  if (tv) document.body.classList.add("tv");
+  let key = params.get("k");
+  try { if (key) localStorage.setItem("cfnBoardKey", key); else key = localStorage.getItem("cfnBoardKey"); } catch {}
+  const whole = (n) => (n === null || n === undefined ? "-" : Math.round(n));
+  const money = (n) => n >= 1e6 ? "$" + (n / 1e6).toFixed(2) + "M" : "$" + Math.round(n / 1000) + "K";
+  const ago = (iso) => { const m = Math.max(0, Math.round((Date.now() - Date.parse(iso)) / 60000)); return m < 1 ? "now" : m < 60 ? m + "m" : m < 1440 ? Math.round(m / 60) + "h" : Math.round(m / 1440) + "d"; };
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  let period = "day", data = null, lastFeedKey = null, celebrated = {}, lastOk = 0;
+  const showErr = (t) => { $("error").hidden = !t; $("error").textContent = t || ""; };
+  if (!key) { showErr("This board needs the team link. Ask a manager for it."); return; }
+
+  function bar(fillId, paceId, pct, pacePct, hit) {
+    $(fillId).style.width = Math.min(100, pct || 0) + "%";
+    $(fillId).classList.toggle("hit", !!hit);
+    if (paceId) $(paceId).style.left = "calc(" + Math.min(100, pacePct || 0) + "% - 1px)";
+  }
+  function confetti(big) {
+    if (!window.confetti || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const colors = ["#1F4FD8", "#16A34A", "#D4A017", "#FFFFFF"];
+    window.confetti({ particleCount: big ? 220 : 90, spread: big ? 120 : 70, origin: { y: 0.3 }, colors });
+    if (big) setTimeout(() => window.confetti({ particleCount: 160, spread: 140, origin: { y: 0.4 }, colors }), 600);
+  }
+  function celebrate(kind, text) {
+    $("ovTitle").textContent = kind === "week" ? "WEEKLY GOAL HIT!" : "DAILY GOAL HIT!";
+    $("ovText").textContent = text;
+    $("overlay").classList.add("show"); confetti(true);
+    setTimeout(() => $("overlay").classList.remove("show"), 8000);
+  }
+  $("overlay").onclick = () => $("overlay").classList.remove("show");
+  function renderLeaders() {
+    if (!data) return;
+    const list = period === "day" ? data.top_today : data.top_week;
+    $("tabDay").setAttribute("aria-pressed", period === "day"); $("tabWeek").setAttribute("aria-pressed", period === "week");
+    $("leaders").innerHTML = list.length ? list.map((r, i) => `<li><span><span class="rank">${i + 1}.</span>${i === 0 ? '<span class="crown" aria-label="leader">&#9819;</span> ' : ""}${esc(r.name)}</span><span>${r.deals} deal${r.deals === 1 ? "" : "s"}</span></li>`).join("")
+      : `<li class="empty">First deal ${period === "day" ? "today" : "this week"} takes the crown.</li>`;
+  }
+  $("tabDay").onclick = () => { period = "day"; renderLeaders(); };
+  $("tabWeek").onclick = () => { period = "week"; renderLeaders(); };
+  if (tv) setInterval(() => { period = period === "day" ? "week" : "day"; renderLeaders(); }, 15000);
+
+  function render(d) {
+    data = d;
+    const g = d.goals || {};
+    $("date").textContent = new Date(d.as_of).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", timeZone: "America/New_York" });
+    $("todayGoal").textContent = g.daily ? "Goal " + money(g.daily) : "";
+    $("todayDebt").textContent = money(d.day.debt);
+    $("todayDeals").textContent = `${d.day.deals} deal${d.day.deals === 1 ? "" : "s"} · goal ${whole(g.daily_deals)} deals`;
+    bar("todayBar", "todayPace", d.day.debt_pct, d.day.pace_pct, d.day.goal_hit);
+    $("todayBarWrap").setAttribute("aria-label", `${d.day.debt_pct ?? 0}% of today's goal`);
+    $("todayNote").textContent = d.day.goal_hit ? "Goal hit! Keep stacking." : g.daily ? `${money(Math.max(0, g.daily - d.day.debt))} to go · ${d.day.debt_pct >= d.day.pace_pct ? "ahead of pace" : "behind pace"}` : "";
+    $("weekGoal").textContent = g.weekly ? "Goal " + money(g.weekly) : "";
+    $("weekDebt").textContent = money(d.week.debt);
+    $("weekDeals").textContent = `${d.week.deals} deal${d.week.deals === 1 ? "" : "s"} · goal ${whole(g.weekly_deals)} deals`;
+    bar("weekBar", "weekPace", d.week.debt_pct, d.week.pace_pct, d.week.goal_hit);
+    $("weekBarWrap").setAttribute("aria-label", `${d.week.debt_pct ?? 0}% of this week's goal`);
+    $("weekNote").textContent = d.week.goal_hit ? "Weekly goal hit!" : g.weekly ? `${money(Math.max(0, g.weekly - d.week.debt))} to go · ${d.week.debt_pct >= d.week.pace_pct ? "ahead of pace" : "behind pace"}` : "";
+    $("monthGoal").textContent = g.month ? "Pro forma " + money(g.month) + " · " + g.month_deals + " deals" : "";
+    $("monthLine").textContent = `${money(d.month.debt)} · ${d.month.deals} deals · ${d.month.debt_pct ?? 0}% · ${d.month.workdays_left} working day${d.month.workdays_left === 1 ? "" : "s"} left`;
+    bar("monthBar", null, d.month.debt_pct, 0, d.month.debt_pct >= 100);
+    const st = Object.fromEntries((d.pipeline_month || []).map((p) => [p.status, p.deals]));
+    const sum = (...k) => k.reduce((s, x) => s + (st[x] || 0), 0);
+    $("pSub").textContent = d.month.deals;
+    $("pEnr").textContent = sum("Waiting For First Payment");
+    $("pAct").textContent = sum("Active", "Final Payment - File Review", "Successful Program / Client Graduated");
+    $("pNw").textContent = d.nationwide_loans_month ?? 0;
+    $("feed").innerHTML = d.feed.length ? d.feed.map((f) => `<li><span>${f.kind === "loan" ? "&#127974;" : "&#127942;"} ${esc(f.name)} · ${f.kind === "loan" ? "Nationwide loan" : "deal"}</span><span class="when">${ago(f.at)}</span></li>`).join("") : '<li class="empty">No wins yet. Be first.</li>';
+    renderLeaders();
+    // New win since last look: banner + confetti. First load just shows the latest.
+    const top = d.feed.find((f) => f.kind === "deal");
+    const k = top ? top.name + top.at : null;
+    if (top) $("banner").classList.remove("idle");
+    if (top) $("bannerText").innerHTML = `<b>${esc(top.name)}</b> ${lastFeedKey === null ? "had the latest deal" : "just submitted a deal!"} · Team is at ${d.day.deals} of ${whole(g.daily_deals)} today.`;
+    if (lastFeedKey !== null && k && k !== lastFeedKey) confetti(false);
+    lastFeedKey = k;
+    // Celebrate each goal once per day (daily) or once per week (weekly), even across page reloads.
+    const t = new Date(d.today + "T12:00:00Z"), monday = new Date(t.getTime() - ((t.getUTCDay() + 6) % 7) * 86400000).toISOString().slice(0, 10);
+    for (const [kind, hit, tag] of [["day", d.day.goal_hit, d.today], ["week", d.week.goal_hit, monday]]) {
+      const store = "cfnCelebrated_" + kind;
+      let seen = celebrated[store] === tag; try { seen = seen || localStorage.getItem(store) === tag; } catch {}
+      if (hit && !seen) { celebrated[store] = tag; try { localStorage.setItem(store, tag); } catch {} celebrate(kind, kind === "day" ? `${d.day.deals} deals today. Huge team effort!` : `${d.week.deals} deals this week!`); }
+    }
+  }
+  async function load() {
+    try {
+      const r = await fetch(window.BOARD_API + "?k=" + encodeURIComponent(key), { cache: "no-store" });
+      if (r.status === 401) { showErr("This team link no longer works. Ask a manager for the new one."); return; }
+      if (!r.ok) throw new Error("status " + r.status);
+      render(await r.json()); showErr(""); lastOk = Date.now();
+    } catch { /* keep the last numbers; the Live dot turns gray */ }
+    $("live").classList.toggle("stale", Date.now() - lastOk > 90000);
+    $("live").querySelector("span").textContent = Date.now() - lastOk > 90000 ? "Reconnecting" : "Live";
+  }
+  load(); setInterval(load, 15000);
+})();
+</script>
+</body>
+</html>
