@@ -26,6 +26,12 @@ details td,details th{text-align:left;padding:4px 2px;border-bottom:1px solid va
 .neg{color:#B91C1C}
 select.f{background:#fff}
 [hidden]{display:none !important}
+table.tt{width:100%;border-collapse:collapse;font-size:14px}
+table.tt th,table.tt td{text-align:right;padding:6px 4px;border-bottom:1px solid var(--tint);white-space:nowrap}
+table.tt th:first-child,table.tt td:first-child{text-align:left}
+table.tt th{color:var(--muted);font-weight:500;font-size:12px}
+table.tt tr.sum td{font-weight:700;border-top:2px solid var(--line)}
+table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{background:var(--tint)}
 #signin{text-align:center;padding:30px 16px}
 @media (max-width:480px){.three{grid-template-columns:1fr 1fr 1fr}.mini .v{font-size:18px}}
 </style>
@@ -46,6 +52,13 @@ select.f{background:#fff}
   <section class="card" id="mgr" style="margin-bottom:14px" hidden>
     <p class="label"><span>Manager view (read only)</span><span>every view is logged</span></p>
     <select id="pick" class="f"><option value="">Pick a closer...</option></select>
+  </section>
+
+  <section class="card" id="team" style="margin-bottom:14px" hidden>
+    <p class="label"><span>Team: next paycheck commission</span><span id="teamDate"></span></p>
+    <div class="big num" id="teamRange">-</div>
+    <div class="note" id="teamNote" style="margin:4px 0 12px"></div>
+    <div style="overflow-x:auto"><table class="tt"><thead><tr><th>Closer</th><th>Estimate</th><th>Confirmed</th><th>Likely</th><th>At risk</th></tr></thead><tbody id="teamRows"></tbody></table></div>
   </section>
 
   <div id="app" hidden>
@@ -150,7 +163,18 @@ select.f{background:#fff}
     $("mgr").hidden = !mgr;
     if (mgr) {
       const cur = d.viewing || "";
-      $("pick").innerHTML = '<option value="">Pick a closer...</option>' + d.reps.map((r) => `<option value="${esc(r.rep_id)}"${r.rep_id === cur ? " selected" : ""}>${esc(r.name)} (${esc(r.shown_as)})</option>`).join("");
+      $("pick").innerHTML = '<option value="">Pick a closer...</option><option value="team"' + (cur === "team" ? " selected" : "") + '>Team: everyone\'s next paycheck</option>' + d.reps.map((r) => `<option value="${esc(r.rep_id)}"${r.rep_id === cur ? " selected" : ""}>${esc(r.name)} (${esc(r.shown_as)})</option>`).join("");
+      $("team").hidden = d.viewing !== "team";
+      if (d.viewing === "team") {
+        const t = d.team, range = (lo, hi) => lo === hi ? money(lo) : money(lo) + " to " + money(hi);
+        $("app").hidden = true; $("hello").textContent = "Manager view · team";
+        $("teamDate").textContent = "Pay date " + day(t.pay_date);
+        $("teamRange").textContent = range(t.totals.low, t.totals.high);
+        $("teamNote").textContent = t.note + " Counts deals on payout files " + day(t.window.start) + " to " + day(t.window.end) + ". Tap a closer to open their page.";
+        $("teamRows").innerHTML = t.reps.map((r) => `<tr data-rep="${esc(r.rep_id)}"><td>${esc(r.name)}</td><td>${range(r.low, r.high)}</td><td>${money(r.confirmed)}</td><td>${money(r.likely)}${r.likely_deals ? ` <span class="when">(${r.likely_deals})</span>` : ""}</td><td class="${r.at_risk ? "neg" : ""}">${money(r.at_risk)}</td></tr>`).join("")
+          + `<tr class="sum"><td>Team</td><td>${range(t.totals.low, t.totals.high)}</td><td>${money(t.totals.confirmed)}</td><td>${money(t.totals.likely)}</td><td>${money(t.totals.at_risk)}</td></tr>`;
+        return;
+      }
       if (!d.viewing) { $("app").hidden = true; $("hello").textContent = "Manager view"; return; }
     }
     $("app").hidden = false;
@@ -204,6 +228,7 @@ select.f{background:#fff}
   let viewing = "";
   async function load() { try { render(await api("/me" + (viewing ? "?rep=" + encodeURIComponent(viewing) : ""))); } catch (e) { if (e.message) showErr(e.message); } }
   $("pick").onchange = () => { viewing = $("pick").value; load(); };
+  $("teamRows").onclick = (e) => { const tr = e.target.closest("tr[data-rep]"); if (tr) { viewing = tr.dataset.rep; load(); } };
 
   $("csForm").onsubmit = async (e) => {
     e.preventDefault(); $("csMsg").textContent = "";
