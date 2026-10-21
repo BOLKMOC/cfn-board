@@ -14,7 +14,7 @@
 .three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
 .mini{background:var(--tint);border-radius:10px;padding:10px}
 .mini .k{font-size:12px;color:var(--muted)} .mini .v{font-size:22px;font-weight:700;color:var(--blue);font-family:Quicksand,Inter,sans-serif}
-input.f{padding:8px 10px;border:1px solid var(--line);border-radius:8px;font:inherit;width:100%;box-sizing:border-box}
+input.f,select.f{padding:8px 10px;border:1px solid var(--line);border-radius:8px;font:inherit;width:100%;box-sizing:border-box}
 button.go{background:var(--blue);color:#fff;border:0;border-radius:8px;padding:8px 14px;font:inherit;cursor:pointer}
 button.link{background:none;border:0;color:var(--muted);font:inherit;font-size:13px;cursor:pointer;text-decoration:underline}
 .row{display:flex;gap:8px;align-items:end;flex-wrap:wrap}
@@ -24,6 +24,8 @@ details summary{display:flex;justify-content:space-between;cursor:pointer;font-s
 details table{width:100%;font-size:13px;border-collapse:collapse;margin-top:8px}
 details td,details th{text-align:left;padding:4px 2px;border-bottom:1px solid var(--tint)} details th{color:var(--muted);font-weight:500}
 .neg{color:#B91C1C}
+select.f{background:#fff}
+[hidden]{display:none !important}
 #signin{text-align:center;padding:30px 16px}
 @media (max-width:480px){.three{grid-template-columns:1fr 1fr 1fr}.mini .v{font-size:18px}}
 </style>
@@ -37,8 +39,13 @@ details td,details th{text-align:left;padding:4px 2px;border-bottom:1px solid va
 
   <section class="card" id="signin" hidden>
     <p style="margin:0 0 6px;font-size:17px">Sign in with your <b>@changefn.com</b> Google account.</p>
-    <p class="note" style="margin:0 0 16px">Only you can see your pay. No passwords are stored here.</p>
+    <p class="note" style="margin:0 0 16px">Only you and your managers can see your pay. No passwords are stored here.</p>
     <div id="gbtn" style="display:inline-block"></div>
+  </section>
+
+  <section class="card" id="mgr" style="margin-bottom:14px" hidden>
+    <p class="label"><span>Manager view (read only)</span><span>every view is logged</span></p>
+    <select id="pick" class="f"><option value="">Pick a closer...</option></select>
   </section>
 
   <div id="app" hidden>
@@ -134,14 +141,23 @@ details td,details th{text-align:left;padding:4px 2px;border-bottom:1px solid va
   }
   function signOut(msg) {
     if (session) fetch(window.BOARD_API + "/logout", { method: "POST", headers: { Authorization: "Bearer " + session } }).catch(() => {});
-    session = null; store.set(null); showSignIn(msg);
+    session = null; viewing = ""; store.set(null); showSignIn(msg);
   }
 
   function render(d) {
-    $("signin").hidden = true; $("app").hidden = false; $("logout").hidden = false; showErr("");
-    $("hello").textContent = "Hi " + (d.me.first_name || "") + " · on the board you are " + d.me.shown_as;
+    $("signin").hidden = true; $("logout").hidden = false; showErr("");
+    const mgr = !!d.manager;
+    $("mgr").hidden = !mgr;
+    if (mgr) {
+      const cur = d.viewing || "";
+      $("pick").innerHTML = '<option value="">Pick a closer...</option>' + d.reps.map((r) => `<option value="${esc(r.rep_id)}"${r.rep_id === cur ? " selected" : ""}>${esc(r.name)} (${esc(r.shown_as)})</option>`).join("");
+      if (!d.viewing) { $("app").hidden = true; $("hello").textContent = "Manager view"; return; }
+    }
+    $("app").hidden = false;
+    $("csForm").hidden = mgr; $("goalForm").hidden = mgr; $("csAsk").hidden = true;
+    $("hello").textContent = (mgr ? "Viewing " + (d.me.first_name || "") : "Hi " + (d.me.first_name || "")) + " · on the board: " + d.me.shown_as;
     $("csNow").textContent = d.me.call_sign ? "Now: " + d.me.call_sign : "Not picked yet";
-    $("csAsk").hidden = !!d.me.call_sign;
+    if (!mgr) $("csAsk").hidden = !!d.me.call_sign;
     if (d.me.call_sign && document.activeElement !== $("cs")) $("cs").value = d.me.call_sign;
     $("today").textContent = d.today; $("week").textContent = d.week; $("month").textContent = d.month;
 
@@ -168,7 +184,7 @@ details td,details th{text-align:left;padding:4px 2px;border-bottom:1px solid va
     if (g.deals_goal) html += bar("Deals", g.deals_so_far, g.deals_goal, String, g.deals_so_far >= g.deals_goal ? "Goal hit. Raise it?" : (g.deals_goal - g.deals_so_far) + " more to go.");
     if (g.commission_goal) html += bar("Commission paid", g.commission_paid_this_month, g.commission_goal, money,
       g.deals_needed_for_commission_goal === 0 ? "Goal hit." : g.deals_needed_for_commission_goal ? "About " + g.deals_needed_for_commission_goal + " more deals at your average of " + money(g.average_per_deal) + "." : "");
-    $("goalBars").innerHTML = html || '<p class="empty">Set a goal below. Only you see it.</p>';
+    $("goalBars").innerHTML = html || '<p class="empty">Set a goal below. Only you and your managers see it.</p>';
     if (document.activeElement !== $("gDeals")) $("gDeals").value = g.deals_goal ?? "";
     if (document.activeElement !== $("gMoney")) $("gMoney").value = g.commission_goal ?? "";
 
@@ -185,7 +201,9 @@ details td,details th{text-align:left;padding:4px 2px;border-bottom:1px solid va
     $("recent").innerHTML = d.recent.length ? d.recent.map((r) => `<li><span>${day(r.at)} · ${esc(r.status || "")}</span><span>${money(r.debt)}</span></li>`).join("")
       : '<li class="empty">No deals yet. Your first one shows here.</li>';
   }
-  async function load() { try { render(await api("/me")); } catch (e) { if (e.message) showErr(e.message); } }
+  let viewing = "";
+  async function load() { try { render(await api("/me" + (viewing ? "?rep=" + encodeURIComponent(viewing) : ""))); } catch (e) { if (e.message) showErr(e.message); } }
+  $("pick").onchange = () => { viewing = $("pick").value; load(); };
 
   $("csForm").onsubmit = async (e) => {
     e.preventDefault(); $("csMsg").textContent = "";
