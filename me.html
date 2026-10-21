@@ -61,6 +61,30 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     <div style="overflow-x:auto"><table class="tt"><thead><tr><th>Closer</th><th>Estimate</th><th>Confirmed</th><th>Likely</th><th>At risk</th></tr></thead><tbody id="teamRows"></tbody></table></div>
   </section>
 
+  <section id="pay" style="margin-bottom:14px" hidden>
+    <div class="card" style="margin-bottom:14px">
+      <p class="label"><span>Payroll review</span><span id="payStatus"></span></p>
+      <div class="big num" id="payTotal">-</div>
+      <div class="note" id="paySub" style="margin:4px 0 12px"></div>
+      <div class="three" style="grid-template-columns:repeat(4,minmax(0,1fr))">
+        <div class="mini"><div class="k">Bonus</div><div class="v" id="payBonus">-</div></div>
+        <div class="mini"><div class="k">Nationwide</div><div class="v" id="payNw">-</div></div>
+        <div class="mini"><div class="k">Clawbacks</div><div class="v" id="payCb">-</div></div>
+        <div class="mini"><div class="k">Deals</div><div class="v" id="payDeals">-</div></div>
+      </div>
+      <p class="note" id="payFiles" style="margin:10px 0 0"></p>
+    </div>
+    <div class="card" style="margin-bottom:14px" id="payReviewCard">
+      <p class="label"><span>Review items</span><span id="payReviewN"></span></p>
+      <ul class="feed" id="payReviews"></ul>
+    </div>
+    <div class="card" style="margin-bottom:14px">
+      <p class="label">By closer (tap for deal lines)</p>
+      <div id="payReps"></div>
+    </div>
+    <div class="card" id="payApprove"></div>
+  </section>
+
   <div id="app" hidden>
     <section class="card" style="margin-bottom:14px" id="csCard">
       <p class="label"><span>Your call sign</span><span id="csNow"></span></p>
@@ -163,8 +187,10 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     $("mgr").hidden = !mgr;
     if (mgr) {
       const cur = d.viewing || "";
-      $("pick").innerHTML = '<option value="">Pick a closer...</option><option value="team"' + (cur === "team" ? " selected" : "") + '>Team: everyone\'s next paycheck</option>' + d.reps.map((r) => `<option value="${esc(r.rep_id)}"${r.rep_id === cur ? " selected" : ""}>${esc(r.name)} (${esc(r.shown_as)})</option>`).join("");
+      $("pick").innerHTML = '<option value="">Pick a closer...</option><option value="payroll"' + (cur === "payroll" ? " selected" : "") + '>Payroll review: next pay date</option><option value="team"' + (cur === "team" ? " selected" : "") + '>Team: everyone\'s next paycheck</option>' + d.reps.map((r) => `<option value="${esc(r.rep_id)}"${r.rep_id === cur ? " selected" : ""}>${esc(r.name)} (${esc(r.shown_as)})</option>`).join("");
       $("team").hidden = d.viewing !== "team";
+      $("pay").hidden = d.viewing !== "payroll";
+      if (d.viewing === "payroll") { renderPayroll(d.payroll); return; }
       if (d.viewing === "team") {
         const t = d.team, range = (lo, hi) => lo === hi ? money(lo) : money(lo) + " to " + money(hi);
         $("app").hidden = true; $("hello").textContent = "Manager view · team";
@@ -225,7 +251,29 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     $("recent").innerHTML = d.recent.length ? d.recent.map((r) => `<li><span>${day(r.at)} · ${esc(r.status || "")}</span><span>${money(r.debt)}</span></li>`).join("")
       : '<li class="empty">No deals yet. Your first one shows here.</li>';
   }
-  let viewing = "";
+  function renderPayroll(p) {
+    $("app").hidden = true; $("hello").textContent = "Manager view · payroll";
+    const locked = p.status !== "draft" && p.status !== "not built yet";
+    $("payStatus").textContent = "Pay date " + day(p.pay_date) + " · " + (locked ? p.status.replaceAll("_", " ") : "draft");
+    $("payTotal").textContent = money(p.totals.payable);
+    $("paySub").textContent = "Commission to pay, after clawbacks. Payout files " + day(p.window.start) + " to " + day(p.window.end) + "." + (p.skipped ? " " + p.skipped + " payout row(s) not paid (former reps or non-closers)." : "");
+    $("payBonus").textContent = money(p.totals.bonus); $("payNw").textContent = money(p.totals.nationwide);
+    $("payCb").textContent = money(p.totals.clawback); $("payDeals").textContent = p.totals.deals;
+    $("payFiles").textContent = "Payout files (" + p.files.length + " of 2): " + (p.files.join(", ") || "none yet");
+    $("payReviewN").textContent = p.reviews.length ? p.reviews.length + " open" : "none";
+    $("payReviews").innerHTML = p.reviews.length ? p.reviews.map((r) => `<li><span><b>${esc(r.reason.replaceAll("_", " "))}</b> · ${esc(r.note)}</span></li>`).join("")
+      : '<li class="empty">Nothing to review.</li>';
+    $("payReps").innerHTML = p.reps.length ? p.reps.map((b) => {
+      const parts = [b.bonus && "bonus " + cents(b.bonus), b.nationwide && "Nationwide " + cents(b.nationwide), b.clawback && "clawbacks " + cents(b.clawback), b.carried_in && "carried in " + cents(b.carried_in), b.carried_out && "carries out " + cents(b.carried_out)].filter(Boolean).join(" · ");
+      const rows = b.lines.map((l) => `<tr><td>${l.kind === "clawback" ? "Clawback " : ""}${esc(l.client)}${l.tp_id ? ` <span class="when">${esc(l.tp_id)}</span>` : ""}</td><td>${l.enrolled ? day(l.enrolled) : ""}</td><td>${l.first_payment ? day(l.first_payment) : ""}</td><td>${l.debt ? money(l.debt) : ""}</td><td>${l.business_days ?? ""}</td><td>${l.rate ? l.rate + "%" : ""}</td><td class="${l.amount < 0 ? "neg" : ""}">${cents(l.amount)}</td></tr>`).join("");
+      return `<details><summary><span>${esc(b.name)}</span><b>${cents(b.payable)}</b></summary><div class="note">${esc(parts)}</div>
+        ${rows ? `<div style="overflow-x:auto"><table><tr><th>Client</th><th>Enrolled</th><th>1st pay</th><th>Debt</th><th>Days</th><th>Rate</th><th>Amount</th></tr>${rows}</table></div>` : ""}</details>`;
+    }).join("") : '<p class="empty">No commission lines yet. They appear once the payout files are in.</p>';
+    $("payApprove").innerHTML = locked
+      ? `<p style="margin:0"><b>Approved</b> by ${esc(p.approved_by || "")} on ${esc(new Date(p.approved_at).toLocaleString("en-US", { timeZone: "America/New_York", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }))}. Locked.</p>`
+      : `<p class="label">To approve</p><p style="margin:0">${p.reviews.length ? "Clear the review items first. Then r" : "R"}eply on Telegram: <b>${esc(p.approve_with)}</b></p><p class="note" style="margin:6px 0 0">Approval locks this payroll. A person still clicks Submit in Gusto.</p>`;
+  }
+  let viewing = location.hash === "#payroll" ? "payroll" : "";
   async function load() { try { render(await api("/me" + (viewing ? "?rep=" + encodeURIComponent(viewing) : ""))); } catch (e) { if (e.message) showErr(e.message); } }
   $("pick").onchange = () => { viewing = $("pick").value; load(); };
   $("teamRows").onclick = (e) => { const tr = e.target.closest("tr[data-rep]"); if (tr) { viewing = tr.dataset.rep; load(); } };
