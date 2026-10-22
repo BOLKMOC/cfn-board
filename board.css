@@ -56,3 +56,5 @@ body.tv .grid{grid-template-columns:1fr 1fr}
 @media (prefers-reduced-motion:reduce){.live i{animation:none}.bar .fill{transition:none}}
 body.tv .sub{font-size:22px} body.tv .when{font-size:18px} body.tv .tabs button{font-size:18px;padding:6px 14px} body.tv .live{font-size:18px}
 body.tv ul.feed li:nth-child(n+9){display:none}
+
+body.tv .tvhide{display:none}
