@@ -1,0 +1,21 @@
+.coach-fab{position:fixed;right:18px;bottom:18px;z-index:60;background:var(--blue);color:#fff;border:0;border-radius:999px;padding:12px 18px;font:700 15px Quicksand,Inter,sans-serif;box-shadow:0 8px 24px rgba(23,60,166,.35);cursor:pointer;display:flex;gap:8px;align-items:center}
+.coach-fab:hover{filter:brightness(1.08)}
+.coach-panel{position:fixed;right:18px;bottom:18px;z-index:61;width:min(420px,calc(100vw - 24px));height:min(640px,calc(100vh - 36px));background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:0 18px 50px rgba(20,26,46,.25);display:flex;flex-direction:column;overflow:hidden}
+.coach-head{background:var(--blue);color:#fff;padding:12px 14px;display:flex;justify-content:space-between;align-items:center}
+.coach-head b{font:700 16px Quicksand,Inter,sans-serif}
+.coach-head small{display:block;font-size:11px;opacity:.85}
+.coach-head button{background:none;border:0;color:#fff;font-size:22px;cursor:pointer;line-height:1}
+.coach-log{flex:1;overflow-y:auto;padding:12px;background:var(--tint)}
+.coach-msg{max-width:88%;margin:0 0 10px;padding:9px 12px;border-radius:14px;font-size:14px;line-height:1.45;white-space:pre-wrap;word-wrap:break-word}
+.coach-msg.me{margin-left:auto;background:var(--blue);color:#fff;border-bottom-right-radius:4px}
+.coach-msg.bot{background:#fff;border:1px solid var(--line);border-bottom-left-radius:4px}
+.coach-msg.err{background:#FEF2F2;color:#991B1B;border:1px solid #FECACA}
+.coach-chips{display:flex;flex-wrap:wrap;gap:6px;padding:8px 12px 0}
+.coach-chips button{border:1px solid var(--line);background:#fff;color:var(--blue);border-radius:999px;padding:5px 10px;font:500 12px Inter,sans-serif;cursor:pointer}
+.coach-form{display:flex;gap:8px;padding:10px 12px;border-top:1px solid var(--line);background:#fff}
+.coach-form textarea{flex:1;resize:none;border:1px solid var(--line);border-radius:10px;padding:8px 10px;font:14px Inter,sans-serif;max-height:110px}
+.coach-form button{background:var(--blue);color:#fff;border:0;border-radius:10px;padding:0 14px;font:700 14px Inter,sans-serif;cursor:pointer}
+.coach-form button:disabled{opacity:.5;cursor:default}
+.coach-foot{font-size:11px;color:var(--muted);padding:0 12px 8px;background:#fff}
+body.tv .coach-fab,body.tv .coach-panel{display:none !important}
+@media (max-width:480px){.coach-panel{right:0;bottom:0;width:100vw;height:100dvh;border-radius:0}}
