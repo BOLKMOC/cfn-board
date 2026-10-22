@@ -69,3 +69,9 @@ body.tv .nav{display:none}
 .brand .mark{width:36px;height:36px;flex:0 0 36px;border-radius:10px;background:var(--blue);color:#fff;font:700 22px/36px Quicksand,Inter,sans-serif;text-align:center}
 body.tv .brand .mark{width:54px;height:54px;flex-basis:54px;border-radius:14px;font-size:32px;line-height:54px}
 .size{color:var(--blue);font-weight:700;margin-left:4px}
+.spot{display:flex;gap:12px;align-items:center;background:linear-gradient(135deg,#FFF6DB,#FFEFC2);border:1px solid #F3D98A;border-radius:12px;padding:10px 14px;margin:2px 0 10px}
+.spot .crown{font-size:30px;line-height:1}
+.spot .k{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:#8A6200;font-weight:700}
+.spot .who{font:700 20px Quicksand,Inter,sans-serif;color:var(--ink)}
+.spot .what{font-size:13px;color:var(--muted)}
+body.tv .spot .who{font-size:30px} body.tv .spot .what{font-size:18px} body.tv .spot .crown{font-size:44px}
