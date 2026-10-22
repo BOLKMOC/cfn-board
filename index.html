@@ -125,18 +125,18 @@
     $("date").textContent = new Date(d.as_of).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", timeZone: "America/New_York" });
     $("todayGoal").textContent = g.daily ? "Goal " + money(g.daily) : "";
     $("todayDebt").textContent = money(d.day.debt);
-    $("todayDeals").textContent = `${d.day.deals} deal${d.day.deals === 1 ? "" : "s"} · goal ${whole(g.daily_deals)} deals`;
+    $("todayDeals").textContent = `${d.day.deals} deal${d.day.deals === 1 ? "" : "s"} · goal ${whole(g.daily_deals)} deals${d.day.avg_deal ? " · avg " + money(d.day.avg_deal) : ""}`;
     bar("todayBar", "todayPace", d.day.debt_pct, d.day.pace_pct, d.day.goal_hit);
     $("todayBarWrap").setAttribute("aria-label", `${d.day.debt_pct ?? 0}% of today's goal`);
     $("todayNote").textContent = d.day.goal_hit ? "Goal hit! Keep stacking." : g.daily ? `${money(Math.max(0, g.daily - d.day.debt))} to go · ${d.day.debt_pct >= d.day.pace_pct ? "ahead of pace" : "behind pace"}` : "";
     $("weekGoal").textContent = g.weekly ? "Goal " + money(g.weekly) : "";
     $("weekDebt").textContent = money(d.week.debt);
-    $("weekDeals").textContent = `${d.week.deals} deal${d.week.deals === 1 ? "" : "s"} · goal ${whole(g.weekly_deals)} deals`;
+    $("weekDeals").textContent = `${d.week.deals} deal${d.week.deals === 1 ? "" : "s"} · goal ${whole(g.weekly_deals)} deals${d.week.avg_deal ? " · avg " + money(d.week.avg_deal) : ""}`;
     bar("weekBar", "weekPace", d.week.debt_pct, d.week.pace_pct, d.week.goal_hit);
     $("weekBarWrap").setAttribute("aria-label", `${d.week.debt_pct ?? 0}% of this week's goal`);
     $("weekNote").textContent = d.week.goal_hit ? "Weekly goal hit!" : g.weekly ? `${money(Math.max(0, g.weekly - d.week.debt))} to go · ${d.week.debt_pct >= d.week.pace_pct ? "ahead of pace" : "behind pace"}` : "";
     $("monthGoal").textContent = g.month ? "Pro forma " + money(g.month) + " · " + g.month_deals + " deals" : "";
-    $("monthLine").textContent = `${money(d.month.debt)} · ${d.month.deals} deals · ${d.month.debt_pct ?? 0}% · ${d.month.workdays_left} working day${d.month.workdays_left === 1 ? "" : "s"} left`;
+    $("monthLine").textContent = `${money(d.month.debt)} · ${d.month.deals} deals${d.month.avg_deal ? " · avg " + money(d.month.avg_deal) + " per deal" : ""} · ${d.month.debt_pct ?? 0}% · ${d.month.workdays_left} working day${d.month.workdays_left === 1 ? "" : "s"} left`;
     bar("monthBar", null, d.month.debt_pct, 0, d.month.debt_pct >= 100);
     const st = Object.fromEntries((d.pipeline_month || []).map((p) => [p.status, p.deals]));
     const sum = (...k) => k.reduce((s, x) => s + (st[x] || 0), 0);
@@ -150,7 +150,7 @@
       $("fpAvg").textContent = fp.avg_business_days; $("fpMax").textContent = fp.fast_max;
       $("fpPct").textContent = fp.within_fast_pct + "%"; $("fpN").textContent = `${fp.within_fast} of ${fp.deals} deals this month`;
     }
-    $("feed").innerHTML = d.feed.length ? d.feed.map((f) => `<li><span>${f.kind === "loan" ? "&#127974;" : "&#127942;"} ${label(f.name)} · ${f.kind === "loan" ? "Nationwide loan" : "deal"}</span><span class="when">${ago(f.at)}</span></li>`).join("") : '<li class="empty">No wins yet today. Be first.</li>';
+    $("feed").innerHTML = d.feed.length ? d.feed.map((f) => `<li><span>${f.kind === "loan" ? "&#127974;" : "&#127942;"} ${label(f.name)} · ${f.kind === "loan" ? "Nationwide loan" : "deal"}${f.debt ? ` <b class="size">${money(f.debt)}</b>` : ""}</span><span class="when">${ago(f.at)}</span></li>`).join("") : '<li class="empty">No wins yet today. Be first.</li>';
     renderLeaders();
     // New win since last look: banner + confetti. First load just shows the latest.
     const top = d.feed.find((f) => f.kind === "deal");

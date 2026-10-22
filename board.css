@@ -68,3 +68,4 @@ body.tv .nav{display:none}
 .fp .k{font-size:12px;color:var(--muted)} .fp .v{font-size:22px;font-weight:700;color:var(--blue)}
 .brand .mark{width:36px;height:36px;flex:0 0 36px;border-radius:10px;background:var(--blue);color:#fff;font:700 22px/36px Quicksand,Inter,sans-serif;text-align:center}
 body.tv .brand .mark{width:54px;height:54px;flex-basis:54px;border-radius:14px;font-size:32px;line-height:54px}
+.size{color:var(--blue);font-weight:700;margin-left:4px}
