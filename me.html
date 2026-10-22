@@ -30,6 +30,12 @@ select.f{background:#fff}
 #app.gate > :not(#csCard){display:none !important}
 #app.gate #csCard{border:2px solid var(--blue)}
 #app.gate #csAsk{font-size:16px;color:var(--ink)}
+.pilot{display:flex;justify-content:center;margin:2px 0 6px}
+.wings{width:100%;max-width:300px;height:auto}
+#app:not(.gate) .wings{max-width:200px}
+.pilot-h{font-size:18px;margin:4px 0 8px;color:var(--blue);text-align:center}
+.pilot-list{margin:0 0 12px;padding-left:18px;font-size:14px;line-height:1.5}
+.pilot-list li{margin:4px 0}
 table.tt{width:100%;border-collapse:collapse;font-size:14px}
 table.tt th,table.tt td{text-align:right;padding:6px 4px;border-bottom:1px solid var(--tint);white-space:nowrap}
 table.tt th:first-child,table.tt td:first-child{text-align:left}
@@ -93,9 +99,31 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
   <div id="app" hidden>
     <section class="card" style="margin-bottom:14px" id="csCard">
       <p class="label"><span>Your call sign</span><span id="csNow"></span></p>
-      <p class="note" id="csAsk" style="margin:0 0 8px" hidden>Welcome. Pick your call sign to get started. It is how the whole floor sees you on the team board, like a fighter pilot. You can change it later.</p>
+      <div class="pilot">
+      <svg class="wings" viewBox="0 0 320 120" role="img" aria-labelledby="wingsTitle">
+        <title id="wingsTitle">Pilot wings with your call sign</title>
+        <defs><linearGradient id="gold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F5C542"/><stop offset="1" stop-color="#C9961A"/></linearGradient></defs>
+        <g fill="url(#gold)" stroke="#9A7212" stroke-width="1">
+          <path d="M140 52 C110 40 70 34 18 40 C40 48 60 52 82 54 C62 56 44 60 26 68 C60 66 88 64 112 64 C96 68 80 74 66 84 C96 78 120 74 140 72 Z"/>
+          <path d="M180 52 C210 40 250 34 302 40 C280 48 260 52 238 54 C258 56 276 60 294 68 C260 66 232 64 208 64 C224 68 240 74 254 84 C224 78 200 74 180 72 Z"/>
+        </g>
+        <path d="M160 26 L186 38 L182 74 Q160 96 160 96 Q160 96 138 74 L134 38 Z" fill="var(--blue)" stroke="#9A7212" stroke-width="2"/>
+        <path d="M160 40 l4 9 10 1 -8 6 3 10 -9 -6 -9 6 3 -10 -8 -6 10 -1 Z" fill="#F5C542"/>
+        <rect x="70" y="92" width="180" height="24" rx="12" fill="var(--blue)"/>
+        <text id="wingsName" x="160" y="109" text-anchor="middle" font-family="Quicksand, Inter, sans-serif" font-weight="700" font-size="14" fill="#fff" letter-spacing="1.5">YOUR CALL SIGN</text>
+      </svg>
+      </div>
+      <div id="csAsk" hidden>
+        <h2 class="pilot-h">Every pilot flies under a call sign. On the CFN floor, so do you.</h2>
+        <ul class="pilot-list">
+          <li><b>It's how the floor sees you.</b> When you close, the team board lights up with your call sign. Your real name never shows there.</li>
+          <li><b>Make it yours.</b> Ideas: Viper, Ghost, Blaze, Ace, Closer Nation, Night Hawk.</li>
+          <li><b>The rules:</b> 2 to 16 letters, numbers, spaces or dashes. No two pilots share one. Keep it clean.</li>
+          <li><b>Not stuck with it.</b> Change it here any time.</li>
+        </ul>
+      </div>
       <form id="csForm" class="row">
-        <label>2 to 16 letters, numbers, spaces or dashes<input class="f" id="cs" maxlength="16" placeholder="Maverick" autocomplete="off"></label>
+        <label>2 to 16 letters, numbers, spaces or dashes<input class="f" id="cs" maxlength="16" placeholder="Viper" autocomplete="off"></label>
         <button class="go" type="submit">Save</button>
       </form>
       <p class="note" id="csMsg" aria-live="polite"></p>
@@ -235,6 +263,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     $("hello").textContent = (mgr ? "Viewing " + (d.me.first_name || "") : "Hi " + (d.me.first_name || "")) + " · on the board: " + d.me.shown_as;
     $("csNow").textContent = d.me.call_sign ? "Now: " + d.me.call_sign : "Not picked yet";
     if (!mgr) $("csAsk").hidden = !!d.me.call_sign;
+    setWings(d.me.call_sign || "");
     $("app").classList.toggle("gate", !mgr && !d.me.call_sign);
     $("payCard").hidden = !d.projection; $("histCard").hidden = !d.history; $("gMoneyLbl").hidden = !!d.pay_hidden;
     if (d.me.call_sign && document.activeElement !== $("cs")) $("cs").value = d.me.call_sign;
@@ -324,6 +353,8 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
   };
   $("teamRows").onclick = (e) => { const tr = e.target.closest("tr[data-rep]"); if (tr) { viewing = tr.dataset.rep; history.replaceState(null, "", "/me"); load(); } };
 
+  function setWings(name) { $("wingsName").textContent = (name.trim() || "Your call sign").toUpperCase().slice(0, 16); }
+  $("cs").addEventListener("input", () => setWings($("cs").value));
   $("csForm").onsubmit = async (e) => {
     e.preventDefault(); $("csMsg").textContent = "";
     try { render(await api("/me/callsign", { call_sign: $("cs").value })); $("csMsg").textContent = "Saved. The board shows it within a minute."; }
