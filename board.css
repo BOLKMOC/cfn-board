@@ -58,3 +58,8 @@ body.tv .sub{font-size:22px} body.tv .when{font-size:18px} body.tv .tabs button{
 body.tv ul.feed li:nth-child(n+9){display:none}
 
 body.tv .tvhide{display:none}
+
+.nav{display:flex;gap:4px;margin:0 0 14px;flex-wrap:wrap}
+.nav a{padding:7px 12px;border-radius:999px;font-size:14px;color:var(--muted);text-decoration:none;border:1px solid var(--line);background:var(--card)}
+.nav a[aria-current=page]{background:var(--blue);color:#fff;border-color:var(--blue)}
+body.tv .nav{display:none}

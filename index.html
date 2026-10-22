@@ -19,6 +19,7 @@
     <div class="brand"><img src="https://changefn.com/logo.png" alt="" onerror="this.remove()"><div><h1>CFN Team Board</h1><div class="date" id="date"></div></div></div>
     <div class="live" id="live" aria-live="polite"><i></i><span>Live</span></div>
   </header>
+  <nav class="nav" id="nav"><a href="/" aria-current="page">Board</a><a href="/me">My page</a></nav>
   <div id="error" class="err" hidden></div>
   <div class="banner idle" id="banner" aria-live="polite"><span id="bannerText">Let's go, team.</span></div>
 
@@ -76,9 +77,14 @@
   const money = (n) => n >= 1e6 ? "$" + (n / 1e6).toFixed(2) + "M" : "$" + Math.round(n / 1000) + "K";
   const ago = (iso) => { const m = Math.max(0, Math.round((Date.now() - Date.parse(iso)) / 60000)); return m < 1 ? "now" : m < 60 ? m + "m" : m < 1440 ? Math.round(m / 60) + "h" : Math.round(m / 1440) + "d"; };
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  let who = {};
+  const label = (n) => esc(n) + (who[n] ? ` <span class="when">${esc(who[n])}</span>` : "");
   let period = "day", data = null, lastFeedKey = null, celebrated = {}, lastOk = 0;
   const showErr = (t) => { $("error").hidden = !t; $("error").textContent = t || ""; };
-  if (!key) { showErr("This board needs the team link. Ask a manager for it."); return; }
+  let session = null, manager = false;
+  try { session = localStorage.getItem("cfn_session"); manager = localStorage.getItem("cfn_manager") === "1"; } catch {}
+  if (manager) $("nav").insertAdjacentHTML("beforeend", '<a href="/me#payroll">Payroll</a><a href="/me#team">Team pay</a>');
+  if (!key && !session) { $("error").hidden = false; $("error").innerHTML = 'This board needs the team link, or <a href="/me">sign in with your CFN Google account</a>.'; return; }
 
   function bar(fillId, paceId, pct, pacePct, hit) {
     $(fillId).style.width = Math.min(100, pct || 0) + "%";
@@ -102,7 +108,7 @@
     if (!data) return;
     const list = period === "day" ? data.top_today : data.top_week;
     $("tabDay").setAttribute("aria-pressed", period === "day"); $("tabWeek").setAttribute("aria-pressed", period === "week");
-    $("leaders").innerHTML = list.length ? list.map((r, i) => `<li><span><span class="rank">${i + 1}.</span>${i === 0 ? '<span class="crown" aria-label="leader">&#9819;</span> ' : ""}${esc(r.name)}</span><span>${r.deals} deal${r.deals === 1 ? "" : "s"}</span></li>`).join("")
+    $("leaders").innerHTML = list.length ? list.map((r, i) => `<li><span><span class="rank">${i + 1}.</span>${i === 0 ? '<span class="crown" aria-label="leader">&#9819;</span> ' : ""}${label(r.name)}</span><span>${r.deals} deal${r.deals === 1 ? "" : "s"}</span></li>`).join("")
       : `<li class="empty">First deal ${period === "day" ? "today" : "this week"} takes the crown.</li>`;
   }
   $("tabDay").onclick = () => { period = "day"; renderLeaders(); };
@@ -134,7 +140,7 @@
     $("pEnr").textContent = sum("Waiting For First Payment");
     $("pAct").textContent = sum("Active", "Final Payment - File Review", "Successful Program / Client Graduated");
     $("pNw").textContent = d.nationwide_loans_month ?? 0;
-    $("feed").innerHTML = d.feed.length ? d.feed.map((f) => `<li><span>${f.kind === "loan" ? "&#127974;" : "&#127942;"} ${esc(f.name)} · ${f.kind === "loan" ? "Nationwide loan" : "deal"}</span><span class="when">${ago(f.at)}</span></li>`).join("") : '<li class="empty">No wins yet today. Be first.</li>';
+    $("feed").innerHTML = d.feed.length ? d.feed.map((f) => `<li><span>${f.kind === "loan" ? "&#127974;" : "&#127942;"} ${label(f.name)} · ${f.kind === "loan" ? "Nationwide loan" : "deal"}</span><span class="when">${ago(f.at)}</span></li>`).join("") : '<li class="empty">No wins yet today. Be first.</li>';
     renderLeaders();
     // New win since last look: banner + confetti. First load just shows the latest.
     const top = d.feed.find((f) => f.kind === "deal");
@@ -153,10 +159,14 @@
   }
   async function load() {
     try {
-      const r = await fetch(window.BOARD_API + "?k=" + encodeURIComponent(key), { cache: "no-store" });
-      if (r.status === 401) { showErr("This team link no longer works. Ask a manager for the new one."); return; }
+      const r = await fetch(window.BOARD_API + (key ? "?k=" + encodeURIComponent(key) : ""), { cache: "no-store", headers: session ? { Authorization: "Bearer " + session } : {} });
+      if (r.status === 401) {
+        if (key && session) { key = null; try { localStorage.removeItem("cfnBoardKey"); } catch {} return load(); } // old team link: fall back to sign-in
+        $("error").hidden = false; $("error").innerHTML = key ? "This team link no longer works. Ask a manager for the new one." : 'Your sign-in ended. <a href="/me">Sign in again</a>.'; return;
+      }
       if (!r.ok) throw new Error("status " + r.status);
-      render(await r.json()); showErr(""); lastOk = Date.now();
+      const j = await r.json(); who = j.who || {};
+      render(j); showErr(""); lastOk = Date.now();
     } catch { /* keep the last numbers; the Live dot turns gray */ }
     $("live").classList.toggle("stale", Date.now() - lastOk > 90000);
     $("live").querySelector("span").textContent = Date.now() - lastOk > 90000 ? "Reconnecting" : "Live";

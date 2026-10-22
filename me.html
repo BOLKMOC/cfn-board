@@ -41,6 +41,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
 <div class="wrap">
   <header><div class="brand"><img src="https://changefn.com/logo.png" alt="" onerror="this.remove()"><div><h1>My CFN Page</h1><div class="date" id="hello"></div></div></div>
     <button class="link" id="logout" hidden>Sign out</button></header>
+  <nav class="nav" id="nav"><a href="/">Board</a><a href="/me" data-v="">My page</a></nav>
   <div id="error" class="err" hidden></div>
 
   <section class="card" id="signin" hidden>
@@ -178,12 +179,19 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
   }
   function signOut(msg) {
     if (session) fetch(window.BOARD_API + "/logout", { method: "POST", headers: { Authorization: "Bearer " + session } }).catch(() => {});
-    session = null; viewing = ""; store.set(null); showSignIn(msg);
+    session = null; viewing = ""; store.set(null); try { localStorage.removeItem("cfn_manager"); } catch {} showSignIn(msg);
   }
 
   function render(d) {
     $("signin").hidden = true; $("logout").hidden = false; showErr("");
     const mgr = !!d.manager;
+    try { localStorage.setItem("cfn_manager", mgr ? "1" : "0"); } catch {}
+    if (mgr && !$("nav").querySelector("[data-v=payroll]")) {
+      $("nav").querySelector("[data-v='']").textContent = "Reps";
+      $("nav").insertAdjacentHTML("beforeend", '<a href="/me#payroll" data-v="payroll">Payroll</a><a href="/me#team" data-v="team">Team pay</a>');
+    }
+    $("nav").querySelectorAll("a").forEach((a) => a.toggleAttribute("aria-current", a.dataset.v !== undefined && a.dataset.v === (mgr ? (["payroll", "team"].includes(d.viewing) ? d.viewing : "") : "")));
+    $("nav").querySelectorAll("a[aria-current]").forEach((a) => a.setAttribute("aria-current", "page"));
     $("mgr").hidden = !mgr;
     if (mgr) {
       const cur = d.viewing || "";
@@ -273,10 +281,16 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
       ? `<p style="margin:0"><b>Approved</b> by ${esc(p.approved_by || "")} on ${esc(new Date(p.approved_at).toLocaleString("en-US", { timeZone: "America/New_York", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }))}. Locked.</p>`
       : `<p class="label">To approve</p><p style="margin:0">${p.reviews.length ? "Clear the review items first. Then r" : "R"}eply on Telegram: <b>${esc(p.approve_with)}</b></p><p class="note" style="margin:6px 0 0">Approval locks this payroll. A person still clicks Submit in Gusto.</p>`;
   }
-  let viewing = location.hash === "#payroll" ? "payroll" : "";
+  const fromHash = () => (["#payroll", "#team"].includes(location.hash) ? location.hash.slice(1) : "");
+  let viewing = fromHash();
+  addEventListener("hashchange", () => { viewing = fromHash(); if (session) load(); });
   async function load() { try { render(await api("/me" + (viewing ? "?rep=" + encodeURIComponent(viewing) : ""))); } catch (e) { if (e.message) showErr(e.message); } }
-  $("pick").onchange = () => { viewing = $("pick").value; load(); };
-  $("teamRows").onclick = (e) => { const tr = e.target.closest("tr[data-rep]"); if (tr) { viewing = tr.dataset.rep; load(); } };
+  $("pick").onchange = () => {
+    const v = $("pick").value;
+    if (["payroll", "team"].includes(v)) { location.hash = v; return; } // hashchange loads it
+    viewing = v; if (location.hash) history.replaceState(null, "", "/me"); load();
+  };
+  $("teamRows").onclick = (e) => { const tr = e.target.closest("tr[data-rep]"); if (tr) { viewing = tr.dataset.rep; history.replaceState(null, "", "/me"); load(); } };
 
   $("csForm").onsubmit = async (e) => {
     e.preventDefault(); $("csMsg").textContent = "";
