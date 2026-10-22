@@ -75,3 +75,6 @@ body.tv .brand .mark{width:54px;height:54px;flex-basis:54px;border-radius:14px;f
 .spot .who{font:700 20px Quicksand,Inter,sans-serif;color:var(--ink)}
 .spot .what{font-size:13px;color:var(--muted)}
 body.tv .spot .who{font-size:30px} body.tv .spot .what{font-size:18px} body.tv .spot .crown{font-size:44px}
+.hdr-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.signout{background:none;border:0;color:var(--muted);font:inherit;font-size:13px;cursor:pointer;text-decoration:underline;padding:0}
+[hidden]{display:none !important}

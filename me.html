@@ -238,7 +238,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
   }
   function signOut(msg) {
     if (session) fetch(window.BOARD_API + "/logout", { method: "POST", headers: { Authorization: "Bearer " + session } }).catch(() => {});
-    session = null; viewing = ""; store.set(null); try { localStorage.removeItem("cfn_manager"); } catch {} showSignIn(msg);
+    session = null; viewing = ""; store.set(null); try { localStorage.removeItem("cfn_manager"); localStorage.removeItem("cfnBoardKey"); } catch {} showSignIn(msg);
   }
 
   function render(d) {

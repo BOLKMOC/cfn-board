@@ -18,7 +18,8 @@
 <div class="wrap">
   <header>
     <div class="brand"><div class="mark" aria-label="ChangeFN">c</div><div><h1>CFN Team Board</h1><div class="date" id="date"></div></div></div>
-    <div class="live" id="live" aria-live="polite"><i></i><span>Live</span></div>
+    <div class="hdr-right"><div class="live" id="live" aria-live="polite"><i></i><span>Live</span></div>
+      <button class="signout tvhide" id="signout" hidden>Sign out</button></div>
   </header>
   <nav class="nav" id="nav"><a href="/" aria-current="page">Board</a><a href="/me">My page</a></nav>
   <div id="error" class="err" hidden></div>
@@ -88,6 +89,13 @@
   const showErr = (t) => { $("error").hidden = !t; $("error").textContent = t || ""; };
   let session = null, manager = false;
   try { session = localStorage.getItem("cfn_session"); manager = localStorage.getItem("cfn_manager") === "1"; } catch {}
+  // Sign out: ends the session and forgets the saved team link on this device.
+  if (session || key) $("signout").hidden = false;
+  $("signout").onclick = async () => {
+    if (session) await fetch(window.BOARD_API + "/logout", { method: "POST", headers: { Authorization: "Bearer " + session } }).catch(() => {});
+    try { ["cfn_session", "cfn_manager", "cfnBoardKey"].forEach((k) => localStorage.removeItem(k)); } catch {}
+    location.replace("/");
+  };
   if (manager) $("nav").insertAdjacentHTML("beforeend", '<a href="/me#payroll">Payroll</a><a href="/me#team">Team pay</a><a href="/me#onboarding">Onboarding</a>');
   if (!key && !session) { $("error").hidden = false; $("error").innerHTML = 'This board needs the team link, or <a href="/me">sign in with your CFN Google account</a>.'; return; }
 
@@ -139,7 +147,7 @@
     bar("weekBar", "weekPace", d.week.debt_pct, d.week.pace_pct, d.week.goal_hit);
     $("weekBarWrap").setAttribute("aria-label", `${d.week.debt_pct ?? 0}% of this week's goal`);
     $("weekNote").textContent = d.week.goal_hit ? "Weekly goal hit!" : g.weekly ? `${money(Math.max(0, g.weekly - d.week.debt))} to go · ${d.week.debt_pct >= d.week.pace_pct ? "ahead of pace" : "behind pace"}` : "";
-    $("monthGoal").textContent = g.month ? "Pro forma " + money(g.month) + " · " + g.month_deals + " deals" : "";
+    $("monthGoal").textContent = g.month ? "Monthly goal " + money(g.month) + " · " + g.month_deals + " deals" : "";
     $("monthLine").textContent = `${money(d.month.debt)} · ${d.month.deals} deals${d.month.avg_deal ? " · avg " + money(d.month.avg_deal) + " per deal" : ""} · ${d.month.debt_pct ?? 0}% · ${d.month.workdays_left} working day${d.month.workdays_left === 1 ? "" : "s"} left`;
     bar("monthBar", null, d.month.debt_pct, 0, d.month.debt_pct >= 100);
     const st = Object.fromEntries((d.pipeline_month || []).map((p) => [p.status, p.deals]));
