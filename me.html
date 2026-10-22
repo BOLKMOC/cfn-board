@@ -41,6 +41,9 @@ table.tt{width:100%;border-collapse:collapse;font-size:14px}
 table.tt th,table.tt td{text-align:right;padding:6px 4px;border-bottom:1px solid var(--tint);white-space:nowrap}
 table.tt th:first-child,table.tt td:first-child{text-align:left}
 table.tt th{color:var(--muted);font-weight:500;font-size:12px}
+table.onb td{text-align:center;vertical-align:top} table.onb th{text-align:center}
+.ok{color:var(--win);font-weight:700} .wait{color:#B45309;font-size:12px}
+button.go.small{padding:5px 10px;font-size:12px}
 table.tt tr.sum td{font-weight:700;border-top:2px solid var(--line)}
 table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{background:var(--tint)}
 #signin{text-align:center;padding:30px 16px}
@@ -62,7 +65,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
   </section>
 
   <section class="card" id="mgr" style="margin-bottom:14px" hidden>
-    <p class="label"><span>Manager view (read only)</span><span>every view is logged</span></p>
+    <p class="label"><span>Manager view</span><span>every view and change is logged</span></p>
     <select id="pick" class="f"><option value="">Pick a closer...</option></select>
   </section>
 
@@ -71,6 +74,13 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     <div class="big num" id="teamRange">-</div>
     <div class="note" id="teamNote" style="margin:4px 0 12px"></div>
     <div style="overflow-x:auto"><table class="tt"><thead><tr><th>Closer</th><th>Full check</th><th>Base</th><th>Commission</th><th>Confirmed</th><th>Likely</th><th>At risk</th></tr></thead><tbody id="teamRows"></tbody></table></div>
+  </section>
+
+  <section class="card" id="onb" style="margin-bottom:14px" hidden>
+    <p class="label"><span>Onboarding</span><span id="onbN"></span></p>
+    <p class="note" style="margin:0 0 10px">New closers and anyone still setting up. Steps: in Forth, signed in, call sign, pay set up (Gusto or overseas), first deal. Copy the welcome text into a text or email to the new rep.</p>
+    <div style="overflow-x:auto"><table class="tt onb"><thead><tr><th>Closer</th><th>Added</th><th>Signed in</th><th>Call sign</th><th>Pay</th><th>First deal</th><th></th></tr></thead><tbody id="onbRows"></tbody></table></div>
+    <p class="note" id="onbMsg" aria-live="polite"></p>
   </section>
 
   <section id="pay" style="margin-bottom:14px" hidden>
@@ -237,9 +247,9 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     try { localStorage.setItem("cfn_manager", mgr ? "1" : "0"); } catch {}
     if (mgr && !$("nav").querySelector("[data-v=payroll]")) {
       $("nav").querySelector("[data-v='']").textContent = "Reps";
-      $("nav").insertAdjacentHTML("beforeend", '<a href="/me#payroll" data-v="payroll">Payroll</a><a href="/me#team" data-v="team">Team pay</a>');
+      $("nav").insertAdjacentHTML("beforeend", '<a href="/me#payroll" data-v="payroll">Payroll</a><a href="/me#team" data-v="team">Team pay</a><a href="/me#onboarding" data-v="onboarding">Onboarding</a>');
     }
-    $("nav").querySelectorAll("a").forEach((a) => a.toggleAttribute("aria-current", a.dataset.v !== undefined && a.dataset.v === (mgr ? (["payroll", "team"].includes(d.viewing) ? d.viewing : "") : "")));
+    $("nav").querySelectorAll("a").forEach((a) => a.toggleAttribute("aria-current", a.dataset.v !== undefined && a.dataset.v === (mgr ? (["payroll", "team", "onboarding"].includes(d.viewing) ? d.viewing : "") : "")));
     $("nav").querySelectorAll("a[aria-current]").forEach((a) => a.setAttribute("aria-current", "page"));
     $("mgr").hidden = !mgr;
     if (mgr) {
@@ -247,6 +257,8 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
       $("pick").innerHTML = '<option value="">Pick a closer...</option><option value="payroll"' + (cur === "payroll" ? " selected" : "") + '>Payroll review: next pay date</option><option value="team"' + (cur === "team" ? " selected" : "") + '>Team: everyone\'s next paycheck</option>' + d.reps.map((r) => `<option value="${esc(r.rep_id)}"${r.rep_id === cur ? " selected" : ""}>${esc(r.name)} (${esc(r.shown_as)})</option>`).join("");
       $("team").hidden = d.viewing !== "team";
       $("pay").hidden = d.viewing !== "payroll";
+      $("onb").hidden = d.viewing !== "onboarding";
+      if (d.viewing === "onboarding") { renderOnboarding(d.onboarding); return; }
       if (d.viewing === "payroll") { renderPayroll(d.payroll); return; }
       if (d.viewing === "team") {
         const t = d.team, range = (lo, hi) => lo === hi ? money(lo) : money(lo) + " to " + money(hi);
@@ -325,6 +337,23 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     $("recent").innerHTML = d.recent.length ? d.recent.map((r) => `<li><span>${day(r.at)} · ${esc(r.status || "")}</span><span>${money(r.debt)}</span></li>`).join("")
       : '<li class="empty">No deals yet. Your first one shows here.</li>';
   }
+  let onbRows = [];
+  function renderOnboarding(rows) {
+    onbRows = rows;
+    $("app").hidden = true; $("hello").textContent = "Manager view · onboarding";
+    const open = rows.filter((r) => r.open.length).length;
+    $("onbN").textContent = rows.length ? `${rows.length} closer${rows.length === 1 ? "" : "s"} · ${open} still setting up` : "everyone is set up";
+    const step = (s) => s.done ? `<span class="ok">&#10003;</span>${s.at ? ` <span class="when">${day(s.at.slice(0, 10))}</span>` : ""}` : '<span class="wait">waiting</span>';
+    $("onbRows").innerHTML = rows.length ? rows.map((r, i) => `<tr>
+      <td style="text-align:left"><b>${esc(r.name)}</b><br><span class="when">${esc(r.shown_as)}</span></td>
+      <td>${day(r.added.slice(0, 10))}<br><span class="when">${r.days_since_added} day${r.days_since_added === 1 ? "" : "s"}</span></td>
+      <td>${step(r.steps.signed_in)}</td><td>${step(r.steps.call_sign)}</td>
+      <td>${r.steps.pay.how === "gusto" ? '<span class="ok">&#10003;</span> Gusto' : r.steps.pay.how === "overseas" ? '<span class="ok">&#10003;</span> Overseas' : '<span class="wait">not in Gusto</span>'}
+        <br><button class="link" data-plan="${r.pay_plan === "other" ? "us_commission" : "other"}" data-rep="${esc(r.rep_id)}">${r.pay_plan === "other" ? "Set to US plan" : "Paid overseas"}</button></td>
+      <td>${step(r.steps.first_deal)}</td>
+      <td><button class="go small" data-copy="${i}">Copy welcome text</button></td></tr>`).join("")
+      : '<tr><td colspan="7" class="empty" style="text-align:left">No one is in onboarding right now.</td></tr>';
+  }
   function renderPayroll(p) {
     $("app").hidden = true; $("hello").textContent = "Manager view · payroll";
     const locked = p.status !== "draft" && p.status !== "not built yet";
@@ -347,14 +376,29 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
       ? `<p style="margin:0"><b>Approved</b> by ${esc(p.approved_by || "")} on ${esc(new Date(p.approved_at).toLocaleString("en-US", { timeZone: "America/New_York", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }))}. Locked.</p>`
       : `<p class="label">To approve</p><p style="margin:0">${p.reviews.length ? "Clear the review items first. Then r" : "R"}eply on Telegram: <b>${esc(p.approve_with)}</b></p><p class="note" style="margin:6px 0 0">Approval locks this payroll. A person still clicks Submit in Gusto.</p>`;
   }
-  const fromHash = () => (["#payroll", "#team"].includes(location.hash) ? location.hash.slice(1) : "");
+  const fromHash = () => (["#payroll", "#team", "#onboarding"].includes(location.hash) ? location.hash.slice(1) : "");
   let viewing = fromHash();
   addEventListener("hashchange", () => { viewing = fromHash(); if (session) load(); });
   async function load() { try { render(await api("/me" + (viewing ? "?rep=" + encodeURIComponent(viewing) : ""))); } catch (e) { if (e.message) showErr(e.message); } }
   $("pick").onchange = () => {
     const v = $("pick").value;
-    if (["payroll", "team"].includes(v)) { location.hash = v; return; } // hashchange loads it
+    if (["payroll", "team", "onboarding"].includes(v)) { location.hash = v; return; } // hashchange loads it
     viewing = v; if (location.hash) history.replaceState(null, "", "/me"); load();
+  };
+  $("onbRows").onclick = async (e) => {
+    const copy = e.target.closest("[data-copy]"), plan = e.target.closest("[data-plan]");
+    $("onbMsg").textContent = "";
+    if (copy) {
+      const r = onbRows[Number(copy.dataset.copy)];
+      try { await navigator.clipboard.writeText(r.welcome); $("onbMsg").textContent = `Welcome text for ${r.name} copied. Paste it into a text or email.`; }
+      catch { window.prompt("Copy this welcome text:", r.welcome); }
+    } else if (plan) {
+      const r = onbRows.find((x) => x.rep_id === plan.dataset.rep);
+      const to = plan.dataset.plan === "other" ? "the overseas pay plan (paid outside Gusto)" : "the US commission plan (needs Gusto)";
+      if (!confirm(`Put ${r.name} on ${to}?`)) return;
+      try { render(await api("/me/pay-plan", { rep_id: plan.dataset.rep, plan: plan.dataset.plan })); $("onbMsg").textContent = `${r.name} updated. The payroll group was told.`; }
+      catch (err) { $("onbMsg").textContent = err.message; }
+    }
   };
   $("teamRows").onclick = (e) => { const tr = e.target.closest("tr[data-rep]"); if (tr) { viewing = tr.dataset.rep; history.replaceState(null, "", "/me"); load(); } };
 

@@ -88,7 +88,7 @@
   const showErr = (t) => { $("error").hidden = !t; $("error").textContent = t || ""; };
   let session = null, manager = false;
   try { session = localStorage.getItem("cfn_session"); manager = localStorage.getItem("cfn_manager") === "1"; } catch {}
-  if (manager) $("nav").insertAdjacentHTML("beforeend", '<a href="/me#payroll">Payroll</a><a href="/me#team">Team pay</a>');
+  if (manager) $("nav").insertAdjacentHTML("beforeend", '<a href="/me#payroll">Payroll</a><a href="/me#team">Team pay</a><a href="/me#onboarding">Onboarding</a>');
   if (!key && !session) { $("error").hidden = false; $("error").innerHTML = 'This board needs the team link, or <a href="/me">sign in with your CFN Google account</a>.'; return; }
 
   function bar(fillId, paceId, pct, pacePct, hit) {
