@@ -5,10 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <meta name="referrer" content="no-referrer">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https://changefn.com; connect-src https://bseyusrbjztybfgjfbja.supabase.co; worker-src blob:; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src https://bseyusrbjztybfgjfbja.supabase.co; worker-src blob:; base-uri 'none'; form-action 'none'; object-src 'none'">
 <title>CFN Team Board</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Quicksand:wght@500;700&display=swap">
+<link rel="icon" href="logo.svg" type="image/svg+xml">
 <link rel="stylesheet" href="board.css">
 <script src="config.js"></script>
 <script src="confetti.browser.js"></script>
@@ -16,7 +17,7 @@
 <body>
 <div class="wrap">
   <header>
-    <div class="brand"><img src="https://changefn.com/logo.png" alt="" onerror="this.remove()"><div><h1>CFN Team Board</h1><div class="date" id="date"></div></div></div>
+    <div class="brand"><div class="mark" aria-label="ChangeFN">c</div><div><h1>CFN Team Board</h1><div class="date" id="date"></div></div></div>
     <div class="live" id="live" aria-live="polite"><i></i><span>Live</span></div>
   </header>
   <nav class="nav" id="nav"><a href="/" aria-current="page">Board</a><a href="/me">My page</a></nav>
