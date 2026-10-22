@@ -260,7 +260,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     $("payBonus").textContent = money(p.totals.bonus); $("payNw").textContent = money(p.totals.nationwide);
     $("payCb").textContent = money(p.totals.clawback); $("payDeals").textContent = p.totals.deals;
     $("payFiles").textContent = "Payout files (" + p.files.length + " of 2): " + (p.files.join(", ") || "none yet");
-    $("payReviewN").textContent = p.reviews.length ? p.reviews.length + " open" : "none";
+    $("payReviewN").textContent = (p.reviews.length ? p.reviews.length + " open" : "none") + (p.set_aside?.length ? " · " + p.set_aside.length + " old loans set aside" : "");
     $("payReviews").innerHTML = p.reviews.length ? p.reviews.map((r) => `<li><span><b>${esc(r.reason.replaceAll("_", " "))}</b> · ${esc(r.note)}</span></li>`).join("")
       : '<li class="empty">Nothing to review.</li>';
     $("payReps").innerHTML = p.reps.length ? p.reps.map((b) => {
