@@ -26,6 +26,10 @@ details td,details th{text-align:left;padding:4px 2px;border-bottom:1px solid va
 .neg{color:#B91C1C}
 select.f{background:#fff}
 [hidden]{display:none !important}
+/* First visit: a rep picks a call sign before anything else. */
+#app.gate > :not(#csCard){display:none !important}
+#app.gate #csCard{border:2px solid var(--blue)}
+#app.gate #csAsk{font-size:16px;color:var(--ink)}
 table.tt{width:100%;border-collapse:collapse;font-size:14px}
 table.tt th,table.tt td{text-align:right;padding:6px 4px;border-bottom:1px solid var(--tint);white-space:nowrap}
 table.tt th:first-child,table.tt td:first-child{text-align:left}
@@ -89,7 +93,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
   <div id="app" hidden>
     <section class="card" style="margin-bottom:14px" id="csCard">
       <p class="label"><span>Your call sign</span><span id="csNow"></span></p>
-      <p class="note" id="csAsk" style="margin:0 0 8px" hidden>Pick a call sign first. It is how you show on the team board, like a fighter pilot.</p>
+      <p class="note" id="csAsk" style="margin:0 0 8px" hidden>Welcome. Pick your call sign to get started. It is how the whole floor sees you on the team board, like a fighter pilot. You can change it later.</p>
       <form id="csForm" class="row">
         <label>2 to 16 letters, numbers, spaces or dashes<input class="f" id="cs" maxlength="16" placeholder="Maverick" autocomplete="off"></label>
         <button class="go" type="submit">Save</button>
@@ -119,7 +123,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
       <p class="note" id="fpTip" style="margin:10px 0 0"></p>
     </section>
 
-    <section class="card" style="margin-bottom:14px">
+    <section class="card" style="margin-bottom:14px" id="payCard">
       <p class="label"><span>Next paycheck</span><span id="payDate"></span></p>
       <div class="big num" id="range">-</div>
       <div class="note" id="projNote" style="margin:4px 0 12px"></div>
@@ -136,13 +140,13 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
       <div id="goalBars"></div>
       <form id="goalForm" class="row" style="margin-top:10px">
         <label>Deal goal<input class="f" id="gDeals" inputmode="numeric" placeholder="20"></label>
-        <label>Commission goal ($)<input class="f" id="gMoney" inputmode="decimal" placeholder="5000"></label>
+        <label id="gMoneyLbl">Commission goal ($)<input class="f" id="gMoney" inputmode="decimal" placeholder="5000"></label>
         <button class="go" type="submit">Save goals</button>
       </form>
       <p class="note" id="goalMsg" aria-live="polite"></p>
     </section>
 
-    <section class="card" style="margin-bottom:14px">
+    <section class="card" style="margin-bottom:14px" id="histCard">
       <p class="label">Pay history (tap a pay date for its deals)</p>
       <div id="history"></div>
     </section>
@@ -231,6 +235,8 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     $("hello").textContent = (mgr ? "Viewing " + (d.me.first_name || "") : "Hi " + (d.me.first_name || "")) + " · on the board: " + d.me.shown_as;
     $("csNow").textContent = d.me.call_sign ? "Now: " + d.me.call_sign : "Not picked yet";
     if (!mgr) $("csAsk").hidden = !!d.me.call_sign;
+    $("app").classList.toggle("gate", !mgr && !d.me.call_sign);
+    $("payCard").hidden = !d.projection; $("histCard").hidden = !d.history; $("gMoneyLbl").hidden = !!d.pay_hidden;
     if (d.me.call_sign && document.activeElement !== $("cs")) $("cs").value = d.me.call_sign;
     $("today").textContent = d.today; $("week").textContent = d.week; $("month").textContent = d.month;
 
@@ -245,7 +251,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
       $("fpPct").textContent = fp.within_fast_pct + "%"; $("fpN").textContent = `${fp.within_fast} of ${fp.deals} deals`;
       $("fpTip").textContent = `A first payment within ${fp.fast_max} business days of enrolling pays 1.25% instead of 1.00%.`;
     }
-    const p = d.projection;
+    const p = d.projection || { pay_date: "2026-01-01", window: { start: "2026-01-01", end: "2026-01-01" }, estimate: { low: 0, high: 0 }, note: "", confirmed: 0, likely: 0, likely_deals: 0, at_risk: 0, at_risk_deals: 0, known_clawbacks: 0, carried_in: 0 };
     $("payDate").textContent = "Pay date " + day(p.pay_date);
     $("range").textContent = p.estimate.low === p.estimate.high ? money(p.estimate.low) : money(p.estimate.low) + " to " + money(p.estimate.high);
     $("projNote").textContent = p.note + " Counts deals on payout files " + day(p.window.start) + " to " + day(p.window.end) + ".";
@@ -272,7 +278,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     if (document.activeElement !== $("gDeals")) $("gDeals").value = g.deals_goal ?? "";
     if (document.activeElement !== $("gMoney")) $("gMoney").value = g.commission_goal ?? "";
 
-    $("history").innerHTML = d.history.length ? d.history.map((h) => {
+    $("history").innerHTML = (d.history || []).length ? d.history.map((h) => {
       const parts = [h.bonus && "bonus " + cents(h.bonus), h.nationwide && "Nationwide " + cents(h.nationwide), h.clawback && "clawback " + cents(h.clawback)].filter(Boolean).join(" · ");
       const rows = (h.lines || []).map((l) => `<tr><td>${l.kind === "clawback" ? "Clawback" : l.kind === "first_pay" ? esc(l.client || "?") : "Nationwide loan"}</td>
         <td>${l.enrolled ? day(l.enrolled) : ""}</td><td>${l.debt ? money(l.debt) : ""}</td><td>${l.business_days ?? ""}</td><td>${l.rate ? l.rate + "%" : ""}</td>
