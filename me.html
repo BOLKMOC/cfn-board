@@ -237,7 +237,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     const pc = d.pending_cancels || [];
     $("pcCard").hidden = !pc.length;
     $("pcN").textContent = pc.length + " deal" + (pc.length === 1 ? "" : "s");
-    $("pcList").innerHTML = pc.map((c) => `<li><span><b>${esc(c.client)}</b> <span class="when">Forth ID ${esc(c.forth_id)}</span><br><span class="note">${esc(c.status)}${c.since ? " since " + day(c.since) : ""}${c.enrolled ? " · enrolled " + day(c.enrolled) : ""}${c.commission_paid ? " · bonus already paid" : ""}</span></span><span>${c.debt ? money(c.debt) : ""}</span></li>`).join("");
+    $("pcList").innerHTML = pc.map((c) => `<li><span><b>${esc(c.client)}</b> <span class="when">Forth ID ${esc(c.forth_id)}</span><br><span class="note">${esc(c.status)}${c.since ? " since " + day(c.since) : ""}${c.enrolled ? " · enrolled " + day(c.enrolled) : ""}${c.payments_cleared >= 2 ? " · 2+ payments cleared (bonus safe)" : c.payments_cleared === 1 ? " · 1 payment cleared" : " · no payment cleared yet"}${c.commission_paid && c.payments_cleared < 2 ? " · bonus already paid (clawback risk)" : ""}</span></span><span>${c.debt ? money(c.debt) : ""}</span></li>`).join("");
     const fp = d.first_pay_month;
     $("fpCard").hidden = !fp || !fp.deals;
     if (fp && fp.deals) {

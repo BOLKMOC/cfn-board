@@ -35,7 +35,7 @@ ol.leaders li:last-child,ul.feed li:last-child{border-bottom:0}
 .crown{color:var(--gold)}
 .when{font-size:12px;color:var(--muted)}
 .empty{color:var(--muted);font-size:14px;padding:8px 0}
-.pipe{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:12px}
+.pipe{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-top:12px}
 .pipe div{background:var(--tint);border-radius:10px;padding:10px}
 .pipe .k{font-size:12px;color:var(--muted)} .pipe .v{font-size:22px;font-weight:700;color:var(--blue)}
 .err{background:#FEF2F2;color:#991B1B;border:1px solid #FECACA;border-radius:12px;padding:14px;margin:20px 0}

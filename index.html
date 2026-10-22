@@ -57,7 +57,8 @@
     <div class="pipe">
       <div><div class="k">Submitted</div><div class="v num" id="pSub">-</div></div>
       <div><div class="k">Enrolled</div><div class="v num" id="pEnr">-</div></div>
-      <div><div class="k">In program</div><div class="v num" id="pAct">-</div></div>
+      <div><div class="k">1st payment cleared</div><div class="v num" id="pAct">-</div></div>
+      <div><div class="k">2 payments cleared</div><div class="v num" id="pTwo">-</div></div>
       <div><div class="k">Nationwide loans</div><div class="v num" id="pNw">-</div></div>
     </div>
     <div class="fp" id="fp" hidden><div><div class="k">Enrolled to 1st payment</div><div class="v num" id="fpAvg">-</div><div class="note">business days, average</div></div>
@@ -140,7 +141,7 @@
     const sum = (...k) => k.reduce((s, x) => s + (st[x] || 0), 0);
     $("pSub").textContent = d.month.deals;
     $("pEnr").textContent = sum("Waiting For First Payment");
-    $("pAct").textContent = sum("Active", "Final Payment - File Review", "Successful Program / Client Graduated");
+    $("pAct").textContent = d.payments_month?.first ?? 0; $("pTwo").textContent = d.payments_month?.second ?? 0;
     $("pNw").textContent = d.nationwide_loans_month ?? 0;
     const fp = d.first_pay_month;
     $("fp").hidden = !fp || !fp.deals;
