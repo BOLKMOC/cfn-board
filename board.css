@@ -63,3 +63,6 @@ body.tv .tvhide{display:none}
 .nav a{padding:7px 12px;border-radius:999px;font-size:14px;color:var(--muted);text-decoration:none;border:1px solid var(--line);background:var(--card)}
 .nav a[aria-current=page]{background:var(--blue);color:#fff;border-color:var(--blue)}
 body.tv .nav{display:none}
+.fp{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.fp > div{background:var(--tint);border-radius:10px;padding:10px}
+.fp .k{font-size:12px;color:var(--muted)} .fp .v{font-size:22px;font-weight:700;color:var(--blue)}

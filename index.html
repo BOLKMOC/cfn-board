@@ -60,6 +60,8 @@
       <div><div class="k">In program</div><div class="v num" id="pAct">-</div></div>
       <div><div class="k">Nationwide loans</div><div class="v num" id="pNw">-</div></div>
     </div>
+    <div class="fp" id="fp" hidden><div><div class="k">Enrolled to 1st payment</div><div class="v num" id="fpAvg">-</div><div class="note">business days, average</div></div>
+      <div><div class="k">1st payment within <span id="fpMax">7</span> days</div><div class="v num" id="fpPct">-</div><div class="note" id="fpN"></div></div></div>
   </section>
   <p class="note tvhide" style="text-align:center;margin:18px 0 6px">Still showing as "Closer #"? <a href="/me" style="color:var(--blue);font-weight:600">Pick your call sign</a> with your CFN Google account.</p>
 </div>
@@ -140,6 +142,12 @@
     $("pEnr").textContent = sum("Waiting For First Payment");
     $("pAct").textContent = sum("Active", "Final Payment - File Review", "Successful Program / Client Graduated");
     $("pNw").textContent = d.nationwide_loans_month ?? 0;
+    const fp = d.first_pay_month;
+    $("fp").hidden = !fp || !fp.deals;
+    if (fp && fp.deals) {
+      $("fpAvg").textContent = fp.avg_business_days; $("fpMax").textContent = fp.fast_max;
+      $("fpPct").textContent = fp.within_fast_pct + "%"; $("fpN").textContent = `${fp.within_fast} of ${fp.deals} deals this month`;
+    }
     $("feed").innerHTML = d.feed.length ? d.feed.map((f) => `<li><span>${f.kind === "loan" ? "&#127974;" : "&#127942;"} ${label(f.name)} · ${f.kind === "loan" ? "Nationwide loan" : "deal"}</span><span class="when">${ago(f.at)}</span></li>`).join("") : '<li class="empty">No wins yet today. Be first.</li>';
     renderLeaders();
     // New win since last look: banner + confetti. First load just shows the latest.
