@@ -67,10 +67,10 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
   </section>
 
   <section class="card" id="team" style="margin-bottom:14px" hidden>
-    <p class="label"><span>Team: next paycheck commission</span><span id="teamDate"></span></p>
+    <p class="label"><span>Team: next paychecks (salary + commission)</span><span id="teamDate"></span></p>
     <div class="big num" id="teamRange">-</div>
     <div class="note" id="teamNote" style="margin:4px 0 12px"></div>
-    <div style="overflow-x:auto"><table class="tt"><thead><tr><th>Closer</th><th>Estimate</th><th>Confirmed</th><th>Likely</th><th>At risk</th></tr></thead><tbody id="teamRows"></tbody></table></div>
+    <div style="overflow-x:auto"><table class="tt"><thead><tr><th>Closer</th><th>Full check</th><th>Base</th><th>Commission</th><th>Confirmed</th><th>Likely</th><th>At risk</th></tr></thead><tbody id="teamRows"></tbody></table></div>
   </section>
 
   <section id="pay" style="margin-bottom:14px" hidden>
@@ -155,6 +155,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     <section class="card" style="margin-bottom:14px" id="payCard">
       <p class="label"><span>Next paycheck</span><span id="payDate"></span></p>
       <div class="big num" id="range">-</div>
+      <div class="note" id="split" style="margin-top:2px"></div>
       <div class="note" id="projNote" style="margin:4px 0 12px"></div>
       <div class="three">
         <div class="mini"><div class="k">Confirmed</div><div class="v" id="confirmed">-</div><div class="note">first payment cleared</div></div>
@@ -251,10 +252,10 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
         const t = d.team, range = (lo, hi) => lo === hi ? money(lo) : money(lo) + " to " + money(hi);
         $("app").hidden = true; $("hello").textContent = "Manager view · team";
         $("teamDate").textContent = "Pay date " + day(t.pay_date);
-        $("teamRange").textContent = range(t.totals.low, t.totals.high);
+        $("teamRange").textContent = range(t.totals.full_low, t.totals.full_high);
         $("teamNote").textContent = t.note + " Counts deals on payout files " + day(t.window.start) + " to " + day(t.window.end) + ". Tap a closer to open their page.";
-        $("teamRows").innerHTML = t.reps.map((r) => `<tr data-rep="${esc(r.rep_id)}"><td>${esc(r.name)}</td><td>${range(r.low, r.high)}</td><td>${money(r.confirmed)}</td><td>${money(r.likely)}${r.likely_deals ? ` <span class="when">(${r.likely_deals})</span>` : ""}</td><td class="${r.at_risk ? "neg" : ""}">${money(r.at_risk)}</td></tr>`).join("")
-          + `<tr class="sum"><td>Team</td><td>${range(t.totals.low, t.totals.high)}</td><td>${money(t.totals.confirmed)}</td><td>${money(t.totals.likely)}</td><td>${money(t.totals.at_risk)}</td></tr>`;
+        $("teamRows").innerHTML = t.reps.map((r) => `<tr data-rep="${esc(r.rep_id)}"><td>${esc(r.name)}</td><td><b>${range(r.full_low, r.full_high)}</b></td><td>${r.base === null ? '<span class="when">not in Gusto</span>' : money(r.base)}</td><td>${range(r.low, r.high)}</td><td>${money(r.confirmed)}</td><td>${money(r.likely)}${r.likely_deals ? ` <span class="when">(${r.likely_deals})</span>` : ""}</td><td class="${r.at_risk ? "neg" : ""}">${money(r.at_risk)}</td></tr>`).join("")
+          + `<tr class="sum"><td>Team</td><td>${range(t.totals.full_low, t.totals.full_high)}</td><td>${money(t.totals.base)}</td><td>${range(t.totals.low, t.totals.high)}</td><td>${money(t.totals.confirmed)}</td><td>${money(t.totals.likely)}</td><td>${money(t.totals.at_risk)}</td></tr>`;
         return;
       }
       if (!d.viewing) { $("app").hidden = true; $("hello").textContent = "Manager view"; return; }
@@ -283,7 +284,10 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     }
     const p = d.projection || { pay_date: "2026-01-01", window: { start: "2026-01-01", end: "2026-01-01" }, estimate: { low: 0, high: 0 }, note: "", confirmed: 0, likely: 0, likely_deals: 0, at_risk: 0, at_risk_deals: 0, known_clawbacks: 0, carried_in: 0 };
     $("payDate").textContent = "Pay date " + day(p.pay_date);
-    $("range").textContent = p.estimate.low === p.estimate.high ? money(p.estimate.low) : money(p.estimate.low) + " to " + money(p.estimate.high);
+    const rng = (a, b) => a === b ? money(a) : money(a) + " to " + money(b);
+    const full = p.full_check;
+    $("range").textContent = full ? rng(full.low, full.high) : rng(p.estimate.low, p.estimate.high);
+    $("split").innerHTML = full ? `Base salary <b>${money(p.base_salary)}</b> + commission <b>${rng(p.estimate.low, p.estimate.high)}</b>` : "";
     $("projNote").textContent = p.note + " Counts deals on payout files " + day(p.window.start) + " to " + day(p.window.end) + ".";
     $("confirmed").textContent = money(p.confirmed);
     $("likely").textContent = money(p.likely); $("likelyN").textContent = p.likely_deals + " deal" + (p.likely_deals === 1 ? "" : "s") + " if first payment clears";
