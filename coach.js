@@ -217,7 +217,8 @@
     box.onkeydown = (e) => { if (e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); if (!busy) ask(box.value); } };
     if (opts.sidebar) {
       $(".cc-new").onclick = newChat; $(".cc-practice").onclick = () => { newChat(); pickPersona(); };
-      $(".cc-menu").onclick = () => root.classList.toggle("cc-side-open");
+      $(".cc-menu").onclick = (e) => { e.stopPropagation(); root.classList.toggle("cc-side-open"); };
+      $(".cc-main").addEventListener("click", () => root.classList.remove("cc-side-open")); // tap outside the menu closes it
     }
     if (opts.onExpand) $(".cc-expand").onclick = () => opts.onExpand(conv);
     if (opts.onClose) $(".cc-close").onclick = opts.onClose;
