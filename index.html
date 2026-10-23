@@ -233,7 +233,8 @@
       if (!r.ok) throw new Error(j.error || "Could not load the deals.");
       const speed = set.startsWith("speed_");
       $("pnTitle").textContent = j.title + (rep ? " · " + rep : "") + (manager ? "" : " (your deals)");
-      $("pnSum").textContent = `${j.count} deal${j.count === 1 ? "" : "s"} · ${dollars(j.total_debt)} debt${j.truncated ? " · showing the first 500" : ""}`;
+      const full = `/me#deals?set=${encodeURIComponent(set)}${rep ? "&rep=" + encodeURIComponent(rep) : ""}`;
+      $("pnSum").innerHTML = `${j.count} deal${j.count === 1 ? "" : "s"} · ${dollars(j.total_debt)} debt${j.truncated ? " · showing the first 500" : ""} · ${manager ? `<a href="${full}" class="full">Open full list (filter, sort, download)</a>` : ""}`;
       $("pnHead").innerHTML = `<tr><th>When</th><th>Closer</th><th>Forth ID</th><th>Client</th><th>Debt</th><th>Status now</th><th>1st payment</th><th>Paid</th>${speed ? "<th>Days</th>" : ""}</tr>`;
       $("pnRows").innerHTML = j.rows.length ? j.rows.map((x) => `<tr><td>${shortDay(x.at)}</td><td>${esc(x.shown_as)}${x.shown_as !== x.closer ? ` <span class="when">${esc(x.closer)}</span>` : ""}</td>
         <td>${esc(x.forth_id)}</td><td>${esc(x.client)}</td><td>${dollars(x.debt)}</td><td>${esc(x.status ?? "")}</td>

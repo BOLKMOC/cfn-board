@@ -45,6 +45,9 @@ table.tt th{color:var(--muted);font-weight:500;font-size:12px}
 table.onb td{text-align:center;vertical-align:top} table.onb th{text-align:center}
 .ok{color:var(--win);font-weight:700} .wait{color:#B45309;font-size:12px}
 button.go.small{padding:5px 10px;font-size:12px}
+.filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:4px 0 10px} .filters label{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted)}
+.actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px} .go.ghost{background:#fff;color:var(--blue);border:1px solid var(--blue)}
+.neg{color:#C62828}
 .preview{white-space:pre-wrap;background:var(--tint);border-radius:10px;padding:12px;max-height:420px;overflow:auto;font:13px/1.5 Inter,system-ui,sans-serif}
 ul.list{list-style:none;margin:0;padding:0} ul.list li{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--tint);font-size:14px}
 table.tt tr.sum td{font-weight:700;border-top:2px solid var(--line)}
@@ -93,6 +96,20 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     <p class="label" style="margin-top:22px"><span>At risk of cancel</span><span id="riskN"></span></p>
     <p class="note" style="margin:0 0 10px">Pending cancel, NSF, admin pause, cancellation review. Biggest debt first. "Paid" means commission was already paid, so a cancel means a clawback.</p>
     <div style="overflow-x:auto"><table class="tt"><thead><tr><th>Closer</th><th>Forth ID</th><th>Client</th><th>Status</th><th>Debt</th><th>Since</th><th>Payments</th><th>Commission</th></tr></thead><tbody id="riskRows"></tbody></table></div>
+  </section>
+
+  <section class="card" id="dealsTab" style="margin-bottom:14px" hidden>
+    <p class="label"><span id="dlTitle">Deals</span><span id="dlSum"></span></p>
+    <div class="filters">
+      <label>Show<select id="dlSet" class="f"></select></label>
+      <label id="dlFromL">From<input type="date" id="dlFrom" class="f"></label>
+      <label id="dlToL">To<input type="date" id="dlTo" class="f"></label>
+      <label>Closer<select id="dlRep" class="f"><option value="">Everyone</option></select></label>
+      <label>Status<select id="dlStatus" class="f"><option value="">Any</option><option value="live">Still alive</option><option value="Submitted|Approved|Contract Needed">Not enrolled yet</option><option value="Waiting For First Payment">Waiting on 1st payment</option><option value="Active">Active (2+ payments)</option><option value="risk">At risk (NSF, pending cancel)</option><option value="Cancelled">Cancelled</option><option value="Returned">Returned</option></select></label>
+      <label>Search<input id="dlQ" class="f" placeholder="Forth ID or initials"></label>
+    </div>
+    <div class="actions"><button class="go small" id="dlCsv">Download for Excel</button> <button class="go small ghost" id="dlLink">Copy link to this view</button> <span class="note" id="dlMsg" aria-live="polite"></span></div>
+    <div style="overflow-x:auto"><table class="tt sortable"><thead><tr id="dlHead"></tr></thead><tbody id="dlRows"></tbody></table></div>
   </section>
 
   <section class="card" id="coachTab" style="margin-bottom:14px" hidden>
@@ -267,9 +284,9 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     try { localStorage.setItem("cfn_manager", mgr ? "1" : "0"); } catch {}
     if (mgr && !$("nav").querySelector("[data-v=payroll]")) {
       $("nav").querySelector("[data-v='']").textContent = "Reps";
-      $("nav").insertAdjacentHTML("beforeend", '<a href="/me#payroll" data-v="payroll">Payroll</a><a href="/me#team" data-v="team">Team pay</a><a href="/me#onboarding" data-v="onboarding">Onboarding</a><a href="/me#saves" data-v="saves">Saves</a><a href="/me#coach" data-v="coach">Coach</a>');
+      $("nav").insertAdjacentHTML("beforeend", '<a href="/me#payroll" data-v="payroll">Payroll</a><a href="/me#team" data-v="team">Team pay</a><a href="/me#onboarding" data-v="onboarding">Onboarding</a><a href="/me#deals" data-v="deals">Deals</a><a href="/me#saves" data-v="saves">Saves</a><a href="/me#coach" data-v="coach">Coach</a>');
     }
-    $("nav").querySelectorAll("a").forEach((a) => a.toggleAttribute("aria-current", a.dataset.v !== undefined && a.dataset.v === (mgr ? (["payroll", "team", "onboarding", "saves", "coach"].includes(d.viewing) ? d.viewing : "") : "")));
+    $("nav").querySelectorAll("a").forEach((a) => a.toggleAttribute("aria-current", a.dataset.v !== undefined && a.dataset.v === (mgr ? (["payroll", "team", "onboarding", "saves", "coach", "deals"].includes(d.viewing) ? d.viewing : "") : "")));
     $("nav").querySelectorAll("a[aria-current]").forEach((a) => a.setAttribute("aria-current", "page"));
     $("mgr").hidden = !mgr;
     if (mgr) {
@@ -280,6 +297,8 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
       $("onb").hidden = d.viewing !== "onboarding";
       $("saves").hidden = d.viewing !== "saves";
       $("coachTab").hidden = d.viewing !== "coach";
+      $("dealsTab").hidden = d.viewing !== "deals";
+      if (d.viewing === "deals") { openDealsPage(d.reps); return; }
       if (d.viewing === "coach") { renderCoach(d.coach); return; }
       if (d.viewing === "saves") { renderSaves(d.saves); return; }
       if (d.viewing === "onboarding") { renderOnboarding(d.onboarding); return; }
@@ -361,6 +380,74 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     $("recent").innerHTML = d.recent.length ? d.recent.map((r) => `<li><span>${day(r.at)} · ${esc(r.status || "")}</span><span>${money(r.debt)}</span></li>`).join("")
       : '<li class="empty">No deals yet. Your first one shows here.</li>';
   }
+  // Deals page: any board number as a full list, with filters, sorting, a download, and a link to share the exact view.
+  const SETS = [["range", "All deals submitted (pick dates)"], ["month_submitted", "This month: submitted"], ["month_enrolled", "This month: waiting on 1st payment"],
+    ["month_first_due", "This month: 1st payment still to come"], ["month_first_cleared", "This month: 1st payment cleared"], ["month_two_cleared", "This month: 2 payments cleared"],
+    ["month_lost", "This month: cancelled or at risk"], ["cleared_first", "1st payments cleared this month (any month's deals)"], ["cleared_second", "2nd payments cleared this month (any month's deals)"],
+    ["day", "Today"], ["week", "This week"], ["returned_day", "Returned today"], ["speed_day", "Speed today: submitted to 1st payment"], ["speed_month", "Speed this month: enrolled to 1st payment"]];
+  const COLS = [["at", "When"], ["shown_as", "Closer"], ["forth_id", "Forth ID"], ["client", "Client"], ["debt", "Debt"], ["status", "Status now"], ["first_payment", "1st payment"], ["payments_cleared", "Paid"], ["days", "Days"]];
+  const RISK = ["On Hold - NSF", "Pending Affiliate Cancellation", "Admin Pause", "Cancellation Review"];
+  let dl = { rows: [], sort: "at", desc: true, loadedKey: "" };
+  const dlState = () => new URLSearchParams(location.hash.replace(/^#deals\??/, ""));
+  function setDlState(changes) {
+    const p = dlState(); for (const [k, v] of Object.entries(changes)) v ? p.set(k, v) : p.delete(k);
+    history.replaceState(null, "", "/me#deals" + (p.toString() ? "?" + p : "")); renderDeals();
+  }
+  async function openDealsPage(reps) {
+    $("app").hidden = true; $("hello").textContent = "Manager view · deals";
+    if (!$("dlSet").options.length) {
+      $("dlSet").innerHTML = SETS.map(([v, t]) => `<option value="${v}">${esc(t)}</option>`).join("");
+      $("dlRep").innerHTML = '<option value="">Everyone</option>' + reps.map((r) => `<option value="${esc(r.shown_as)}">${esc(r.name)} (${esc(r.shown_as)})</option>`).join("");
+      $("dlSet").onchange = () => setDlState({ set: $("dlSet").value });
+      $("dlFrom").onchange = () => setDlState({ from: $("dlFrom").value }); $("dlTo").onchange = () => setDlState({ to: $("dlTo").value });
+      $("dlRep").onchange = () => setDlState({ rep: $("dlRep").value }); $("dlStatus").onchange = () => setDlState({ status: $("dlStatus").value });
+      $("dlQ").oninput = () => setDlState({ q: $("dlQ").value.trim() });
+      $("dlHead").onclick = (e) => { const th = e.target.closest("[data-col]"); if (!th) return; const c = th.dataset.col; setDlState({ sort: c, dir: dlState().get("sort") === c && dlState().get("dir") !== "asc" ? "asc" : "desc" }); };
+      $("dlCsv").onclick = downloadDeals;
+      $("dlLink").onclick = async () => { try { await navigator.clipboard.writeText(location.href); $("dlMsg").textContent = "Link copied. Anyone signed in as a manager sees this same list."; } catch { prompt("Copy this link:", location.href); } };
+    }
+    await renderDeals();
+  }
+  async function renderDeals() {
+    const p = dlState(), set = p.get("set") || "range";
+    $("dlSet").value = set; $("dlRep").value = p.get("rep") || ""; $("dlStatus").value = p.get("status") || ""; if (document.activeElement !== $("dlQ")) $("dlQ").value = p.get("q") || "";
+    $("dlFromL").hidden = $("dlToL").hidden = set !== "range";
+    const key = [set, p.get("rep") || "", set === "range" ? p.get("from") || "" : "", set === "range" ? p.get("to") || "" : ""].join("|");
+    if (key !== dl.loadedKey) {
+      $("dlMsg").textContent = "Loading...";
+      try {
+        const q = new URLSearchParams({ set }); if (p.get("rep")) q.set("rep", p.get("rep")); if (set === "range") { if (p.get("from")) q.set("from", p.get("from")); if (p.get("to")) q.set("to", p.get("to")); }
+        const j = await api("/deals?" + q);
+        dl = { ...dl, rows: j.rows, title: j.title, truncated: j.truncated, loadedKey: key };
+        if (set === "range") { $("dlFrom").value = j.from; $("dlTo").value = j.to; }
+        $("dlMsg").textContent = "";
+      } catch (e) { $("dlMsg").textContent = e.message; return; }
+    }
+    const status = p.get("status") || "", needle = (p.get("q") || "").toLowerCase();
+    const keep = (r) => (!status || (status === "live" ? !["Cancelled", "Returned"].includes(r.status) : status === "risk" ? RISK.includes(r.status) : status.split("|").includes(r.status)))
+      && (!needle || r.forth_id.includes(needle) || r.client.toLowerCase().includes(needle));
+    const sort = p.get("sort") || (set.startsWith("speed_") ? "days" : "at"), asc = p.get("dir") === "asc";
+    const val = (r) => r[sort] ?? (sort === "debt" || sort === "days" || sort === "payments_cleared" ? -1 : "");
+    const rows = dl.rows.filter(keep).sort((a, b) => { const x = val(a), y = val(b); return (x < y ? -1 : x > y ? 1 : 0) * (asc ? 1 : -1); });
+    dl.view = rows;
+    const total = rows.reduce((s, r) => s + (r.debt || 0), 0);
+    $("dlTitle").textContent = dl.title || "Deals";
+    $("dlSum").textContent = `${rows.length} deal${rows.length === 1 ? "" : "s"} · ${money(total)} debt${rows.length ? " · avg " + money(total / rows.length) : ""}${dl.truncated ? " · first 3,000 only" : ""}`;
+    const cols = set.startsWith("speed_") ? COLS : COLS.filter(([c]) => c !== "days");
+    $("dlHead").innerHTML = cols.map(([c, t]) => `<th data-col="${c}" style="cursor:pointer">${t}${c === sort ? (asc ? " &#9650;" : " &#9660;") : ""}</th>`).join("");
+    $("dlRows").innerHTML = rows.length ? rows.map((r) => `<tr><td>${r.at ? day(r.at.slice(0, 10)) : ""}</td><td>${esc(r.shown_as)} <span class="when">${esc(r.closer)}</span></td><td>${esc(r.forth_id)}</td><td>${esc(r.client)}</td>
+      <td>${money(r.debt || 0)}</td><td class="${["Cancelled", "Returned"].includes(r.status) || RISK.includes(r.status) ? "neg" : ""}">${esc(r.status || "")}</td>
+      <td>${r.first_payment ? day(r.first_payment) : ""}${r.first_cleared ? ' <span class="ok">&#10003;</span>' : ""}</td><td>${r.payments_cleared >= 2 ? "2+" : r.payments_cleared}</td>${set.startsWith("speed_") ? `<td><b>${r.days}</b></td>` : ""}</tr>`).join("")
+      : `<tr><td colspan="9" class="empty" style="text-align:left">No deals match.</td></tr>`;
+  }
+  function downloadDeals() {
+    const cell = (v) => { const t = String(v ?? ""); return /[",\n]/.test(t) ? `"${t.replace(/"/g, '""')}"` : t; };
+    const lines = [["Submitted", "Call sign", "Closer", "Forth ID", "Client", "Debt", "Status", "1st payment", "1st cleared", "Payments cleared", "Days"].join(",")]
+      .concat((dl.view || []).map((r) => [r.at ? r.at.slice(0, 10) : "", r.shown_as, r.closer, r.forth_id, r.client, Math.round(r.debt || 0), r.status, r.first_payment, r.first_cleared ? "yes" : "no", r.payments_cleared, r.days ?? ""].map(cell).join(",")));
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob(["\ufeff" + lines.join("\n")], { type: "text/csv" }));
+    a.download = `cfn-deals-${new Date().toISOString().slice(0, 10)}.csv`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  }
   function renderCoach(c) {
     $("app").hidden = true; $("hello").textContent = "Manager view · coach";
     const live = c.library.filter((x) => x.status === "approved").length, drafts = c.library.filter((x) => x.status === "draft").length;
@@ -438,7 +525,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
       ? `<p style="margin:0"><b>Approved</b> by ${esc(p.approved_by || "")} on ${esc(new Date(p.approved_at).toLocaleString("en-US", { timeZone: "America/New_York", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }))}. Locked.</p>`
       : `<p class="label">To approve</p><p style="margin:0">${p.reviews.length ? "Clear the review items first. Then r" : "R"}eply on Telegram: <b>${esc(p.approve_with)}</b></p><p class="note" style="margin:6px 0 0">Approval locks this payroll. A person still clicks Submit in Gusto.</p>`;
   }
-  const fromHash = () => (["#payroll", "#team", "#onboarding", "#saves", "#coach"].includes(location.hash) ? location.hash.slice(1) : "");
+  const fromHash = () => (/^#deals(\?|$)/.test(location.hash) ? "deals" : ["#payroll", "#team", "#onboarding", "#saves", "#coach"].includes(location.hash) ? location.hash.slice(1) : "");
   let viewing = fromHash();
   addEventListener("hashchange", () => {
     if (/^#signin/.test(location.hash)) { const m = takeSignIn(); if (m) showSignIn(m); else if (session) load(); return; }
@@ -447,7 +534,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
   async function load() { try { render(await api("/me" + (viewing ? "?rep=" + encodeURIComponent(viewing) : ""))); } catch (e) { if (e.message) showErr(e.message); } }
   $("pick").onchange = () => {
     const v = $("pick").value;
-    if (["payroll", "team", "onboarding", "saves", "coach"].includes(v)) { location.hash = v; return; } // hashchange loads it
+    if (["payroll", "team", "onboarding", "saves", "coach", "deals"].includes(v)) { location.hash = v; return; } // hashchange loads it
     viewing = v; if (location.hash) history.replaceState(null, "", "/me"); load();
   };
   $("onbRows").onclick = async (e) => {
