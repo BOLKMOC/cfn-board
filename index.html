@@ -60,17 +60,18 @@
     <div class="bar"><div class="fill" id="monthBar" style="width:0"></div></div>
     <p class="label sec"><span>This month's deals: where they are now</span><span class="clickhint" hidden>Tap any number to see the deals</span></p>
     <div class="pipe funnel">
-      <div data-set="month_submitted"><div class="k">Submitted</div><div class="v num" id="pSub">-</div><div class="tip">Sent to underwriting this month. Returned deals left out.</div></div>
+      <div data-set="month_submitted"><div class="k">Submitted</div><div class="v num" id="pSub">-</div></div>
       <div data-set="month_enrolled"><div class="k">Enrolled, waiting on 1st payment</div><div class="v num" id="pEnr">-</div><div class="tip" id="pDue" data-set="month_first_due"></div></div>
-      <div data-set="month_first_cleared"><div class="k">1st payment cleared</div><div class="v num" id="pOne">-</div><div class="tip">On a Cordoba payout file (Mondays).</div></div>
-      <div data-set="month_two_cleared"><div class="k">2 payments cleared</div><div class="v num" id="pTwoC">-</div><div class="tip">Forth moved it to Active.</div></div>
+      <div data-set="month_first_cleared"><div class="k">1st payment cleared</div><div class="v num" id="pOne">-</div></div>
+      <div data-set="month_two_cleared"><div class="k">2 payments cleared</div><div class="v num" id="pTwoC">-</div></div>
       <div data-set="month_lost" class="lost"><div class="k">Cancelled or at risk</div><div class="v num" id="pLost">-</div><div class="tip" id="pLostN"></div></div>
+      <div data-set="month_returned" class="lost"><div class="k">Returned, to fix</div><div class="v num" id="pRet">-</div><div class="tip" id="pRetN"></div></div>
     </div>
     <p class="label sec"><span>Money cleared this month (deals from any month)</span></p>
     <div class="pipe">
-      <div data-set="cleared_first"><div class="k">1st payments</div><div class="v num" id="pAct">-</div><div class="tip">From this month's Cordoba payout files.</div></div>
-      <div data-set="cleared_second"><div class="k">2nd payments</div><div class="v num" id="pTwo">-</div><div class="tip">Deals Forth moved to Active this month.</div></div>
-      <div><div class="k">Nationwide loans</div><div class="v num" id="pNw">-</div><div class="tip">From Nationwide's weekly report.</div></div>
+      <div data-set="cleared_first"><div class="k">1st payments</div><div class="v num" id="pAct">-</div></div>
+      <div data-set="cleared_second"><div class="k">2nd payments</div><div class="v num" id="pTwo">-</div></div>
+      <div><div class="k">Nationwide loans</div><div class="v num" id="pNw">-</div></div>
     </div>
     <p class="label sec"><span>Speed to 1st payment (business days)</span><span>Goal: <span id="fpMax">7</span> days or less</span></p>
     <div class="fp" id="fp" hidden>
@@ -177,6 +178,7 @@
     $("pOne").innerHTML = share(fm.first_cleared); $("pTwoC").innerHTML = share(fm.two_cleared);
     $("pLost").innerHTML = share((fm.cancelled ?? 0) + (fm.at_risk ?? 0));
     $("pLostN").textContent = `${fm.cancelled ?? 0} cancelled · ${fm.at_risk ?? 0} at risk`;
+    $("pRet").textContent = fm.returned ?? 0; $("pRetN").textContent = fm.returned ? money(fm.returned_debt) + " debt" : "";
     $("pAct").textContent = d.payments_month?.first ?? 0; $("pTwo").textContent = d.payments_month?.second ?? 0;
     $("pNw").textContent = d.nationwide_loans_month ?? 0;
     const fp = d.first_pay_month, fd = d.first_pay_day;
