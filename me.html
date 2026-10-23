@@ -121,6 +121,10 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     <p class="label" style="margin-top:22px"><span>Questions the library could not answer (last 30 days)</span></p>
     <p class="note" style="margin:0 0 10px">Fill these gaps by adding a document.</p>
     <ul class="list" id="libGaps"></ul>
+    <p class="label" style="margin-top:22px"><span>Answers rated thumbs down (last 60 days)</span></p>
+    <ul class="list" id="libDown"></ul>
+    <p class="label" style="margin-top:22px"><span>Practice calls (last 30 days)</span></p>
+    <div style="overflow-x:auto"><table class="tt"><thead><tr><th>Person</th><th>Calls</th><th>Average score</th><th>Last</th></tr></thead><tbody id="coachPractice"></tbody></table></div>
     <p class="label" style="margin-top:22px"><span>Who uses the Coach (last 7 days)</span></p>
     <div style="overflow-x:auto"><table class="tt"><thead><tr><th>Person</th><th>Questions</th><th>Last</th></tr></thead><tbody id="coachUse"></tbody></table></div>
   </section>
@@ -283,9 +287,10 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     const mgr = !!d.manager;
     try { localStorage.setItem("cfn_manager", mgr ? "1" : "0"); } catch {}
     $("pageTitle").textContent = mgr ? "CFN Staff" : "My CFN Page"; document.title = mgr ? "CFN Staff" : "My CFN Page";
+    if (!$("nav").querySelector('a[href="/coach"]')) $("nav").querySelector("[data-v='']").insertAdjacentHTML("afterend", '<a href="/coach">Coach</a>');
     if (mgr && !$("nav").querySelector("[data-v=payroll]")) {
       $("nav").querySelector("[data-v='']").textContent = "Reps";
-      $("nav").insertAdjacentHTML("beforeend", '<a href="/me#payroll" data-v="payroll">Payroll</a><a href="/me#team" data-v="team">Team pay</a><a href="/me#onboarding" data-v="onboarding">Onboarding</a><a href="/me#deals" data-v="deals">Deals</a><a href="/me#saves" data-v="saves">Saves</a><a href="/me#coach" data-v="coach">Coach</a>');
+      $("nav").insertAdjacentHTML("beforeend", '<a href="/me#payroll" data-v="payroll">Payroll</a><a href="/me#team" data-v="team">Team pay</a><a href="/me#onboarding" data-v="onboarding">Onboarding</a><a href="/me#deals" data-v="deals">Deals</a><a href="/me#saves" data-v="saves">Saves</a><a href="/me#coach" data-v="coach">Coach library</a>');
     }
     $("nav").querySelectorAll("a").forEach((a) => a.toggleAttribute("aria-current", a.dataset.v !== undefined && a.dataset.v === (mgr ? (["payroll", "team", "onboarding", "saves", "coach", "deals"].includes(d.viewing) ? d.viewing : "") : "")));
     $("nav").querySelectorAll("a[aria-current]").forEach((a) => a.setAttribute("aria-current", "page"));
@@ -460,6 +465,10 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
       : '<tr><td colspan="5" class="empty" style="text-align:left">No documents yet.</td></tr>';
     $("libGaps").innerHTML = c.unanswered.length ? c.unanswered.map((u) => `<li><span>${esc(u.question)}</span><span class="when">${esc(u.who)} · ${day(String(u.created_at).slice(0, 10))}</span></li>`).join("")
       : '<li class="empty">None yet.</li>';
+    $("libDown").innerHTML = (c.thumbs_down || []).length ? c.thumbs_down.map((u) => `<li style="display:block"><b>${esc(u.question)}</b><br><span class="when">${esc(u.who)} · ${day(String(u.created_at).slice(0, 10))}${u.note ? " · note: " + esc(u.note) : ""}</span><details><summary class="when">The answer</summary><div class="preview" style="max-height:220px">${esc(u.answer)}</div></details></li>`).join("")
+      : '<li class="empty">None yet.</li>';
+    $("coachPractice").innerHTML = (c.practice || []).length ? c.practice.map((u) => `<tr><td>${esc(u.who)}</td><td>${u.calls}</td><td>${u.avg_pct ?? "-"}%</td><td>${day(String(u.last_at).slice(0, 10))}</td></tr>`).join("")
+      : '<tr><td colspan="4" class="empty" style="text-align:left">No practice calls yet.</td></tr>';
     $("coachUse").innerHTML = c.usage.length ? c.usage.map((u) => `<tr><td>${esc(u.who)}</td><td>${u.questions}</td><td>${day(String(u.last_at).slice(0, 10))}</td></tr>`).join("")
       : '<tr><td colspan="3" class="empty" style="text-align:left">Nobody yet.</td></tr>';
   }

@@ -1,21 +1,70 @@
-.coach-fab{position:fixed;right:18px;bottom:18px;z-index:60;background:var(--blue);color:#fff;border:0;border-radius:999px;padding:12px 18px;font:700 15px Quicksand,Inter,sans-serif;box-shadow:0 8px 24px rgba(23,60,166,.35);cursor:pointer;display:flex;gap:8px;align-items:center}
-.coach-fab:hover{filter:brightness(1.08)}
-.coach-panel{position:fixed;right:18px;bottom:18px;z-index:61;width:min(420px,calc(100vw - 24px));height:min(640px,calc(100vh - 36px));background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:0 18px 50px rgba(20,26,46,.25);display:flex;flex-direction:column;overflow:hidden}
-.coach-head{background:var(--blue);color:#fff;padding:12px 14px;display:flex;justify-content:space-between;align-items:center}
-.coach-head b{font:700 16px Quicksand,Inter,sans-serif}
-.coach-head small{display:block;font-size:11px;opacity:.85}
-.coach-head button{background:none;border:0;color:#fff;font-size:22px;cursor:pointer;line-height:1}
-.coach-log{flex:1;overflow-y:auto;padding:12px;background:var(--tint)}
-.coach-msg{max-width:88%;margin:0 0 10px;padding:9px 12px;border-radius:14px;font-size:14px;line-height:1.45;white-space:pre-wrap;word-wrap:break-word}
-.coach-msg.me{margin-left:auto;background:var(--blue);color:#fff;border-bottom-right-radius:4px}
-.coach-msg.bot{background:#fff;border:1px solid var(--line);border-bottom-left-radius:4px}
-.coach-msg.err{background:#FEF2F2;color:#991B1B;border:1px solid #FECACA}
-.coach-chips{display:flex;flex-wrap:wrap;gap:6px;padding:8px 12px 0}
-.coach-chips button{border:1px solid var(--line);background:#fff;color:var(--blue);border-radius:999px;padding:5px 10px;font:500 12px Inter,sans-serif;cursor:pointer}
-.coach-form{display:flex;gap:8px;padding:10px 12px;border-top:1px solid var(--line);background:#fff}
-.coach-form textarea{flex:1;resize:none;border:1px solid var(--line);border-radius:10px;padding:8px 10px;font:14px Inter,sans-serif;max-height:110px}
-.coach-form button{background:var(--blue);color:#fff;border:0;border-radius:10px;padding:0 14px;font:700 14px Inter,sans-serif;cursor:pointer}
-.coach-form button:disabled{opacity:.5;cursor:default}
-.coach-foot{font-size:11px;color:var(--muted);padding:0 12px 8px;background:#fff}
-body.tv .coach-fab,body.tv .coach-panel{display:none !important}
-@media (max-width:480px){.coach-panel{right:0;bottom:0;width:100vw;height:100dvh;border-radius:0}}
+/* CFN Coach: bubble and full page share these styles. */
+.coach-fab{position:fixed;right:18px;bottom:18px;z-index:40;background:var(--blue,#1F4FD8);color:#fff;border:0;border-radius:999px;padding:12px 18px;font:600 15px Inter,system-ui,sans-serif;box-shadow:0 6px 20px rgba(31,79,216,.35);cursor:pointer}
+.coach-panel{position:fixed;right:18px;bottom:18px;z-index:45;width:min(440px,calc(100vw - 24px));height:min(680px,calc(100vh - 36px));background:#fff;border:1px solid #CDD6EA;border-radius:18px;box-shadow:0 18px 50px rgba(17,24,39,.25);display:flex;overflow:hidden}
+@media (max-width:600px){.coach-panel{inset:0;width:auto;height:auto;border-radius:0;right:0;bottom:0}}
+.cc{font-family:Inter,system-ui,sans-serif;color:#111827}
+.cc-main{flex:1;display:flex;flex-direction:column;min-width:0;background:#fff}
+.cc-top{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #EEF1F8}
+.cc-title{flex:1;font:700 16px Quicksand,Inter,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cc-tools{display:flex;gap:4px}
+.cc-top button{border:0;background:transparent;font-size:18px;cursor:pointer;color:#5B6475;border-radius:8px;padding:4px 8px}
+.cc-top button:hover,.cc-top button.on{background:#F2F5FD;color:#1F4FD8}
+.cc-log{flex:1;overflow-y:auto;padding:18px 16px 8px;display:flex;flex-direction:column;gap:14px}
+.cc-empty{margin:auto 0;text-align:center;padding:10px}
+.cc-empty h2{font:700 22px Quicksand,Inter,sans-serif;margin:0 0 6px}
+.cc-empty p{color:#5B6475;margin:0 0 16px}
+.cc-chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.cc-chips button{border:1px solid #CDD6EA;background:#fff;border-radius:12px;padding:9px 12px;font:14px Inter,system-ui,sans-serif;cursor:pointer;text-align:left;color:#111827}
+.cc-chips button:hover{border-color:#1F4FD8;background:#F2F5FD}
+.cc-msg{max-width:100%}
+.cc-msg.me{align-self:flex-end;max-width:85%}
+.cc-msg.me .cc-body{background:#F2F5FD;border-radius:18px;padding:10px 14px;white-space:pre-wrap;line-height:1.45}
+.cc-msg.bot .cc-body{line-height:1.55;font-size:15px}
+.cc-msg.err .cc-body{color:#991B1B}
+.cc-body p{margin:0 0 8px} .cc-body p:last-child{margin-bottom:0}
+.cc-body ul,.cc-body ol{margin:4px 0 8px;padding-left:22px} .cc-body li{margin:2px 0}
+.cc-body blockquote{margin:6px 0 10px;padding:8px 12px;border-left:3px solid #1F4FD8;background:#F7F9FE;border-radius:0 10px 10px 0}
+.cc-body code{background:#F2F5FD;padding:1px 5px;border-radius:5px}
+.cc-sources{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.cc-sources span{font-size:11.5px;color:#1F4FD8;background:#F2F5FD;border-radius:999px;padding:3px 9px}
+.cc-sources span::before{content:"From: "}
+.cc-actions{display:flex;gap:2px;margin-top:6px;opacity:.75}
+.cc-msg:hover .cc-actions{opacity:1}
+.cc-actions button{border:0;background:transparent;color:#5B6475;font:12.5px Inter,system-ui,sans-serif;padding:4px 7px;border-radius:7px;cursor:pointer}
+.cc-actions button:hover,.cc-thumb.on{background:#F2F5FD;color:#1F4FD8}
+.cc-dots{display:inline-flex;gap:4px} .cc-dots i{width:7px;height:7px;border-radius:50%;background:#9AA3B5;animation:ccb 1.2s infinite} .cc-dots i:nth-child(2){animation-delay:.15s} .cc-dots i:nth-child(3){animation-delay:.3s}
+@keyframes ccb{0%,80%,100%{opacity:.3;transform:translateY(0)}40%{opacity:1;transform:translateY(-3px)}}
+.cc-practice-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#FFF6DB;border:1px solid #F3D98A;border-radius:12px;padding:8px 12px;font-size:13.5px}
+.cc-practice-bar button{border:0;background:#1F4FD8;color:#fff;border-radius:9px;padding:7px 12px;font:600 13px Inter,system-ui,sans-serif;cursor:pointer}
+.cc-form{padding:10px 14px 12px;border-top:1px solid #EEF1F8}
+.cc-box{display:flex;align-items:flex-end;gap:6px;border:1px solid #CDD6EA;border-radius:20px;padding:6px 6px 6px 14px;background:#fff}
+.cc-box:focus-within{border-color:#1F4FD8;box-shadow:0 0 0 3px rgba(31,79,216,.12)}
+.cc-box textarea{flex:1;border:0;outline:0;resize:none;font:15px/1.45 Inter,system-ui,sans-serif;padding:6px 0;max-height:200px;background:transparent}
+.cc-mic,.cc-send{border:0;width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:16px;flex:0 0 36px}
+.cc-mic{background:#F2F5FD;color:#1F4FD8} .cc-mic.on{background:#DC2626;color:#fff;animation:ccp 1.2s infinite}
+@keyframes ccp{50%{box-shadow:0 0 0 6px rgba(220,38,38,.2)}}
+.cc-send{background:#1F4FD8;color:#fff;font-weight:700} .cc-send.stop{background:#111827}
+.cc-hint{font-size:11.5px;color:#9AA3B5;margin-top:6px;text-align:center}
+@media (max-width:600px){.cc-hint{display:none}}
+/* Full page */
+body.coach-page{margin:0;height:100vh;overflow:hidden;background:#fff}
+#coach{display:flex;height:100vh}
+.cc-side{width:270px;flex:0 0 270px;background:#F7F9FE;border-right:1px solid #EEF1F8;display:flex;flex-direction:column;padding:12px;gap:8px}
+.cc-side > button{border:1px solid #CDD6EA;background:#fff;border-radius:12px;padding:10px 12px;font:600 14px Inter,system-ui,sans-serif;cursor:pointer;text-align:left;color:#111827}
+.cc-side > button.cc-new{background:#1F4FD8;color:#fff;border-color:#1F4FD8}
+.cc-list{flex:1;overflow-y:auto;margin-top:6px}
+.cc-group{font-size:11.5px;color:#9AA3B5;text-transform:uppercase;letter-spacing:.6px;margin:12px 6px 4px}
+.cc-item{display:flex;align-items:center;border-radius:10px}
+.cc-item.on,.cc-item:hover{background:#E9EEFB}
+.cc-name{flex:1;min-width:0;border:0;background:transparent;text-align:left;padding:8px 8px;font:14px Inter,system-ui,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;color:#111827}
+.cc-mini{border:0;background:transparent;cursor:pointer;opacity:0;padding:4px;font-size:13px}
+.cc-item:hover .cc-mini{opacity:.7}
+.cc-side-foot{font-size:11.5px;color:#9AA3B5;line-height:1.4}
+.cc-menu{display:none}
+#coach .cc-log,#coach .cc-form{width:100%;max-width:820px;margin:0 auto}
+@media (max-width:760px){
+  .cc-side{position:fixed;inset:0 25% 0 0;z-index:5;transform:translateX(-105%);transition:transform .2s;box-shadow:0 0 40px rgba(0,0,0,.2)}
+  #coach.cc-side-open .cc-side{transform:none}
+  .cc-menu{display:inline-block}
+}
+.cc-back{color:#1F4FD8;font-weight:600;text-decoration:none;font-size:13px}
