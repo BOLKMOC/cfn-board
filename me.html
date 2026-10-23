@@ -396,7 +396,10 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
   }
   const fromHash = () => (["#payroll", "#team", "#onboarding", "#saves"].includes(location.hash) ? location.hash.slice(1) : "");
   let viewing = fromHash();
-  addEventListener("hashchange", () => { viewing = fromHash(); if (session) load(); });
+  addEventListener("hashchange", () => {
+    if (/^#signin/.test(location.hash)) { const m = takeSignIn(); if (m) showSignIn(m); else if (session) load(); return; }
+    viewing = fromHash(); if (session) load();
+  });
   async function load() { try { render(await api("/me" + (viewing ? "?rep=" + encodeURIComponent(viewing) : ""))); } catch (e) { if (e.message) showErr(e.message); } }
   $("pick").onchange = () => {
     const v = $("pick").value;
