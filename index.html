@@ -138,7 +138,7 @@
     $("date").textContent = new Date(d.as_of).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", timeZone: "America/New_York" });
     $("todayGoal").textContent = g.daily ? "Goal " + money(g.daily) : "";
     $("todayDebt").textContent = money(d.day.debt);
-    $("todayDeals").textContent = `${d.day.deals} deal${d.day.deals === 1 ? "" : "s"}${d.day.returned?.deals ? ` · ${d.day.returned.deals} returned (${money(d.day.returned.debt)})` : ""} · goal ${whole(g.daily_deals)} deals${d.day.avg_deal ? " · avg " + money(d.day.avg_deal) : ""}`;
+    $("todayDeals").textContent = `${d.day.deals} deal${d.day.deals === 1 ? "" : "s"}${d.day.returned?.deals ? ` · ${d.day.returned.deals} returned to fix (${money(d.day.returned.debt)})` : ""} · goal ${whole(g.daily_deals)} deals${d.day.avg_deal ? " · avg " + money(d.day.avg_deal) : ""}`;
     bar("todayBar", "todayPace", d.day.debt_pct, d.day.pace_pct, d.day.goal_hit);
     $("todayBarWrap").setAttribute("aria-label", `${d.day.debt_pct ?? 0}% of today's goal`);
     $("todayNote").textContent = d.day.goal_hit ? "Goal hit! Keep stacking." : g.daily ? `${money(Math.max(0, g.daily - d.day.debt))} to go · ${d.day.debt_pct >= d.day.pace_pct ? "ahead of pace" : "behind pace"}` : "";
