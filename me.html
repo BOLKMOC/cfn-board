@@ -84,6 +84,15 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     <p class="note" id="onbMsg" aria-live="polite"></p>
   </section>
 
+  <section class="card" id="saves" style="margin-bottom:14px" hidden>
+    <p class="label"><span>Returned to fix</span><span id="retN"></span></p>
+    <p class="note" style="margin:0 0 10px">Deals Forth sent back in the last 30 days, longest waiting first. They do not count on the board until fixed and resubmitted.</p>
+    <div style="overflow-x:auto"><table class="tt"><thead><tr><th>Closer</th><th>Forth ID</th><th>Client</th><th>Debt</th><th>Waiting</th></tr></thead><tbody id="retRows"></tbody></table></div>
+    <p class="label" style="margin-top:22px"><span>At risk of cancel</span><span id="riskN"></span></p>
+    <p class="note" style="margin:0 0 10px">Pending cancel, NSF, admin pause, cancellation review. Biggest debt first. "Paid" means commission was already paid, so a cancel means a clawback.</p>
+    <div style="overflow-x:auto"><table class="tt"><thead><tr><th>Closer</th><th>Forth ID</th><th>Client</th><th>Status</th><th>Debt</th><th>Since</th><th>Payments</th><th>Commission</th></tr></thead><tbody id="riskRows"></tbody></table></div>
+  </section>
+
   <section id="pay" style="margin-bottom:14px" hidden>
     <div class="card" style="margin-bottom:14px">
       <p class="label"><span>Payroll review</span><span id="payStatus"></span></p>
@@ -248,9 +257,9 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     try { localStorage.setItem("cfn_manager", mgr ? "1" : "0"); } catch {}
     if (mgr && !$("nav").querySelector("[data-v=payroll]")) {
       $("nav").querySelector("[data-v='']").textContent = "Reps";
-      $("nav").insertAdjacentHTML("beforeend", '<a href="/me#payroll" data-v="payroll">Payroll</a><a href="/me#team" data-v="team">Team pay</a><a href="/me#onboarding" data-v="onboarding">Onboarding</a>');
+      $("nav").insertAdjacentHTML("beforeend", '<a href="/me#payroll" data-v="payroll">Payroll</a><a href="/me#team" data-v="team">Team pay</a><a href="/me#onboarding" data-v="onboarding">Onboarding</a><a href="/me#saves" data-v="saves">Saves</a>');
     }
-    $("nav").querySelectorAll("a").forEach((a) => a.toggleAttribute("aria-current", a.dataset.v !== undefined && a.dataset.v === (mgr ? (["payroll", "team", "onboarding"].includes(d.viewing) ? d.viewing : "") : "")));
+    $("nav").querySelectorAll("a").forEach((a) => a.toggleAttribute("aria-current", a.dataset.v !== undefined && a.dataset.v === (mgr ? (["payroll", "team", "onboarding", "saves"].includes(d.viewing) ? d.viewing : "") : "")));
     $("nav").querySelectorAll("a[aria-current]").forEach((a) => a.setAttribute("aria-current", "page"));
     $("mgr").hidden = !mgr;
     if (mgr) {
@@ -259,6 +268,8 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
       $("team").hidden = d.viewing !== "team";
       $("pay").hidden = d.viewing !== "payroll";
       $("onb").hidden = d.viewing !== "onboarding";
+      $("saves").hidden = d.viewing !== "saves";
+      if (d.viewing === "saves") { renderSaves(d.saves); return; }
       if (d.viewing === "onboarding") { renderOnboarding(d.onboarding); return; }
       if (d.viewing === "payroll") { renderPayroll(d.payroll); return; }
       if (d.viewing === "team") {
@@ -338,6 +349,17 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     $("recent").innerHTML = d.recent.length ? d.recent.map((r) => `<li><span>${day(r.at)} · ${esc(r.status || "")}</span><span>${money(r.debt)}</span></li>`).join("")
       : '<li class="empty">No deals yet. Your first one shows here.</li>';
   }
+  function renderSaves(s) {
+    $("app").hidden = true; $("hello").textContent = "Manager view · saves";
+    const t = s.totals, who = (r) => `<b>${esc(r.closer)}</b>${r.shown_as && r.shown_as !== r.closer ? `<br><span class="when">${esc(r.shown_as)}</span>` : ""}`;
+    const days = (n) => n === null ? "" : n + " day" + (n === 1 ? "" : "s");
+    $("retN").textContent = t.returned ? `${t.returned} · ${money(t.returned_debt)}` : "none";
+    $("retRows").innerHTML = s.returned.length ? s.returned.map((r) => `<tr><td>${who(r)}</td><td>${esc(r.forth_id)}</td><td>${esc(r.client)}</td><td>${money(r.debt)}</td><td class="${r.days >= 2 ? "neg" : ""}">${days(r.days)}</td></tr>`).join("")
+      : '<tr><td colspan="5" class="empty" style="text-align:left">Nothing returned. Nice.</td></tr>';
+    $("riskN").textContent = t.at_risk ? `${t.at_risk} · ${money(t.at_risk_debt)}${t.at_risk_paid ? ` · ${t.at_risk_paid} paid` : ""}` : "none";
+    $("riskRows").innerHTML = s.at_risk.length ? s.at_risk.map((r) => `<tr><td>${who(r)}</td><td>${esc(r.forth_id)}</td><td>${esc(r.client)}</td><td>${esc(r.status)}</td><td>${money(r.debt)}</td><td>${r.since ? day(r.since.slice(0, 10)) : ""}<br><span class="when">${days(r.days)}</span></td><td>${r.payments_cleared >= 2 ? "2+" : r.payments_cleared}</td><td class="${r.commission_paid ? "neg" : ""}">${r.commission_paid ? "Paid" : "Not paid"}</td></tr>`).join("")
+      : '<tr><td colspan="8" class="empty" style="text-align:left">No deals at risk.</td></tr>';
+  }
   let onbRows = [];
   function renderOnboarding(rows) {
     onbRows = rows;
@@ -377,13 +399,13 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
       ? `<p style="margin:0"><b>Approved</b> by ${esc(p.approved_by || "")} on ${esc(new Date(p.approved_at).toLocaleString("en-US", { timeZone: "America/New_York", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }))}. Locked.</p>`
       : `<p class="label">To approve</p><p style="margin:0">${p.reviews.length ? "Clear the review items first. Then r" : "R"}eply on Telegram: <b>${esc(p.approve_with)}</b></p><p class="note" style="margin:6px 0 0">Approval locks this payroll. A person still clicks Submit in Gusto.</p>`;
   }
-  const fromHash = () => (["#payroll", "#team", "#onboarding"].includes(location.hash) ? location.hash.slice(1) : "");
+  const fromHash = () => (["#payroll", "#team", "#onboarding", "#saves"].includes(location.hash) ? location.hash.slice(1) : "");
   let viewing = fromHash();
   addEventListener("hashchange", () => { viewing = fromHash(); if (session) load(); });
   async function load() { try { render(await api("/me" + (viewing ? "?rep=" + encodeURIComponent(viewing) : ""))); } catch (e) { if (e.message) showErr(e.message); } }
   $("pick").onchange = () => {
     const v = $("pick").value;
-    if (["payroll", "team", "onboarding"].includes(v)) { location.hash = v; return; } // hashchange loads it
+    if (["payroll", "team", "onboarding", "saves"].includes(v)) { location.hash = v; return; } // hashchange loads it
     viewing = v; if (location.hash) history.replaceState(null, "", "/me"); load();
   };
   $("onbRows").onclick = async (e) => {
