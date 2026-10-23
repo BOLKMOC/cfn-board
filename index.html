@@ -179,12 +179,12 @@
     $("pLostN").textContent = `${fm.cancelled ?? 0} cancelled · ${fm.at_risk ?? 0} at risk`;
     $("pAct").textContent = d.payments_month?.first ?? 0; $("pTwo").textContent = d.payments_month?.second ?? 0;
     $("pNw").textContent = d.nationwide_loans_month ?? 0;
-    const fp = d.first_pay_month, t = d.first_pay_day;
-    $("fp").hidden = !(fp?.deals || t?.deals);
+    const fp = d.first_pay_month, fd = d.first_pay_day;
+    $("fp").hidden = !(fp?.deals || fd?.deals);
     const days = (x) => x?.deals ? `${x.avg_business_days} <small>days avg</small>` : "-";
     const within = (x) => x?.deals ? `${x.within_fast} of ${x.deals} within ${x.fast_max} days (${x.within_fast_pct}%)` : "No deals with a 1st payment date yet";
     if (fp) $("fpMax").textContent = fp.fast_max;
-    $("fpDayAvg").innerHTML = days(t); $("fpDayN").textContent = within(t);
+    $("fpDayAvg").innerHTML = days(fd); $("fpDayN").textContent = within(fd);
     $("fpAvg").innerHTML = days(fp); $("fpN").textContent = within(fp);
     $("feed").innerHTML = d.feed.length ? d.feed.map((f) => `<li${f.kind === "deal" ? ` data-set="day" data-rep="${esc(f.name)}"` : ""}><span>${f.kind === "loan" ? "&#127974;" : "&#127942;"} ${label(f.name)} · ${f.kind === "loan" ? "Nationwide loan" : "deal"}${f.debt ? ` <b class="size">${money(f.debt)}</b>` : ""}</span><span class="when">${ago(f.at)}</span></li>`).join("") : '<li class="empty">No wins yet today. Be first.</li>';
     renderLeaders();
