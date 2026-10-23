@@ -58,11 +58,18 @@
     <p class="label"><span id="t-month">This month</span><span id="monthGoal"></span></p>
     <div class="sub" id="monthLine"></div>
     <div class="bar"><div class="fill" id="monthBar" style="width:0"></div></div>
+    <p class="label" style="margin-top:16px"><span>This month's deals: where they are now</span></p>
     <div class="pipe">
       <div><div class="k">Submitted</div><div class="v num" id="pSub">-</div></div>
-      <div><div class="k">Enrolled</div><div class="v num" id="pEnr">-</div></div>
-      <div><div class="k">1st payment cleared</div><div class="v num" id="pAct">-</div></div>
-      <div><div class="k">2 payments cleared</div><div class="v num" id="pTwo">-</div></div>
+      <div><div class="k">Enrolled, waiting on 1st payment</div><div class="v num" id="pEnr">-</div><div class="note" id="pDue"></div></div>
+      <div><div class="k">1st payment cleared</div><div class="v num" id="pOne">-</div></div>
+      <div><div class="k">2 payments cleared</div><div class="v num" id="pTwoC">-</div></div>
+      <div><div class="k">Cancelled or at risk</div><div class="v num" id="pLost" style="color:var(--red,#C62828)">-</div><div class="note" id="pLostN"></div></div>
+    </div>
+    <p class="label" style="margin-top:16px"><span>Cleared this month (deals from any month)</span></p>
+    <div class="pipe">
+      <div><div class="k">1st payments</div><div class="v num" id="pAct">-</div></div>
+      <div><div class="k">2nd payments</div><div class="v num" id="pTwo">-</div></div>
       <div><div class="k">Nationwide loans</div><div class="v num" id="pNw">-</div></div>
     </div>
     <div class="fp" id="fp" hidden><div><div class="k">Enrolled to 1st payment</div><div class="v num" id="fpAvg">-</div><div class="note">business days, average this month</div><div class="note" id="fpDay"></div></div>
@@ -153,8 +160,13 @@
     bar("monthBar", null, d.month.debt_pct, 0, d.month.debt_pct >= 100);
     const st = Object.fromEntries((d.pipeline_month || []).map((p) => [p.status, p.deals]));
     const sum = (...k) => k.reduce((s, x) => s + (st[x] || 0), 0);
-    $("pSub").textContent = d.month.deals;
-    $("pEnr").textContent = sum("Waiting For First Payment");
+    const fm = d.funnel_month || {};
+    $("pSub").textContent = fm.submitted ?? d.month.deals;
+    $("pEnr").textContent = fm.enrolled ?? sum("Waiting For First Payment");
+    $("pDue").textContent = fm.first_due ? `${fm.first_due} payments still to come` : "";
+    $("pOne").textContent = fm.first_cleared ?? 0; $("pTwoC").textContent = fm.two_cleared ?? 0;
+    $("pLost").textContent = (fm.cancelled ?? 0) + (fm.at_risk ?? 0);
+    $("pLostN").textContent = `${fm.cancelled ?? 0} cancelled · ${fm.at_risk ?? 0} at risk`;
     $("pAct").textContent = d.payments_month?.first ?? 0; $("pTwo").textContent = d.payments_month?.second ?? 0;
     $("pNw").textContent = d.nationwide_loans_month ?? 0;
     const fp = d.first_pay_month;
