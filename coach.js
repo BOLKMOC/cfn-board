@@ -71,7 +71,7 @@
         <div class="cc-log" aria-live="polite"></div>
         <form class="cc-form"><div class="cc-box"><textarea rows="1" maxlength="4000" placeholder="Message the Coach"></textarea>
           <button type="button" class="cc-mic" title="Talk" hidden>&#127908;</button><button type="submit" class="cc-send" aria-label="Send">&#8593;</button></div>
-          <div class="cc-hint">Enter to send, Shift+Enter for a new line. Answers come from the CFN library.</div></form>
+          <div class="cc-hint">Enter to send, Shift+Enter for a new line. CFN facts come from the CFN library.</div></form>
       </section>`;
     const $ = (s) => root.querySelector(s);
     const log = $(".cc-log"), box = $("textarea"), send = $(".cc-send"), mic = $(".cc-mic");
