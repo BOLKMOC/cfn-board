@@ -133,7 +133,7 @@
       if (m.role === "user") body.textContent = m.content; else body.innerHTML = md(visible(m.content));
       w.append(body);
       if (m.role === "assistant" && !m.err && !m.pending) {
-        if (m.sources?.length) { const s = el("div", "cc-sources"); for (const t of m.sources) s.append(el("span", "", t)); w.append(s); }
+        if (m.sources?.length) { const s = el("div", "cc-sources"); for (const t of m.sources) s.append(el("span", /^general/i.test(t) ? "gen" : "", t)); w.append(s); }
         const a = el("div", "cc-actions");
         const copy = el("button", "", "Copy"); copy.onclick = async () => { try { await navigator.clipboard.writeText(visible(m.content)); copy.textContent = "Copied"; setTimeout(() => copy.textContent = "Copy", 1500); } catch {} };
         a.append(copy);

@@ -68,3 +68,5 @@ body.coach-page{margin:0;height:100vh;overflow:hidden;background:#fff}
   .cc-menu{display:inline-block}
 }
 .cc-back{color:#1F4FD8;font-weight:600;text-decoration:none;font-size:13px}
+.cc-sources span.gen{color:#5B6475;background:#F1F2F6}
+.cc-sources span.gen::before{content:""}
