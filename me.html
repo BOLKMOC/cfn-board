@@ -231,20 +231,15 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     $("app").hidden = true; $("logout").hidden = true; $("signin").hidden = false; showErr(msg || "");
     const start = () => {
       if (!window.google?.accounts?.id) return setTimeout(start, 200);
-      google.accounts.id.initialize({ client_id: window.GOOGLE_CLIENT_ID, hd: "changefn.com", callback: onGoogle, auto_select: false });
+      // Full-page sign-in (no pop-up): pop-ups come up blank in phone browsers opened from Telegram, Gmail, or Messages.
+      // Google posts the sign-in to our server, which sends the person back here with a session (see takeSignIn).
+      let nonce = ""; try { nonce = localStorage.getItem("cfn_nonce") || ""; } catch {}
+      if (!nonce) { nonce = Array.from(crypto.getRandomValues(new Uint8Array(16)), (b) => b.toString(16).padStart(2, "0")).join(""); try { localStorage.setItem("cfn_nonce", nonce); } catch {} }
+      google.accounts.id.initialize({ client_id: window.GOOGLE_CLIENT_ID, hd: "changefn.com", ux_mode: "redirect", login_uri: window.BOARD_API + "/auth/google", nonce, auto_select: false });
       google.accounts.id.renderButton($("gbtn"), { theme: "filled_blue", size: "large", text: "signin_with", shape: "pill" });
     };
     if (!document.getElementById("gsi")) { const s = document.createElement("script"); s.id = "gsi"; s.src = "https://accounts.google.com/gsi/client"; s.async = true; document.head.appendChild(s); }
     start();
-  }
-  async function onGoogle(resp) {
-    showErr("");
-    try {
-      const r = await fetch(window.BOARD_API + "/auth", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ credential: resp.credential }) });
-      const j = await r.json().catch(() => ({}));
-      if (!r.ok) throw new Error(j.error || "Sign-in failed");
-      session = j.session; store.set(session); load();
-    } catch (e) { showErr(e.message); }
   }
   function signOut(msg) {
     if (session) fetch(window.BOARD_API + "/logout", { method: "POST", headers: { Authorization: "Bearer " + session } }).catch(() => {});
@@ -439,7 +434,22 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
   };
   $("logout").onclick = () => signOut("");
 
+  // Back from Google: the session is in the address fragment. Keep it only if it was started from this browser (nonce), then clean the address.
+  function takeSignIn() {
+    if (!/^#(signin|signin_error)=/.test(location.hash)) return null;
+    const p = new URLSearchParams(location.hash.slice(1));
+    history.replaceState(null, "", "/me");
+    viewing = "";
+    if (p.get("signin_error")) return p.get("signin_error");
+    let mine = ""; try { mine = localStorage.getItem("cfn_nonce") || ""; localStorage.removeItem("cfn_nonce"); } catch {}
+    if (!mine || p.get("n") !== mine) return "That sign-in was started somewhere else. Tap Sign in with Google again.";
+    session = p.get("signin"); store.set(session);
+    try { localStorage.setItem("cfn_manager", p.get("m") === "1" ? "1" : "0"); } catch {}
+    return "";
+  }
+  const signInMsg = takeSignIn();
   if (!window.GOOGLE_CLIENT_ID) showErr("Sign-in is not set up yet. Check back soon.");
+  else if (signInMsg) showSignIn(signInMsg);
   else if (session) load(); else showSignIn();
 })();
 </script>
