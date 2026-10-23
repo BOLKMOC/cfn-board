@@ -27,13 +27,13 @@
   <div class="banner idle" id="banner" aria-live="polite"><span id="bannerText">Let's go, team.</span></div>
 
   <div class="grid">
-    <section class="card" aria-labelledby="t-today">
+    <section class="card" aria-labelledby="t-today" data-set="day">
       <p class="label"><span id="t-today">Today</span><span id="todayGoal"></span></p>
       <div class="big num" id="todayDebt">-</div><div class="sub" id="todayDeals"></div>
       <div class="bar" role="img" id="todayBarWrap"><div class="fill" id="todayBar" style="width:0"></div><div class="pace" id="todayPace" title="Where we should be by now"></div></div>
       <div class="note" id="todayNote"></div>
     </section>
-    <section class="card" aria-labelledby="t-week">
+    <section class="card" aria-labelledby="t-week" data-set="week">
       <p class="label"><span id="t-week">This week</span><span id="weekGoal"></span></p>
       <div class="big num" id="weekDebt">-</div><div class="sub" id="weekDeals"></div>
       <div class="bar" role="img" id="weekBarWrap"><div class="fill" id="weekBar" style="width:0"></div><div class="pace" id="weekPace" title="Where we should be by now"></div></div>
@@ -58,24 +58,32 @@
     <p class="label"><span id="t-month">This month</span><span id="monthGoal"></span></p>
     <div class="sub" id="monthLine"></div>
     <div class="bar"><div class="fill" id="monthBar" style="width:0"></div></div>
-    <p class="label" style="margin-top:16px"><span>This month's deals: where they are now</span></p>
-    <div class="pipe">
-      <div><div class="k">Submitted</div><div class="v num" id="pSub">-</div></div>
-      <div><div class="k">Enrolled, waiting on 1st payment</div><div class="v num" id="pEnr">-</div><div class="note" id="pDue"></div></div>
-      <div><div class="k">1st payment cleared</div><div class="v num" id="pOne">-</div></div>
-      <div><div class="k">2 payments cleared</div><div class="v num" id="pTwoC">-</div></div>
-      <div><div class="k">Cancelled or at risk</div><div class="v num" id="pLost" style="color:var(--red,#C62828)">-</div><div class="note" id="pLostN"></div></div>
+    <p class="label sec"><span>This month's deals: where they are now</span><span class="clickhint" hidden>Tap any number to see the deals</span></p>
+    <div class="pipe funnel">
+      <div data-set="month_submitted"><div class="k">Submitted</div><div class="v num" id="pSub">-</div><div class="tip">Sent to underwriting this month. Returned deals left out.</div></div>
+      <div data-set="month_enrolled"><div class="k">Enrolled, waiting on 1st payment</div><div class="v num" id="pEnr">-</div><div class="tip" id="pDue" data-set="month_first_due"></div></div>
+      <div data-set="month_first_cleared"><div class="k">1st payment cleared</div><div class="v num" id="pOne">-</div><div class="tip">On a Cordoba payout file (Mondays).</div></div>
+      <div data-set="month_two_cleared"><div class="k">2 payments cleared</div><div class="v num" id="pTwoC">-</div><div class="tip">Forth moved it to Active.</div></div>
+      <div data-set="month_lost" class="lost"><div class="k">Cancelled or at risk</div><div class="v num" id="pLost">-</div><div class="tip" id="pLostN"></div></div>
     </div>
-    <p class="label" style="margin-top:16px"><span>Cleared this month (deals from any month)</span></p>
+    <p class="label sec"><span>Money cleared this month (deals from any month)</span></p>
     <div class="pipe">
-      <div><div class="k">1st payments</div><div class="v num" id="pAct">-</div></div>
-      <div><div class="k">2nd payments</div><div class="v num" id="pTwo">-</div></div>
-      <div><div class="k">Nationwide loans</div><div class="v num" id="pNw">-</div></div>
+      <div data-set="cleared_first"><div class="k">1st payments</div><div class="v num" id="pAct">-</div><div class="tip">From this month's Cordoba payout files.</div></div>
+      <div data-set="cleared_second"><div class="k">2nd payments</div><div class="v num" id="pTwo">-</div><div class="tip">Deals Forth moved to Active this month.</div></div>
+      <div><div class="k">Nationwide loans</div><div class="v num" id="pNw">-</div><div class="tip">From Nationwide's weekly report.</div></div>
     </div>
-    <div class="fp" id="fp" hidden><div><div class="k">Enrolled to 1st payment</div><div class="v num" id="fpAvg">-</div><div class="note">business days, average this month</div><div class="note" id="fpDay"></div></div>
-      <div><div class="k">1st payment within <span id="fpMax">7</span> days</div><div class="v num" id="fpPct">-</div><div class="note" id="fpN"></div></div></div>
+    <p class="label sec"><span>Speed to 1st payment (business days)</span><span>Goal: <span id="fpMax">7</span> days or less</span></p>
+    <div class="fp" id="fp" hidden>
+      <div data-set="speed_day"><div class="k">Today: submitted to 1st payment</div><div class="v num" id="fpDayAvg">-</div><div class="tip" id="fpDayN"></div></div>
+      <div data-set="speed_month"><div class="k">This month: enrolled to 1st payment</div><div class="v num" id="fpAvg">-</div><div class="tip" id="fpN"></div></div>
+    </div>
   </section>
   <p class="note tvhide" style="text-align:center;margin:18px 0 6px">Still showing as "Closer #"? <a href="/me" style="color:var(--blue);font-weight:600">Pick your call sign</a> with your CFN Google account.</p>
+</div>
+<div class="panel" id="panel" hidden role="dialog" aria-modal="true" aria-labelledby="pnTitle">
+  <div class="pbox"><div class="phead"><h2 id="pnTitle"></h2><button id="pnClose" aria-label="Close">&times;</button></div>
+    <div class="note" id="pnSum"></div>
+    <div class="ptable"><table><thead id="pnHead"></thead><tbody id="pnRows"></tbody></table></div></div>
 </div>
 <div class="overlay" id="overlay" role="alert"><div><h2 id="ovTitle">GOAL HIT!</h2><p id="ovText"></p></div></div>
 
@@ -104,7 +112,7 @@
     try { ["cfn_session", "cfn_manager", "cfnBoardKey"].forEach((k) => localStorage.removeItem(k)); } catch {}
     location.replace("/");
   };
-  if (manager) $("nav").insertAdjacentHTML("beforeend", '<a href="/me#payroll">Payroll</a><a href="/me#team">Team pay</a><a href="/me#onboarding">Onboarding</a>');
+  if (manager) $("nav").insertAdjacentHTML("beforeend", '<a href="/me#payroll">Payroll</a><a href="/me#team">Team pay</a><a href="/me#onboarding">Onboarding</a><a href="/me#saves">Saves</a>');
   if (!key && !session) { $("error").hidden = false; $("error").innerHTML = 'This board needs the team link, or <a href="/me">sign in with your CFN Google account</a>.'; return; }
 
   function bar(fillId, paceId, pct, pacePct, hit) {
@@ -132,7 +140,7 @@
     const top = list[0];
     $("spot").hidden = !top;
     if (top) $("spot").innerHTML = `<span class="crown" aria-hidden="true">&#9819;</span><div><div class="k">Top agent ${period === "day" ? "today" : "this week"}</div><div class="who">${label(top.name)}</div><div class="what">${money(top.debt)} enrolled · ${top.deals} deal${top.deals === 1 ? "" : "s"}</div></div>`;
-    $("leaders").innerHTML = list.length ? list.map((r, i) => `<li><span><span class="rank">${i + 1}.</span>${i === 0 ? '<span class="crown" aria-label="leader">&#9819;</span> ' : ""}${label(r.name)}</span><span><b class="size">${money(r.debt)}</b> <span class="when">· ${r.deals} deal${r.deals === 1 ? "" : "s"}</span></span></li>`).join("")
+    $("leaders").innerHTML = list.length ? list.map((r, i) => `<li data-set="${period}" data-rep="${esc(r.name)}"><span><span class="rank">${i + 1}.</span>${i === 0 ? '<span class="crown" aria-label="leader">&#9819;</span> ' : ""}${label(r.name)}</span><span><b class="size">${money(r.debt)}</b> <span class="when">· ${r.deals} deal${r.deals === 1 ? "" : "s"}</span></span></li>`).join("")
       : `<li class="empty">First deal ${period === "day" ? "today" : "this week"} takes the crown.</li>`;
   }
   $("tabDay").onclick = () => { period = "day"; renderLeaders(); };
@@ -145,7 +153,7 @@
     $("date").textContent = new Date(d.as_of).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", timeZone: "America/New_York" });
     $("todayGoal").textContent = g.daily ? "Goal " + money(g.daily) : "";
     $("todayDebt").textContent = money(d.day.debt);
-    $("todayDeals").textContent = `${d.day.deals} deal${d.day.deals === 1 ? "" : "s"}${d.day.returned?.deals ? ` · ${d.day.returned.deals} returned to fix (${money(d.day.returned.debt)})` : ""} · goal ${whole(g.daily_deals)} deals${d.day.avg_deal ? " · avg " + money(d.day.avg_deal) : ""}`;
+    $("todayDeals").innerHTML = `${d.day.deals} deal${d.day.deals === 1 ? "" : "s"}${d.day.returned?.deals ? ` · <span data-set="returned_day" class="neg">${d.day.returned.deals} returned to fix (${money(d.day.returned.debt)})</span>` : ""} · goal ${whole(g.daily_deals)} deals${d.day.avg_deal ? " · avg " + money(d.day.avg_deal) : ""}`;
     bar("todayBar", "todayPace", d.day.debt_pct, d.day.pace_pct, d.day.goal_hit);
     $("todayBarWrap").setAttribute("aria-label", `${d.day.debt_pct ?? 0}% of today's goal`);
     $("todayNote").textContent = d.day.goal_hit ? "Goal hit! Keep stacking." : g.daily ? `${money(Math.max(0, g.daily - d.day.debt))} to go · ${d.day.debt_pct >= d.day.pace_pct ? "ahead of pace" : "behind pace"}` : "";
@@ -161,24 +169,24 @@
     const st = Object.fromEntries((d.pipeline_month || []).map((p) => [p.status, p.deals]));
     const sum = (...k) => k.reduce((s, x) => s + (st[x] || 0), 0);
     const fm = d.funnel_month || {};
-    $("pSub").textContent = fm.submitted ?? d.month.deals;
-    $("pEnr").textContent = fm.enrolled ?? sum("Waiting For First Payment");
-    $("pDue").textContent = fm.first_due ? `${fm.first_due} payments still to come` : "";
-    $("pOne").textContent = fm.first_cleared ?? 0; $("pTwoC").textContent = fm.two_cleared ?? 0;
-    $("pLost").textContent = (fm.cancelled ?? 0) + (fm.at_risk ?? 0);
+    const subN = fm.submitted ?? d.month.deals;
+    const share = (n) => `${n ?? 0}${subN ? `<small> ${Math.round(((n ?? 0) / subN) * 100)}%</small>` : ""}`;
+    $("pSub").textContent = subN;
+    $("pEnr").innerHTML = share(fm.enrolled ?? sum("Waiting For First Payment"));
+    $("pDue").textContent = fm.first_due ? `${fm.first_due} first payments still to come` : "";
+    $("pOne").innerHTML = share(fm.first_cleared); $("pTwoC").innerHTML = share(fm.two_cleared);
+    $("pLost").innerHTML = share((fm.cancelled ?? 0) + (fm.at_risk ?? 0));
     $("pLostN").textContent = `${fm.cancelled ?? 0} cancelled · ${fm.at_risk ?? 0} at risk`;
     $("pAct").textContent = d.payments_month?.first ?? 0; $("pTwo").textContent = d.payments_month?.second ?? 0;
     $("pNw").textContent = d.nationwide_loans_month ?? 0;
-    const fp = d.first_pay_month;
-    $("fp").hidden = !fp || !fp.deals;
-    if (fp && fp.deals) {
-      $("fpAvg").textContent = fp.avg_business_days; $("fpMax").textContent = fp.fast_max;
-      $("fpPct").textContent = fp.within_fast_pct + "%"; $("fpN").textContent = `${fp.within_fast} of ${fp.deals} deals this month`;
-      const t = d.first_pay_day;
-      $("fpDay").innerHTML = t?.deals ? `Today, submitted to 1st payment: <b>${t.avg_business_days}</b> days · ${t.within_fast} of ${t.deals} within ${t.fast_max}` : "Today: no deals with a 1st payment date yet";
-      $("fpN").textContent += t?.deals ? ` · today ${t.within_fast_pct}%` : "";
-    }
-    $("feed").innerHTML = d.feed.length ? d.feed.map((f) => `<li><span>${f.kind === "loan" ? "&#127974;" : "&#127942;"} ${label(f.name)} · ${f.kind === "loan" ? "Nationwide loan" : "deal"}${f.debt ? ` <b class="size">${money(f.debt)}</b>` : ""}</span><span class="when">${ago(f.at)}</span></li>`).join("") : '<li class="empty">No wins yet today. Be first.</li>';
+    const fp = d.first_pay_month, t = d.first_pay_day;
+    $("fp").hidden = !(fp?.deals || t?.deals);
+    const days = (x) => x?.deals ? `${x.avg_business_days} <small>days avg</small>` : "-";
+    const within = (x) => x?.deals ? `${x.within_fast} of ${x.deals} within ${x.fast_max} days (${x.within_fast_pct}%)` : "No deals with a 1st payment date yet";
+    if (fp) $("fpMax").textContent = fp.fast_max;
+    $("fpDayAvg").innerHTML = days(t); $("fpDayN").textContent = within(t);
+    $("fpAvg").innerHTML = days(fp); $("fpN").textContent = within(fp);
+    $("feed").innerHTML = d.feed.length ? d.feed.map((f) => `<li${f.kind === "deal" ? ` data-set="day" data-rep="${esc(f.name)}"` : ""}><span>${f.kind === "loan" ? "&#127974;" : "&#127942;"} ${label(f.name)} · ${f.kind === "loan" ? "Nationwide loan" : "deal"}${f.debt ? ` <b class="size">${money(f.debt)}</b>` : ""}</span><span class="when">${ago(f.at)}</span></li>`).join("") : '<li class="empty">No wins yet today. Be first.</li>';
     renderLeaders();
     // New win since last look: banner + confetti. First load just shows the latest.
     const top = d.feed.find((f) => f.kind === "deal");
@@ -209,6 +217,38 @@
     $("live").classList.toggle("stale", Date.now() - lastOk > 90000);
     $("live").querySelector("span").textContent = Date.now() - lastOk > 90000 ? "Reconnecting" : "Live";
   }
+  // Tap a number: the deals behind it. Signed-in managers see everyone; a closer sees their own. Not on the team link or TV.
+  const canClick = !!session && !tv;
+  document.body.classList.toggle("can-click", canClick);
+  document.querySelectorAll(".clickhint").forEach((x) => x.hidden = !canClick);
+  const dollars = (n) => n === null || n === undefined ? "" : "$" + Math.round(n).toLocaleString("en-US");
+  const shortDay = (s) => s ? new Date(s.length === 10 ? s + "T12:00:00Z" : s).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "America/New_York" }) : "";
+  function closePanel() { $("panel").hidden = true; document.body.classList.remove("noscroll"); }
+  async function openDeals(set, rep) {
+    $("panel").hidden = false; document.body.classList.add("noscroll");
+    $("pnTitle").textContent = "Loading..."; $("pnSum").textContent = ""; $("pnRows").innerHTML = ""; $("pnHead").innerHTML = "";
+    try {
+      const r = await fetch(window.BOARD_API + "/deals?set=" + encodeURIComponent(set) + (rep ? "&rep=" + encodeURIComponent(rep) : ""), { headers: { Authorization: "Bearer " + session }, cache: "no-store" });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(j.error || "Could not load the deals.");
+      const speed = set.startsWith("speed_");
+      $("pnTitle").textContent = j.title + (rep ? " · " + rep : "") + (manager ? "" : " (your deals)");
+      $("pnSum").textContent = `${j.count} deal${j.count === 1 ? "" : "s"} · ${dollars(j.total_debt)} debt${j.truncated ? " · showing the first 500" : ""}`;
+      $("pnHead").innerHTML = `<tr><th>When</th><th>Closer</th><th>Forth ID</th><th>Client</th><th>Debt</th><th>Status now</th><th>1st payment</th><th>Paid</th>${speed ? "<th>Days</th>" : ""}</tr>`;
+      $("pnRows").innerHTML = j.rows.length ? j.rows.map((x) => `<tr><td>${shortDay(x.at)}</td><td>${esc(x.shown_as)}${x.shown_as !== x.closer ? ` <span class="when">${esc(x.closer)}</span>` : ""}</td>
+        <td>${esc(x.forth_id)}</td><td>${esc(x.client)}</td><td>${dollars(x.debt)}</td><td>${esc(x.status ?? "")}</td>
+        <td>${shortDay(x.first_payment)}${x.first_cleared ? ' <span class="ok">&#10003;</span>' : ""}</td><td>${x.payments_cleared >= 2 ? "2+" : x.payments_cleared}</td>${speed ? `<td><b>${x.days}</b></td>` : ""}</tr>`).join("")
+        : `<tr><td colspan="9" class="empty">No deals in this number.</td></tr>`;
+    } catch (e) { $("pnTitle").textContent = "Deals"; $("pnSum").textContent = e.message; }
+  }
+  document.addEventListener("click", (e) => {
+    if (e.target === $("panel") || e.target.closest("#pnClose")) return closePanel();
+    if (!canClick || e.target.closest("#panel, .tabs, a, button")) return;
+    const el = e.target.closest("[data-set]");
+    if (el) openDeals(el.dataset.set, el.dataset.rep);
+  });
+  addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("panel").hidden) closePanel(); });
+
   load(); setInterval(load, 15000);
 })();
 </script>
