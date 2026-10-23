@@ -59,7 +59,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
 </head>
 <body>
 <div class="wrap">
-  <header><div class="brand"><div class="mark" aria-label="ChangeFN">c</div><div><h1>My CFN Page</h1><div class="date" id="hello"></div></div></div>
+  <header><div class="brand"><div class="mark" aria-label="ChangeFN">c</div><div><h1 id="pageTitle">My CFN Page</h1><div class="date" id="hello"></div></div></div>
     <button class="link" id="logout" hidden>Sign out</button></header>
   <nav class="nav" id="nav"><a href="/">Board</a><a href="/me" data-v="">My page</a></nav>
   <div id="error" class="err" hidden></div>
@@ -282,6 +282,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     $("signin").hidden = true; $("logout").hidden = false; showErr("");
     const mgr = !!d.manager;
     try { localStorage.setItem("cfn_manager", mgr ? "1" : "0"); } catch {}
+    $("pageTitle").textContent = mgr ? "CFN Staff" : "My CFN Page"; document.title = mgr ? "CFN Staff" : "My CFN Page";
     if (mgr && !$("nav").querySelector("[data-v=payroll]")) {
       $("nav").querySelector("[data-v='']").textContent = "Reps";
       $("nav").insertAdjacentHTML("beforeend", '<a href="/me#payroll" data-v="payroll">Payroll</a><a href="/me#team" data-v="team">Team pay</a><a href="/me#onboarding" data-v="onboarding">Onboarding</a><a href="/me#deals" data-v="deals">Deals</a><a href="/me#saves" data-v="saves">Saves</a><a href="/me#coach" data-v="coach">Coach</a>');
