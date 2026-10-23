@@ -582,6 +582,9 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     return "";
   }
   const signInMsg = takeSignIn();
+  // Came here from a page that asked them to sign in: go back there now that they are.
+  let next = null; try { next = localStorage.getItem("cfn_next"); } catch {}
+  if (next && session && !signInMsg) { try { localStorage.removeItem("cfn_next"); } catch {} if (/^\/[^/]/.test(next) || next === "/") { location.replace(next); return; } }
   if (!window.GOOGLE_CLIENT_ID) showErr("Sign-in is not set up yet. Check back soon.");
   else if (signInMsg) showSignIn(signInMsg);
   else if (session) load(); else showSignIn();

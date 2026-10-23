@@ -218,7 +218,9 @@
     $("live").querySelector("span").textContent = Date.now() - lastOk > 90000 ? "Reconnecting" : "Live";
   }
   // Tap a number: the deals behind it. Signed-in managers see everyone; a closer sees their own. Not on the team link or TV.
-  const canClick = !!session && !tv;
+  // Signed out (for example a link opened inside Telegram, Gmail, or Messages, which keep their own sign-in): a tap explains why
+  // and offers sign-in, then brings them back here.
+  const canClick = !tv;
   document.body.classList.toggle("can-click", canClick);
   document.querySelectorAll(".clickhint").forEach((x) => x.hidden = !canClick);
   const dollars = (n) => n === null || n === undefined ? "" : "$" + Math.round(n).toLocaleString("en-US");
@@ -226,6 +228,12 @@
   function closePanel() { $("panel").hidden = true; document.body.classList.remove("noscroll"); }
   async function openDeals(set, rep) {
     $("panel").hidden = false; document.body.classList.add("noscroll");
+    if (!session) {
+      $("pnTitle").textContent = "Sign in to see the deals"; $("pnHead").innerHTML = ""; $("pnRows").innerHTML = "";
+      $("pnSum").innerHTML = 'The deals behind each number are for signed-in CFN managers and closers. If you opened this link from Telegram, Gmail, or Messages, sign in here once. <a class="full" id="pnSignIn" href="/me">Sign in with Google</a>';
+      $("pnSignIn").onclick = () => { try { localStorage.setItem("cfn_next", location.pathname + location.search); } catch {} };
+      return;
+    }
     $("pnTitle").textContent = "Loading..."; $("pnSum").textContent = ""; $("pnRows").innerHTML = ""; $("pnHead").innerHTML = "";
     try {
       const r = await fetch(window.BOARD_API + "/deals?set=" + encodeURIComponent(set) + (rep ? "&rep=" + encodeURIComponent(rep) : ""), { headers: { Authorization: "Bearer " + session }, cache: "no-store" });
