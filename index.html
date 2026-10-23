@@ -152,7 +152,7 @@
   function render(d) {
     data = d;
     const g = d.goals || {};
-    $("date").textContent = new Date(d.as_of).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", timeZone: "America/New_York" });
+    $("date").textContent = new Date(d.as_of).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", timeZone: "America/Los_Angeles" });
     $("todayGoal").textContent = g.daily ? "Goal " + money(g.daily) : "";
     $("todayDebt").textContent = money(d.day.debt);
     $("todayDeals").innerHTML = `${d.day.deals} deal${d.day.deals === 1 ? "" : "s"}${d.day.returned?.deals ? ` · <span data-set="returned_day" class="neg">${d.day.returned.deals} returned to fix (${money(d.day.returned.debt)})</span>` : ""} · goal ${whole(g.daily_deals)} deals${d.day.avg_deal ? " · avg " + money(d.day.avg_deal) : ""}`;
@@ -227,7 +227,7 @@
   document.body.classList.toggle("can-click", canClick);
   document.querySelectorAll(".clickhint").forEach((x) => x.hidden = !canClick);
   const dollars = (n) => n === null || n === undefined ? "" : "$" + Math.round(n).toLocaleString("en-US");
-  const shortDay = (s) => s ? new Date(s.length === 10 ? s + "T12:00:00Z" : s).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "America/New_York" }) : "";
+  const shortDay = (s) => s ? new Date(s.length === 10 ? s + "T12:00:00Z" : s).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "America/Los_Angeles" }) : "";
   function closePanel() { $("panel").hidden = true; document.body.classList.remove("noscroll"); }
   async function openDeals(set, rep) {
     $("panel").hidden = false; document.body.classList.add("noscroll");

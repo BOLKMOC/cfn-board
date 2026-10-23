@@ -247,7 +247,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const money = (n) => (n < 0 ? "-$" : "$") + Math.abs(Math.round(n || 0)).toLocaleString("en-US");
   const cents = (n) => (n < 0 ? "-$" : "$") + Math.abs(n || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  const day = (d) => new Date(d + (d.length === 10 ? "T12:00:00Z" : "")).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "America/New_York" });
+  const day = (d) => new Date(d + (d.length === 10 ? "T12:00:00Z" : "")).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "America/Los_Angeles" });
 
   async function api(path, body) {
     const r = await fetch(window.BOARD_API + path, { method: body ? "POST" : "GET",
@@ -523,7 +523,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
         ${rows ? `<div style="overflow-x:auto"><table><tr><th>Client</th><th>Enrolled</th><th>1st pay</th><th>Debt</th><th>Days</th><th>Rate</th><th>Amount</th></tr>${rows}</table></div>` : ""}</details>`;
     }).join("") : '<p class="empty">No commission lines yet. They appear once the payout files are in.</p>';
     $("payApprove").innerHTML = locked
-      ? `<p style="margin:0"><b>Approved</b> by ${esc(p.approved_by || "")} on ${esc(new Date(p.approved_at).toLocaleString("en-US", { timeZone: "America/New_York", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }))}. Locked.</p>`
+      ? `<p style="margin:0"><b>Approved</b> by ${esc(p.approved_by || "")} on ${esc(new Date(p.approved_at).toLocaleString("en-US", { timeZone: "America/Los_Angeles", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }))}. Locked.</p>`
       : `<p class="label">To approve</p><p style="margin:0">${p.reviews.length ? "Clear the review items first. Then r" : "R"}eply on Telegram: <b>${esc(p.approve_with)}</b></p><p class="note" style="margin:6px 0 0">Approval locks this payroll. A person still clicks Submit in Gusto.</p>`;
   }
   const fromHash = () => (/^#deals(\?|$)/.test(location.hash) ? "deals" : ["#payroll", "#team", "#onboarding", "#saves", "#coach"].includes(location.hash) ? location.hash.slice(1) : "");
