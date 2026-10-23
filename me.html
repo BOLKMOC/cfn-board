@@ -45,6 +45,8 @@ table.tt th{color:var(--muted);font-weight:500;font-size:12px}
 table.onb td{text-align:center;vertical-align:top} table.onb th{text-align:center}
 .ok{color:var(--win);font-weight:700} .wait{color:#B45309;font-size:12px}
 button.go.small{padding:5px 10px;font-size:12px}
+.preview{white-space:pre-wrap;background:var(--tint);border-radius:10px;padding:12px;max-height:420px;overflow:auto;font:13px/1.5 Inter,system-ui,sans-serif}
+ul.list{list-style:none;margin:0;padding:0} ul.list li{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--tint);font-size:14px}
 table.tt tr.sum td{font-weight:700;border-top:2px solid var(--line)}
 table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{background:var(--tint)}
 #signin{text-align:center;padding:30px 16px}
@@ -91,6 +93,19 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     <p class="label" style="margin-top:22px"><span>At risk of cancel</span><span id="riskN"></span></p>
     <p class="note" style="margin:0 0 10px">Pending cancel, NSF, admin pause, cancellation review. Biggest debt first. "Paid" means commission was already paid, so a cancel means a clawback.</p>
     <div style="overflow-x:auto"><table class="tt"><thead><tr><th>Closer</th><th>Forth ID</th><th>Client</th><th>Status</th><th>Debt</th><th>Since</th><th>Payments</th><th>Commission</th></tr></thead><tbody id="riskRows"></tbody></table></div>
+  </section>
+
+  <section class="card" id="coachTab" style="margin-bottom:14px" hidden>
+    <p class="label"><span>Coach library</span><span id="libN"></span></p>
+    <p class="note" style="margin:0 0 10px">The Coach answers only from Approved documents. Drafts are waiting for a manager to read and approve. Approving a new version retires the old one. Until something is approved, the Coach uses the built-in CFN playbook.</p>
+    <div style="overflow-x:auto"><table class="tt"><thead><tr><th>Document</th><th>Type</th><th>Status</th><th>Size</th><th></th></tr></thead><tbody id="libRows"></tbody></table></div>
+    <p class="note" id="libMsg" aria-live="polite"></p>
+    <pre id="libPreview" class="preview" hidden></pre>
+    <p class="label" style="margin-top:22px"><span>Questions the library could not answer (last 30 days)</span></p>
+    <p class="note" style="margin:0 0 10px">Fill these gaps by adding a document.</p>
+    <ul class="list" id="libGaps"></ul>
+    <p class="label" style="margin-top:22px"><span>Who uses the Coach (last 7 days)</span></p>
+    <div style="overflow-x:auto"><table class="tt"><thead><tr><th>Person</th><th>Questions</th><th>Last</th></tr></thead><tbody id="coachUse"></tbody></table></div>
   </section>
 
   <section id="pay" style="margin-bottom:14px" hidden>
@@ -252,9 +267,9 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     try { localStorage.setItem("cfn_manager", mgr ? "1" : "0"); } catch {}
     if (mgr && !$("nav").querySelector("[data-v=payroll]")) {
       $("nav").querySelector("[data-v='']").textContent = "Reps";
-      $("nav").insertAdjacentHTML("beforeend", '<a href="/me#payroll" data-v="payroll">Payroll</a><a href="/me#team" data-v="team">Team pay</a><a href="/me#onboarding" data-v="onboarding">Onboarding</a><a href="/me#saves" data-v="saves">Saves</a>');
+      $("nav").insertAdjacentHTML("beforeend", '<a href="/me#payroll" data-v="payroll">Payroll</a><a href="/me#team" data-v="team">Team pay</a><a href="/me#onboarding" data-v="onboarding">Onboarding</a><a href="/me#saves" data-v="saves">Saves</a><a href="/me#coach" data-v="coach">Coach</a>');
     }
-    $("nav").querySelectorAll("a").forEach((a) => a.toggleAttribute("aria-current", a.dataset.v !== undefined && a.dataset.v === (mgr ? (["payroll", "team", "onboarding", "saves"].includes(d.viewing) ? d.viewing : "") : "")));
+    $("nav").querySelectorAll("a").forEach((a) => a.toggleAttribute("aria-current", a.dataset.v !== undefined && a.dataset.v === (mgr ? (["payroll", "team", "onboarding", "saves", "coach"].includes(d.viewing) ? d.viewing : "") : "")));
     $("nav").querySelectorAll("a[aria-current]").forEach((a) => a.setAttribute("aria-current", "page"));
     $("mgr").hidden = !mgr;
     if (mgr) {
@@ -264,6 +279,8 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
       $("pay").hidden = d.viewing !== "payroll";
       $("onb").hidden = d.viewing !== "onboarding";
       $("saves").hidden = d.viewing !== "saves";
+      $("coachTab").hidden = d.viewing !== "coach";
+      if (d.viewing === "coach") { renderCoach(d.coach); return; }
       if (d.viewing === "saves") { renderSaves(d.saves); return; }
       if (d.viewing === "onboarding") { renderOnboarding(d.onboarding); return; }
       if (d.viewing === "payroll") { renderPayroll(d.payroll); return; }
@@ -344,6 +361,33 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     $("recent").innerHTML = d.recent.length ? d.recent.map((r) => `<li><span>${day(r.at)} · ${esc(r.status || "")}</span><span>${money(r.debt)}</span></li>`).join("")
       : '<li class="empty">No deals yet. Your first one shows here.</li>';
   }
+  function renderCoach(c) {
+    $("app").hidden = true; $("hello").textContent = "Manager view · coach";
+    const live = c.library.filter((x) => x.status === "approved").length, drafts = c.library.filter((x) => x.status === "draft").length;
+    $("libN").textContent = `${live} approved · ${drafts} waiting for approval`;
+    const btn = (x, to, label) => `<button class="link" data-doc="${esc(x.doc_id)}" data-to="${to}">${label}</button>`;
+    $("libRows").innerHTML = c.library.length ? c.library.map((x) => `<tr><td style="text-align:left"><b>${esc(x.title)}</b> <span class="when">v${x.version}${x.source ? " · " + esc(x.source) : ""}</span></td>
+      <td>${esc(x.kind)}</td><td class="${x.status === "approved" ? "ok" : x.status === "draft" ? "wait" : "when"}">${esc(x.status)}</td><td>${Math.round(x.chars / 1000)}K</td>
+      <td style="white-space:nowrap"><button class="link" data-view="${esc(x.doc_id)}">Read</button> ${x.status !== "approved" ? btn(x, "approved", "Approve") : ""} ${x.status !== "retired" ? btn(x, "retired", "Retire") : btn(x, "draft", "Back to draft")}</td></tr>`).join("")
+      : '<tr><td colspan="5" class="empty" style="text-align:left">No documents yet.</td></tr>';
+    $("libGaps").innerHTML = c.unanswered.length ? c.unanswered.map((u) => `<li><span>${esc(u.question)}</span><span class="when">${esc(u.who)} · ${day(String(u.created_at).slice(0, 10))}</span></li>`).join("")
+      : '<li class="empty">None yet.</li>';
+    $("coachUse").innerHTML = c.usage.length ? c.usage.map((u) => `<tr><td>${esc(u.who)}</td><td>${u.questions}</td><td>${day(String(u.last_at).slice(0, 10))}</td></tr>`).join("")
+      : '<tr><td colspan="3" class="empty" style="text-align:left">Nobody yet.</td></tr>';
+  }
+  $("libRows").onclick = async (e) => {
+    const view = e.target.closest("[data-view]"), act = e.target.closest("[data-to]");
+    $("libMsg").textContent = "";
+    if (view) {
+      try { const d = await api("/me/coach-doc?id=" + encodeURIComponent(view.dataset.view)); $("libPreview").hidden = false; $("libPreview").textContent = `${d.title} (v${d.version}, ${d.status})\n\n${d.body}`; $("libPreview").scrollIntoView({ behavior: "smooth" }); }
+      catch (err) { $("libMsg").textContent = err.message; }
+    }
+    if (act) {
+      if (act.dataset.to === "approved" && !confirm("Approve this document? The Coach will start answering from it within a minute.")) return;
+      try { render(await api("/me/coach-doc", { doc_id: act.dataset.doc, status: act.dataset.to })); $("libMsg").textContent = "Saved."; }
+      catch (err) { $("libMsg").textContent = err.message; }
+    }
+  };
   function renderSaves(s) {
     $("app").hidden = true; $("hello").textContent = "Manager view · saves";
     const t = s.totals, who = (r) => `<b>${esc(r.closer)}</b>${r.shown_as && r.shown_as !== r.closer ? `<br><span class="when">${esc(r.shown_as)}</span>` : ""}`;
@@ -394,7 +438,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
       ? `<p style="margin:0"><b>Approved</b> by ${esc(p.approved_by || "")} on ${esc(new Date(p.approved_at).toLocaleString("en-US", { timeZone: "America/New_York", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }))}. Locked.</p>`
       : `<p class="label">To approve</p><p style="margin:0">${p.reviews.length ? "Clear the review items first. Then r" : "R"}eply on Telegram: <b>${esc(p.approve_with)}</b></p><p class="note" style="margin:6px 0 0">Approval locks this payroll. A person still clicks Submit in Gusto.</p>`;
   }
-  const fromHash = () => (["#payroll", "#team", "#onboarding", "#saves"].includes(location.hash) ? location.hash.slice(1) : "");
+  const fromHash = () => (["#payroll", "#team", "#onboarding", "#saves", "#coach"].includes(location.hash) ? location.hash.slice(1) : "");
   let viewing = fromHash();
   addEventListener("hashchange", () => {
     if (/^#signin/.test(location.hash)) { const m = takeSignIn(); if (m) showSignIn(m); else if (session) load(); return; }
@@ -403,7 +447,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
   async function load() { try { render(await api("/me" + (viewing ? "?rep=" + encodeURIComponent(viewing) : ""))); } catch (e) { if (e.message) showErr(e.message); } }
   $("pick").onchange = () => {
     const v = $("pick").value;
-    if (["payroll", "team", "onboarding", "saves"].includes(v)) { location.hash = v; return; } // hashchange loads it
+    if (["payroll", "team", "onboarding", "saves", "coach"].includes(v)) { location.hash = v; return; } // hashchange loads it
     viewing = v; if (location.hash) history.replaceState(null, "", "/me"); load();
   };
   $("onbRows").onclick = async (e) => {
