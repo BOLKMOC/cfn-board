@@ -169,7 +169,7 @@
       const answer = { role: "assistant", content: "", pending: true }; msgs.push(answer);
       box.value = ""; autosize(); render();
       const ctrl = new AbortController(); setBusy(ctrl);
-      const body = conv ? { conv_id: conv.conv_id, message: text } : { message: text, ...extra };
+      const body = conv ? { conv_id: conv.conv_id, message: text, ...(extra.retry ? { retry: true } : {}) } : { message: text, ...extra };
       let pendingDraw = false;
       const draw = () => { pendingDraw = false; const b = log.querySelector('.cc-msg[data-pending="1"] .cc-body'); if (b) b.innerHTML = md(visible(answer.content)) || '<span class="cc-dots"><i></i><i></i><i></i></span>'; log.scrollTop = log.scrollHeight; };
       draw();
@@ -192,7 +192,7 @@
     function retry() {
       const lastUser = [...msgs].reverse().find((m) => m.role === "user");
       if (!lastUser) return;
-      msgs.splice(msgs.lastIndexOf(lastUser)); ask(lastUser.content); // the server keeps both answers; the newest is shown
+      msgs.splice(msgs.lastIndexOf(lastUser)); ask(lastUser.content, { retry: true }); // the server swaps in the new answer
     }
     function pickPersona() {
       const e = el("div", "cc-msg bot");
