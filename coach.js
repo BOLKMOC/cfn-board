@@ -67,7 +67,7 @@
         <div class="cc-side-foot"><a href="/" class="cc-back">&larr; Back to the board</a><br><br>Coaching only. It can't contact clients.<br>Never type or say SSNs or bank numbers.</div></aside>` : ""}
       <section class="cc-main">
         <header class="cc-top">${opts.sidebar ? '<button class="cc-menu" aria-label="Chats">&#9776;</button>' : ""}<b class="cc-title">CFN Coach</b>
-          <span class="cc-tools"><button class="cc-speak" title="Read answers out loud" aria-pressed="false">&#128264;</button>${opts.onExpand ? '<button class="cc-expand" title="Open full screen">&#10530;</button>' : ""}${opts.onClose ? '<button class="cc-close" aria-label="Close">&times;</button>' : ""}</span></header>
+          <span class="cc-tools">${opts.sidebar ? "" : '<button class="cc-newb" title="New chat">&#65291;</button>'}<button class="cc-speak" title="Read answers out loud" aria-pressed="false">&#128264;</button>${opts.onExpand ? '<button class="cc-expand" title="Open full screen">&#10530;</button>' : ""}${opts.onClose ? '<button class="cc-close" aria-label="Close">&times;</button>' : ""}</span></header>
         <div class="cc-log" aria-live="polite"></div>
         <form class="cc-form"><div class="cc-box"><textarea rows="1" maxlength="4000" placeholder="Message the Coach"></textarea>
           <button type="button" class="cc-mic" title="Talk" hidden>&#127908;</button><button type="submit" class="cc-send" aria-label="Send">&#8593;</button></div>
@@ -221,6 +221,7 @@
       $(".cc-main").addEventListener("click", () => root.classList.remove("cc-side-open")); // tap outside the menu closes it
     }
     if (opts.onExpand) $(".cc-expand").onclick = () => opts.onExpand(conv);
+    if (!opts.sidebar) $(".cc-newb").onclick = newChat;
     if (opts.onClose) $(".cc-close").onclick = opts.onClose;
     const spk = $(".cc-speak");
     if (!("speechSynthesis" in window)) spk.hidden = true;
