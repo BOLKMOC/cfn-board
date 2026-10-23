@@ -24,6 +24,7 @@
       let m;
       if ((m = /^\s*>\s?(.*)$/.exec(line))) { flushList(); quote.push(m[1]); continue; }
       flushQuote();
+      if (!line.trim()) continue; // a blank line between list items keeps the list (and its numbering) going
       if ((m = /^\s*[-*•]\s+(.*)$/.exec(line))) { if (!list || list.tag !== "ul") { flushList(); list = { tag: "ul", items: [] }; } list.items.push(m[1]); continue; }
       if ((m = /^\s*\d+[.)]\s+(.*)$/.exec(line))) { if (!list || list.tag !== "ol") { flushList(); list = { tag: "ol", items: [] }; } list.items.push(m[1]); continue; }
       flushList();
