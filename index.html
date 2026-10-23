@@ -163,7 +163,7 @@
       $("fpAvg").textContent = fp.avg_business_days; $("fpMax").textContent = fp.fast_max;
       $("fpPct").textContent = fp.within_fast_pct + "%"; $("fpN").textContent = `${fp.within_fast} of ${fp.deals} deals this month`;
       const t = d.first_pay_day;
-      $("fpDay").innerHTML = t?.deals ? `Today: <b>${t.avg_business_days}</b> days · ${t.within_fast} of ${t.deals} within ${t.fast_max}` : "Today: no deals enrolled yet";
+      $("fpDay").innerHTML = t?.deals ? `Today, submitted to 1st payment: <b>${t.avg_business_days}</b> days · ${t.within_fast} of ${t.deals} within ${t.fast_max}` : "Today: no deals with a 1st payment date yet";
       $("fpN").textContent += t?.deals ? ` · today ${t.within_fast_pct}%` : "";
     }
     $("feed").innerHTML = d.feed.length ? d.feed.map((f) => `<li><span>${f.kind === "loan" ? "&#127974;" : "&#127942;"} ${label(f.name)} · ${f.kind === "loan" ? "Nationwide loan" : "deal"}${f.debt ? ` <b class="size">${money(f.debt)}</b>` : ""}</span><span class="when">${ago(f.at)}</span></li>`).join("") : '<li class="empty">No wins yet today. Be first.</li>';
