@@ -9,8 +9,8 @@
 <title>My CFN Page</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Quicksand:wght@500;700&display=swap">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
-<link rel="stylesheet" href="board.css?v=ee337e1-1792861411">
-<link rel="stylesheet" href="coach.css?v=ee337e1-1792861411">
+<link rel="stylesheet" href="board.css?v=cf99da2-1792863821">
+<link rel="stylesheet" href="coach.css?v=cf99da2-1792863821">
 <style>
 .wrap{max-width:680px}
 .three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
@@ -61,7 +61,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
 #signin{text-align:center;padding:30px 16px}
 @media (max-width:480px){.three{grid-template-columns:1fr 1fr 1fr}.mini .v{font-size:18px}}
 </style>
-<script src="config.js?v=ee337e1-1792861411"></script>
+<script src="config.js?v=cf99da2-1792863821"></script>
 </head>
 <body>
 <div class="wrap">
@@ -98,7 +98,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
   <section class="card" id="callsTab" style="margin-bottom:14px" hidden>
     <div id="callList">
       <p class="label"><span>Call QA</span><span id="callsN"></span></p>
-      <p class="note" style="margin:0 0 10px">Closer calls from Vici, pulled after 6 PM Pacific, Monday to Saturday (up to 40 a night, 2 minutes or longer), transcribed and scored on the 16 CFN checks. Tap a call for the full review. Recordings are kept 90 days.</p>
+      <p class="note" style="margin:0 0 10px">Closer calls from Vici, pulled after 6 PM Pacific, Monday to Saturday. Calls of 5 minutes or longer are transcribed and scored (up to 40 a night, shared across closers) on the 16 CFN checks. Tap a call for the full review. Recordings are kept 90 days.</p>
       <div><table class="tt calls"><thead><tr><th>When</th><th>Closer</th><th>Result</th></tr></thead><tbody id="callRows"></tbody></table></div>
     </div>
     <div id="callDetail" hidden>
@@ -620,7 +620,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     $("app").hidden = true; $("hello").textContent = "Manager view · calls"; $("callsMsg").textContent = "";
     const c = d.counts || {};
     $("callsN").textContent = `${c.scored || 0} scored` + (c.waiting ? ` · ${c.waiting} waiting` : "") + (c.failed ? ` · ${c.failed} failed` : "");
-    const status = (r) => r.status === "scored" ? (r.closed === true ? "Yes" : r.closed === false ? "No" : "") : r.status === "new" ? '<span class="when">waiting to be scored</span>' : r.status === "transcribed" ? '<span class="when">being scored</span>' : r.status === "skipped" ? '<span class="when">under 2 min, not scored</span>' : `<span class="neg">${esc(r.status)}</span>${r.error ? `<br><span class="when">${esc(String(r.error).slice(0, 120))}</span>` : ""}`;
+    const status = (r) => r.status === "scored" ? (r.closed === true ? "Yes" : r.closed === false ? "No" : "") : r.status === "new" ? '<span class="when">waiting to be scored</span>' : r.status === "transcribed" ? '<span class="when">being scored</span>' : r.status === "skipped" ? `<span class="when">not scored: ${esc(r.error || "skipped")}</span>` : `<span class="neg">${esc(r.status)}</span>${r.error ? `<br><span class="when">${esc(String(r.error).slice(0, 120))}</span>` : ""}`;
     const short = (iso) => iso ? new Date(iso).toLocaleString("en-US", { timeZone: "America/Los_Angeles", month: "short", day: "numeric" }) + ", " + new Date(iso).toLocaleTimeString("en-US", { timeZone: "America/Los_Angeles", hour: "numeric", minute: "2-digit" }) : "";
     const result = (r) => {
       if (r.status !== "scored") return status(r);
@@ -789,6 +789,6 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
   else if (session) load(); else showSignIn();
 })();
 </script>
-<script src="coach.js?v=ee337e1-1792861411"></script>
+<script src="coach.js?v=cf99da2-1792863821"></script>
 </body>
 </html>
