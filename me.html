@@ -9,8 +9,8 @@
 <title>My CFN Page</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Quicksand:wght@500;700&display=swap">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
-<link rel="stylesheet" href="board.css?v=d2ade16-1792856249">
-<link rel="stylesheet" href="coach.css?v=d2ade16-1792856249">
+<link rel="stylesheet" href="board.css?v=d2ade16-1792856605">
+<link rel="stylesheet" href="coach.css?v=d2ade16-1792856605">
 <style>
 .wrap{max-width:680px}
 .three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
@@ -56,11 +56,12 @@ button.go.small{padding:5px 10px;font-size:12px}
 .preview{white-space:pre-wrap;background:var(--tint);border-radius:10px;padding:12px;max-height:420px;overflow:auto;font:13px/1.5 Inter,system-ui,sans-serif}
 ul.list{list-style:none;margin:0;padding:0} ul.list li{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--tint);font-size:14px}
 table.tt tr.sum td{font-weight:700;border-top:2px solid var(--line)}
+table.calls{width:100%;table-layout:fixed} table.calls th,table.calls td{text-align:left;white-space:normal;vertical-align:top;overflow-wrap:anywhere} table.calls th:nth-child(1){width:24%} table.calls th:nth-child(2){width:34%} table.checks th:nth-child(1){width:74%} table.checks th:nth-child(2){width:26%} table.calls tbody tr:hover{background:var(--tint)}
 table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{background:var(--tint)}
 #signin{text-align:center;padding:30px 16px}
 @media (max-width:480px){.three{grid-template-columns:1fr 1fr 1fr}.mini .v{font-size:18px}}
 </style>
-<script src="config.js?v=d2ade16-1792856249"></script>
+<script src="config.js?v=d2ade16-1792856605"></script>
 </head>
 <body>
 <div class="wrap">
@@ -98,7 +99,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     <div id="callList">
       <p class="label"><span>Call QA</span><span id="callsN"></span></p>
       <p class="note" style="margin:0 0 10px">Closer calls from Vici, pulled after 5 PM Pacific (up to 40 a night, 2 minutes or longer), transcribed and scored on the 16 CFN checks. Tap a call for the full review. Recordings are kept 90 days.</p>
-      <div style="overflow-x:auto"><table class="tt"><thead><tr><th>When</th><th>Closer</th><th>Length</th><th>Closed</th><th>Main loss</th><th>Flags</th></tr></thead><tbody id="callRows"></tbody></table></div>
+      <div><table class="tt calls"><thead><tr><th>When</th><th>Closer</th><th>Result</th></tr></thead><tbody id="callRows"></tbody></table></div>
     </div>
     <div id="callDetail" hidden>
       <p style="margin:0 0 10px"><button class="link" id="callBack">&larr; All calls</button></p>
@@ -619,9 +620,16 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     $("app").hidden = true; $("hello").textContent = "Manager view · calls"; $("callsMsg").textContent = "";
     const c = d.counts || {};
     $("callsN").textContent = `${c.scored || 0} scored` + (c.waiting ? ` · ${c.waiting} waiting` : "") + (c.failed ? ` · ${c.failed} failed` : "");
-    const status = (r) => r.status === "scored" ? (r.closed === true ? "Yes" : r.closed === false ? "No" : "") : r.status === "new" ? '<span class="when">waiting</span>' : r.status === "skipped" ? '<span class="when">under 2 min</span>' : `<span class="neg">${esc(r.status)}</span>`;
-    $("callRows").innerHTML = d.calls.length ? d.calls.map((r) => `<tr data-call="${esc(r.call_id)}" style="cursor:pointer"><td style="text-align:left">${esc(when(r.started_at))}</td><td style="text-align:left"><b>${esc(r.closer)}</b><br><span class="when">${esc(r.call_sign || "")}</span></td><td>${mins(r.minutes)}</td><td>${status(r)}</td><td style="text-align:left">${esc(r.main_loss || "")}</td><td class="${(r.compliance_flags || 0) ? "neg" : ""}">${r.compliance_flags ? r.compliance_flags : ""}</td></tr>`).join("")
-      : '<tr><td colspan="6" class="empty" style="text-align:left">No calls yet. The first pull runs after 5 PM Pacific on a floor day.</td></tr>';
+    const status = (r) => r.status === "scored" ? (r.closed === true ? "Yes" : r.closed === false ? "No" : "") : r.status === "new" ? '<span class="when">waiting to be scored</span>' : r.status === "transcribed" ? '<span class="when">being scored</span>' : r.status === "skipped" ? '<span class="when">under 2 min, not scored</span>' : `<span class="neg">${esc(r.status)}</span>${r.error ? `<br><span class="when">${esc(String(r.error).slice(0, 120))}</span>` : ""}`;
+    const short = (iso) => iso ? new Date(iso).toLocaleString("en-US", { timeZone: "America/Los_Angeles", month: "short", day: "numeric" }) + ", " + new Date(iso).toLocaleTimeString("en-US", { timeZone: "America/Los_Angeles", hour: "numeric", minute: "2-digit" }) : "";
+    const result = (r) => {
+      if (r.status !== "scored") return status(r);
+      const flags = r.compliance_flags ? `<br><b class="neg">${r.compliance_flags} compliance flag${r.compliance_flags === 1 ? "" : "s"}</b>` : "";
+      const loss = r.main_loss ? `<br><span class="when">${esc(r.main_loss)}</span>` : "";
+      return `<b>${r.closed === true ? "Closed" : r.closed === false ? "Not closed" : "Scored"}</b>${flags}${loss}`;
+    };
+    $("callRows").innerHTML = d.calls.length ? d.calls.map((r) => `<tr data-call="${esc(r.call_id)}" style="cursor:pointer"><td>${esc(short(r.started_at))}${r.minutes ? `<br><span class="when">${mins(r.minutes)} min</span>` : ""}</td><td><b>${esc(r.closer)}</b><br><span class="when">${esc(r.call_sign || "")}</span></td><td>${result(r)}</td></tr>`).join("")
+      : '<tr><td colspan="3" class="empty" style="text-align:left">No calls yet. The first pull runs after 5 PM Pacific on a floor day.</td></tr>';
     const det = d.detail;
     $("callList").hidden = !!det; $("callDetail").hidden = !det;
     if (new URLSearchParams(location.hash.replace(/^#calls\??/, "")).get("id") && !det) $("callsMsg").textContent = "That call was not found.";
@@ -632,11 +640,11 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     $("cdAudio").innerHTML = det.has_audio ? '<button class="go small" id="cdPlay">Play recording</button>' : '<span class="when">Recording not kept.</span>';
     const list = (title, items) => items.length ? `<p class="label" style="margin-top:14px"><span>${title}</span></p><ul style="margin:0;padding-left:20px">${items.join("")}</ul>` : "";
     $("cdBody").innerHTML =
-      (det.compliance.length ? list("Compliance flags", det.compliance.map((x) => `<li class="neg">${esc(typeof x === "string" ? x : (x.issue || x.rule || "") + (x.quote ? ': "' + x.quote + '"' : "") + (x.minute !== undefined && x.minute !== null ? " (min " + x.minute + ")" : ""))}</li>`)) : "")
+      (det.compliance.length ? list("Compliance flags", det.compliance.map((x) => typeof x === "string" ? `<li class="neg">${esc(x)}</li>` : `<li><span class="neg"><b>${x.minute ? esc(x.minute) + " " : ""}&ldquo;${esc(x.quote || "")}&rdquo;</b></span><br>${esc(x.issue || "")}</li>`)) : "")
       + list("Coaching", det.coaching.map((x) => `<li>${esc(typeof x === "string" ? x : x.point || x.text || JSON.stringify(x))}</li>`))
       + (det.best_line ? `<p class="label" style="margin-top:14px"><span>Best line</span></p><p style="margin:0">&ldquo;${esc(typeof det.best_line === "string" ? det.best_line : det.best_line.quote || "")}&rdquo;</p>` : "")
       + list("Where it lost momentum", det.loss_codes.map((l) => `<li><b>${esc(l.code)}</b> ${esc(l.label)}${l.minute !== undefined && l.minute !== null ? ` <span class="when">min ${esc(l.minute)}</span>` : ""}${l.evidence ? `<br><span class="when">${esc(l.evidence)}</span>` : ""}</li>`))
-      + (det.checks.length ? `<p class="label" style="margin-top:14px"><span>The 16 checks</span></p><div style="overflow-x:auto"><table class="tt"><thead><tr><th>Check</th><th>Result</th><th>Evidence</th></tr></thead><tbody>${det.checks.map((g) => `<tr><td style="text-align:left">${esc(g.label)}</td><td>${RESULT[g.result] || esc(g.result || "")}</td><td style="text-align:left"><span class="when">${esc(g.evidence || "")}</span></td></tr>`).join("")}</tbody></table></div>` : "")
+      + (det.checks.length ? `<p class="label" style="margin-top:14px"><span>The 16 checks</span></p><table class="tt calls checks"><thead><tr><th>Check</th><th>Result</th></tr></thead><tbody>${det.checks.map((g) => `<tr><td><b>${esc(g.label)}</b>${g.evidence ? `<br><span class="when">${g.minute ? esc(g.minute) + " · " : ""}${esc(g.evidence)}</span>` : ""}</td><td>${RESULT[g.result] || esc(g.result || "")}</td></tr>`).join("")}</tbody></table>` : "")
       + (det.outcome_note ? `<p class="note" style="margin-top:14px">Forth: ${esc(det.outcome_note)}</p>` : "");
     $("cdTranscript").textContent = det.transcript || "No transcript.";
   }
@@ -781,6 +789,6 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
   else if (session) load(); else showSignIn();
 })();
 </script>
-<script src="coach.js?v=d2ade16-1792856249"></script>
+<script src="coach.js?v=d2ade16-1792856605"></script>
 </body>
 </html>
