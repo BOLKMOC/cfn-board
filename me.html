@@ -5,12 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <meta name="referrer" content="no-referrer">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/client; frame-src https://accounts.google.com/gsi/; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com/gsi/style; font-src https://fonts.gstatic.com; img-src 'self' data: https://*.googleusercontent.com; connect-src https://bseyusrbjztybfgjfbja.supabase.co https://accounts.google.com/gsi/; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/client; frame-src https://accounts.google.com/gsi/; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com/gsi/style; font-src https://fonts.gstatic.com; img-src 'self' data: https://*.googleusercontent.com; media-src https://bseyusrbjztybfgjfbja.supabase.co; connect-src https://bseyusrbjztybfgjfbja.supabase.co https://accounts.google.com/gsi/; base-uri 'none'; form-action 'none'; object-src 'none'">
 <title>My CFN Page</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Quicksand:wght@500;700&display=swap">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
-<link rel="stylesheet" href="board.css?v=06294c5-1792853869">
-<link rel="stylesheet" href="coach.css?v=06294c5-1792853869">
+<link rel="stylesheet" href="board.css?v=d2ade16-1792856249">
+<link rel="stylesheet" href="coach.css?v=d2ade16-1792856249">
 <style>
 .wrap{max-width:680px}
 .three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
@@ -49,6 +49,8 @@ button.go.small{padding:5px 10px;font-size:12px}
 .actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px} .go.ghost{background:#fff;color:var(--blue);border:1px solid var(--blue)}
 .neg{color:#C62828}
 .savebtn{display:inline-block;margin-top:6px;background:#1F4FD8;color:#fff;border-radius:8px;padding:5px 10px;font-size:12.5px;font-weight:600;text-decoration:none}
+.savebtn.ai{background:#0E7C66;border:0;cursor:pointer;margin-left:6px;font-family:inherit}
+.savebtn.ai[disabled]{background:#9AA3B2;cursor:default}
 .two-tables{display:grid;grid-template-columns:1fr 1fr;gap:14px} @media (max-width:700px){.two-tables{grid-template-columns:1fr}}
 .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px} .ccard{border:1px solid var(--line);border-radius:12px;padding:12px} .ccard .note{margin-top:4px} .cc-h{font-size:15px} .cc-f{margin-top:8px;background:var(--tint);border-radius:8px;padding:8px;font-size:13.5px}
 .preview{white-space:pre-wrap;background:var(--tint);border-radius:10px;padding:12px;max-height:420px;overflow:auto;font:13px/1.5 Inter,system-ui,sans-serif}
@@ -58,7 +60,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
 #signin{text-align:center;padding:30px 16px}
 @media (max-width:480px){.three{grid-template-columns:1fr 1fr 1fr}.mini .v{font-size:18px}}
 </style>
-<script src="config.js?v=06294c5-1792853869"></script>
+<script src="config.js?v=d2ade16-1792856249"></script>
 </head>
 <body>
 <div class="wrap">
@@ -87,18 +89,35 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
 
   <section class="card" id="onb" style="margin-bottom:14px" hidden>
     <p class="label"><span>Onboarding</span><span id="onbN"></span></p>
-    <p class="note" style="margin:0 0 10px">New closers and anyone still setting up. Steps: in Forth, signed in, call sign, pay set up (Gusto or overseas), first deal. Copy the welcome text into a text or email to the new rep.</p>
-    <div style="overflow-x:auto"><table class="tt onb"><thead><tr><th>Closer</th><th>Added</th><th>Signed in</th><th>Call sign</th><th>Pay</th><th>First deal</th><th></th></tr></thead><tbody id="onbRows"></tbody></table></div>
+    <p class="note" style="margin:0 0 10px">New closers and anyone still setting up. Steps: in Forth, signed in, call sign, pay set up (Gusto or overseas), first deal, Vici ID. Copy the welcome text into a text or email to the new rep.</p>
+    <div style="overflow-x:auto"><table class="tt onb"><thead><tr><th>Closer</th><th>Added</th><th>Signed in</th><th>Call sign</th><th>Pay</th><th>First deal</th><th>Vici ID</th><th>Transfer line</th><th></th></tr></thead><tbody id="onbRows"></tbody></table></div>
     <p class="note" id="onbMsg" aria-live="polite"></p>
+  </section>
+
+  <section class="card" id="callsTab" style="margin-bottom:14px" hidden>
+    <div id="callList">
+      <p class="label"><span>Call QA</span><span id="callsN"></span></p>
+      <p class="note" style="margin:0 0 10px">Closer calls from Vici, pulled after 5 PM Pacific (up to 40 a night, 2 minutes or longer), transcribed and scored on the 16 CFN checks. Tap a call for the full review. Recordings are kept 90 days.</p>
+      <div style="overflow-x:auto"><table class="tt"><thead><tr><th>When</th><th>Closer</th><th>Length</th><th>Closed</th><th>Main loss</th><th>Flags</th></tr></thead><tbody id="callRows"></tbody></table></div>
+    </div>
+    <div id="callDetail" hidden>
+      <p style="margin:0 0 10px"><button class="link" id="callBack">&larr; All calls</button></p>
+      <p class="label"><span id="cdTitle"></span><span id="cdWhen"></span></p>
+      <p id="cdSummary" style="margin:0 0 10px"></p>
+      <p id="cdAudio" style="margin:0 0 12px"></p>
+      <div id="cdBody"></div>
+      <details style="margin-top:14px"><summary><span>Transcript</span></summary><pre id="cdTranscript" style="white-space:pre-wrap;font:inherit;font-size:14px;line-height:1.5;margin:8px 0 0"></pre></details>
+    </div>
+    <p class="note" id="callsMsg" aria-live="polite"></p>
   </section>
 
   <section class="card" id="saves" style="margin-bottom:14px" hidden>
     <p class="label"><span>Returned to fix</span><span id="retN"></span></p>
     <p class="note" style="margin:0 0 10px">Deals Forth sent back in the last 30 days, longest waiting first. They do not count on the board until fixed and resubmitted.</p>
-    <div style="overflow-x:auto"><table class="tt"><thead><tr><th>Closer</th><th>Forth ID</th><th>Client</th><th>Debt</th><th>Waiting</th></tr></thead><tbody id="retRows"></tbody></table></div>
+    <div style="overflow-x:auto"><table class="tt"><thead><tr><th>Closer</th><th>Forth ID</th><th>Client</th><th>Debt</th><th>Waiting</th><th>Assistant</th></tr></thead><tbody id="retRows"></tbody></table></div>
     <p class="label" style="margin-top:22px"><span>At risk of cancel</span><span id="riskN"></span></p>
     <p class="note" style="margin:0 0 10px">Pending cancel, NSF, admin pause, cancellation review. Biggest debt first. "Paid" means commission was already paid, so a cancel means a clawback.</p>
-    <div style="overflow-x:auto"><table class="tt"><thead><tr><th>Closer</th><th>Forth ID</th><th>Client</th><th>Status</th><th>Debt</th><th>Since</th><th>Payments</th><th>Commission</th></tr></thead><tbody id="riskRows"></tbody></table></div>
+    <div style="overflow-x:auto"><table class="tt"><thead><tr><th>Closer</th><th>Forth ID</th><th>Client</th><th>Status</th><th>Debt</th><th>Since</th><th>Payments</th><th>Commission</th><th>Assistant</th></tr></thead><tbody id="riskRows"></tbody></table></div>
     <p class="label" style="margin-top:22px"><span>Why deals cancel and come back</span><span id="whyN"></span></p>
     <p class="note" style="margin:0 0 10px">Read from the Forth notes on each cancelled or returned deal (last 90 days). Only the reason is kept, never the note.</p>
     <div class="two-tables">
@@ -112,7 +131,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
   <section class="card" id="reportTab" style="margin-bottom:14px" hidden>
     <p class="label"><span id="rpTitle">Weekly sales report</span><span id="rpSub"></span></p>
     <div class="actions"><button class="go small ghost" id="rpPrev">&larr; Previous week</button> <button class="go small ghost" id="rpNext">Next week &rarr;</button> <button class="go small" id="rpCsv">Download for Excel</button> <button class="go small ghost" id="rpDeals">Every deal this week</button></div>
-    <div style="overflow-x:auto"><table class="tt"><thead><tr><th>Call sign</th><th>Closer</th><th>Deals</th><th>Debt</th><th>Avg deal</th><th>Returned</th><th>Cancelled</th><th>At risk</th><th>Net</th><th>Net debt</th><th>Days to 1st pay</th><th>Within 7 days</th><th>1st pays cleared</th><th>Cancel rate</th><th>Practice calls</th></tr></thead><tbody id="rpRows"></tbody></table></div>
+    <div style="overflow-x:auto"><table class="tt"><thead><tr><th>Call sign</th><th>Closer</th><th>Deals</th><th>Debt</th><th>Avg deal</th><th>Returned</th><th>Cancelled</th><th>At risk</th><th>Net</th><th>Net debt</th><th>Days to 1st pay</th><th>Within 7 days</th><th>1st pays cleared</th><th>Cancel rate</th><th>Practice calls</th><th>Calls</th><th>Talk</th><th>Pause</th><th>Talk %</th><th>Calls per deal</th></tr></thead><tbody id="rpRows"></tbody></table></div>
     <p class="note" style="margin-top:8px">Live numbers. A deal counts in the week it was submitted (Pacific time); returned, cancelled, and at risk show where those deals stand right now. Cancel rate is since June 1.</p>
     <p class="label" style="margin-top:22px"><span>Coaching cards: one focus per closer this week</span><span id="ccWeek"></span></p>
     <p class="note" style="margin:0 0 10px">Sent to the management group every Monday at 7 AM Pacific. Use them for 1-on-1s.</p>
@@ -287,7 +306,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
   function showSignIn(msg) {
     $("app").hidden = true; $("logout").hidden = true; $("signin").hidden = false; showErr(msg || "");
     // Opened a link to a tab (for example the weekly report from Telegram) while signed out: come back to it after sign-in.
-    if (/^#(report|deals|saves|coach|payroll|team|onboarding)/.test(location.hash)) { try { localStorage.setItem("cfn_after", location.hash); } catch {} }
+    if (/^#(report|deals|saves|calls|coach|payroll|team|onboarding)/.test(location.hash)) { try { localStorage.setItem("cfn_after", location.hash); } catch {} }
     const start = () => {
       if (!window.google?.accounts?.id) return setTimeout(start, 200);
       // Full-page sign-in (no pop-up): pop-ups come up blank in phone browsers opened from Telegram, Gmail, or Messages.
@@ -305,6 +324,21 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     session = null; viewing = ""; store.set(null); try { localStorage.removeItem("cfn_manager"); localStorage.removeItem("cfnBoardKey"); } catch {} showSignIn(msg);
   }
 
+  // Save call assistant: the button (or why it is off) and the latest call's outcome for a deal.
+  let saveCallsReady = false;
+  const aiBtn = (id, client) => saveCallsReady
+    ? `<button class="savebtn ai" data-aicall="${esc(id)}" data-client="${esc(client)}">Have the assistant call</button>`
+    : '<button class="savebtn ai" disabled>Assistant calling is not set up yet</button>';
+  const aiLast = (c) => c.save_call ? `<br><span class="note">Assistant call ${c.save_call.today ? "today" : day(c.save_call.at)}: ${esc(c.save_call.outcome_text || c.save_call.status.replace("_", " "))}</span>` : "";
+  async function askAssistant(e) {
+    const b = e.target.closest("[data-aicall]");
+    if (!b || b.disabled) return;
+    if (!confirm(`Have the assistant call ${b.dataset.client} now? If the client agrees, the assistant transfers them to the closer's line. One call per deal per day.`)) return;
+    b.disabled = true;
+    try { await api("/save-call", { contact_id: b.dataset.aicall }); alert("The assistant is calling now. Keep the closer's line free for the transfer."); load(); }
+    catch (err) { b.disabled = false; if (err.message) alert(err.message); }
+  }
+
   function render(d) {
     $("signin").hidden = true; $("logout").hidden = false; showErr("");
     const mgr = !!d.manager;
@@ -313,9 +347,9 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     if (!$("nav").querySelector('a[href="/coach"]')) $("nav").querySelector("[data-v='']").insertAdjacentHTML("afterend", '<a href="/coach">Coach</a>');
     if (mgr && !$("nav").querySelector("[data-v=payroll]")) {
       $("nav").querySelector("[data-v='']").textContent = "Reps";
-      $("nav").insertAdjacentHTML("beforeend", '<a href="/me#payroll" data-v="payroll">Payroll</a><a href="/me#team" data-v="team">Team pay</a><a href="/me#onboarding" data-v="onboarding">Onboarding</a><a href="/me#report" data-v="report">Reports</a><a href="/me#deals" data-v="deals">Deals</a><a href="/me#saves" data-v="saves">Saves</a><a href="/me#coach" data-v="coach">Coach library</a>');
+      $("nav").insertAdjacentHTML("beforeend", '<a href="/me#payroll" data-v="payroll">Payroll</a><a href="/me#team" data-v="team">Team pay</a><a href="/me#onboarding" data-v="onboarding">Onboarding</a><a href="/me#report" data-v="report">Reports</a><a href="/me#deals" data-v="deals">Deals</a><a href="/me#saves" data-v="saves">Saves</a><a href="/me#calls" data-v="calls">Calls</a><a href="/me#coach" data-v="coach">Coach library</a>');
     }
-    $("nav").querySelectorAll("a").forEach((a) => a.toggleAttribute("aria-current", a.dataset.v !== undefined && a.dataset.v === (mgr ? (["payroll", "team", "onboarding", "saves", "coach", "deals", "report"].includes(d.viewing) ? d.viewing : "") : "")));
+    $("nav").querySelectorAll("a").forEach((a) => a.toggleAttribute("aria-current", a.dataset.v !== undefined && a.dataset.v === (mgr ? (["payroll", "team", "onboarding", "saves", "coach", "deals", "report", "calls"].includes(d.viewing) ? d.viewing : "") : "")));
     $("nav").querySelectorAll("a[aria-current]").forEach((a) => a.setAttribute("aria-current", "page"));
     $("mgr").hidden = !mgr;
     if (mgr) {
@@ -325,13 +359,15 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
       $("pay").hidden = d.viewing !== "payroll";
       $("onb").hidden = d.viewing !== "onboarding";
       $("saves").hidden = d.viewing !== "saves";
+      $("callsTab").hidden = d.viewing !== "calls";
       $("coachTab").hidden = d.viewing !== "coach";
       $("dealsTab").hidden = d.viewing !== "deals";
       $("reportTab").hidden = d.viewing !== "report";
       if (d.viewing === "report") { renderReport(d.report); renderCards(d.cards); return; }
       if (d.viewing === "deals") { openDealsPage(d.reps); return; }
       if (d.viewing === "coach") { renderCoach(d.coach); return; }
-      if (d.viewing === "saves") { renderSaves(d.saves, d.reasons); return; }
+      if (d.viewing === "saves") { saveCallsReady = !!d.save_calls_ready; renderSaves(d.saves, d.reasons); return; }
+      if (d.viewing === "calls") { renderCalls(d); return; }
       if (d.viewing === "onboarding") { renderOnboarding(d.onboarding); return; }
       if (d.viewing === "payroll") { renderPayroll(d.payroll); return; }
       if (d.viewing === "team") {
@@ -358,12 +394,13 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     $("today").textContent = d.today; $("week").textContent = d.week; $("month").textContent = d.month;
 
     const pc = d.pending_cancels || [];
+    saveCallsReady = !!d.save_calls_ready;
     const saveLink = (c) => "/coach?ask=" + encodeURIComponent(c.status === "Returned"
       ? `My deal with ${c.client} (Forth ID ${c.forth_id}) came back Returned${c.since ? " on " + day(c.since) : ""}. Help me fix it and get it resubmitted fast: what to check, what to say to the client, and what to send.`
       : `Help me save my deal with ${c.client} (Forth ID ${c.forth_id}). Status: ${c.status}${c.since ? " since " + day(c.since) : ""}. ${c.payments_cleared >= 2 ? "2+ payments cleared" : c.payments_cleared === 1 ? "1 payment cleared" : "No payment cleared yet"}. Give me the save call, step by step, with what to say.`);
     $("pcCard").hidden = !pc.length;
     $("pcN").textContent = pc.length + " deal" + (pc.length === 1 ? "" : "s");
-    $("pcList").innerHTML = pc.map((c) => `<li><span><b>${esc(c.client)}</b> <span class="when">Forth ID ${esc(c.forth_id)}</span><br><span class="note">${esc(c.status)}${c.since ? " since " + day(c.since) : ""}${c.enrolled ? " · enrolled " + day(c.enrolled) : ""}${c.payments_cleared >= 2 ? " · 2+ payments cleared (bonus safe)" : c.payments_cleared === 1 ? " · 1 payment cleared" : " · no payment cleared yet"}${c.commission_paid && c.payments_cleared < 2 ? " · bonus already paid (clawback risk)" : ""}</span><br><a class="savebtn" href="${saveLink(c)}">${c.status === "Returned" ? "Help me fix this" : "Help me save this"}</a></span><span>${c.debt ? money(c.debt) : ""}</span></li>`).join("");
+    $("pcList").innerHTML = pc.map((c) => `<li><span><b>${esc(c.client)}</b> <span class="when">Forth ID ${esc(c.forth_id)}</span><br><span class="note">${esc(c.status)}${c.since ? " since " + day(c.since) : ""}${c.enrolled ? " · enrolled " + day(c.enrolled) : ""}${c.payments_cleared >= 2 ? " · 2+ payments cleared (bonus safe)" : c.payments_cleared === 1 ? " · 1 payment cleared" : " · no payment cleared yet"}${c.commission_paid && c.payments_cleared < 2 ? " · bonus already paid (clawback risk)" : ""}</span><br><a class="savebtn" href="${saveLink(c)}">${c.status === "Returned" ? "Help me fix this" : "Help me save this"}</a>${aiBtn(c.forth_id, c.client)}${aiLast(c)}</span><span>${c.debt ? money(c.debt) : ""}</span></li>`).join("");
     const fp = d.first_pay_month;
     $("fpCard").hidden = !fp || !fp.deals;
     if (fp && fp.deals) {
@@ -485,6 +522,8 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
   }
   // Weekly sales report: the same table as the Friday Telegram picture, live, any week.
   let rp = null;
+  // Vici seconds as hours, h:mm (16246 = 4:30).
+  const hm = (s) => { if (s === null || s === undefined) return "-"; const m = Math.floor(Math.max(0, s) / 60); return `${Math.floor(m / 60)}:${String(m % 60).padStart(2, "0")}`; };
   function renderReport(r) {
     rp = r; $("app").hidden = true; $("hello").textContent = "Manager view · reports";
     const d = (x) => new Date(x + "T12:00:00Z").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", timeZone: "UTC" });
@@ -496,17 +535,19 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     const sunday = new Date(Date.parse(r.monday + "T12:00:00Z") + 6 * 864e5).toISOString().slice(0, 10);
     $("rpDeals").onclick = () => { location.hash = `deals?set=range&from=${r.monday}${r.current ? "" : "&to=" + sunday}`; };
     const dash = (n) => (n === null || n === undefined || n === 0 ? "-" : n);
+    const na = (n, s = "") => (n === null || n === undefined ? "-" : n + s);
     const row = (x, total) => `<tr class="${total ? "sum" : ""}"><td style="text-align:left">${total ? "Total" : esc(x.call_sign)}</td><td style="text-align:left">${total ? "" : esc(x.closer)}</td>
       <td>${x.deals}</td><td>${money(x.debt)}</td><td>${x.avg_deal ? money(x.avg_deal) : "-"}</td><td class="${x.returned ? "neg" : ""}">${dash(x.returned)}</td><td class="${x.cancelled ? "neg" : ""}">${dash(x.cancelled)}</td>
       <td class="${x.at_risk ? "neg" : ""}">${dash(x.at_risk)}</td><td><b>${x.net}</b></td><td><b>${money(x.net_debt)}</b></td><td>${x.speed_days ?? "-"}</td><td>${x.within_7_pct === null ? "-" : x.within_7_pct + "%"}</td>
-      <td>${dash(x.first_pays)}</td><td>${x.cancel_rate === null || x.cancel_rate === undefined ? "-" : x.cancel_rate + "%"}</td><td>${dash(x.practice)}</td></tr>`;
-    $("rpRows").innerHTML = (r.rows.length ? r.rows.map((x) => row(x)).join("") : '<tr><td colspan="15" class="empty" style="text-align:left">No deals this week.</td></tr>') + row(r.totals, true);
+      <td>${dash(x.first_pays)}</td><td>${x.cancel_rate === null || x.cancel_rate === undefined ? "-" : x.cancel_rate + "%"}</td><td>${dash(x.practice)}</td>
+      <td>${na(x.calls)}</td><td>${hm(x.talk_s)}</td><td>${hm(x.pause_s)}</td><td>${na(x.talk_pct, "%")}</td><td>${na(x.calls_per_deal)}</td></tr>`;
+    $("rpRows").innerHTML = (r.rows.length ? r.rows.map((x) => row(x)).join("") : '<tr><td colspan="20" class="empty" style="text-align:left">No deals or calls this week.</td></tr>') + row(r.totals, true);
   }
   $("rpCsv").onclick = () => {
     if (!rp) return;
     const cell = (v) => { const t = String(v ?? ""); return /[",\n]/.test(t) ? `"${t.replace(/"/g, '""')}"` : t; };
-    const head = ["Call sign", "Closer", "Deals", "Debt", "Avg deal", "Returned", "Cancelled", "At risk", "Net", "Net debt", "Days to 1st pay", "Within 7 days %", "1st pays cleared", "Cancel rate %", "Practice calls"];
-    const line = (x, t) => [t ? "Total" : x.call_sign, t ? "" : x.closer, x.deals, x.debt, x.avg_deal, x.returned, x.cancelled, x.at_risk, x.net, x.net_debt, x.speed_days, x.within_7_pct, x.first_pays, x.cancel_rate, x.practice].map(cell).join(",");
+    const head = ["Call sign", "Closer", "Deals", "Debt", "Avg deal", "Returned", "Cancelled", "At risk", "Net", "Net debt", "Days to 1st pay", "Within 7 days %", "1st pays cleared", "Cancel rate %", "Practice calls", "Calls", "Talk (h:mm)", "Pause (h:mm)", "Talk % of login", "Calls per deal"];
+    const line = (x, t) => [t ? "Total" : x.call_sign, t ? "" : x.closer, x.deals, x.debt, x.avg_deal, x.returned, x.cancelled, x.at_risk, x.net, x.net_debt, x.speed_days, x.within_7_pct, x.first_pays, x.cancel_rate, x.practice, x.calls, x.talk_s === null || x.talk_s === undefined ? "" : hm(x.talk_s), x.pause_s === null || x.pause_s === undefined ? "" : hm(x.pause_s), x.talk_pct, x.calls_per_deal].map(cell).join(",");
     const csv = [head.join(","), ...rp.rows.map((x) => line(x)), line(rp.totals, true)].join("\n");
     const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob(["\ufeff" + csv], { type: "text/csv" })); a.download = `cfn-weekly-${rp.monday}.csv`; a.click();
   };
@@ -565,12 +606,54 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     const t = s.totals, who = (r) => `<b>${esc(r.closer)}</b>${r.shown_as && r.shown_as !== r.closer ? `<br><span class="when">${esc(r.shown_as)}</span>` : ""}`;
     const days = (n) => n === null ? "" : n + " day" + (n === 1 ? "" : "s");
     $("retN").textContent = t.returned ? `${t.returned} · ${money(t.returned_debt)}` : "none";
-    $("retRows").innerHTML = s.returned.length ? s.returned.map((r) => `<tr><td>${who(r)}</td><td>${esc(r.forth_id)}</td><td>${esc(r.client)}</td><td>${money(r.debt)}</td><td class="${r.days >= 2 ? "neg" : ""}">${days(r.days)}</td></tr>`).join("")
-      : '<tr><td colspan="5" class="empty" style="text-align:left">Nothing returned. Nice.</td></tr>';
+    $("retRows").innerHTML = s.returned.length ? s.returned.map((r) => `<tr><td>${who(r)}</td><td>${esc(r.forth_id)}</td><td>${esc(r.client)}</td><td>${money(r.debt)}</td><td class="${r.days >= 2 ? "neg" : ""}">${days(r.days)}</td><td>${aiBtn(r.forth_id, r.client)}${aiLast(r)}</td></tr>`).join("")
+      : '<tr><td colspan="6" class="empty" style="text-align:left">Nothing returned. Nice.</td></tr>';
     $("riskN").textContent = t.at_risk ? `${t.at_risk} · ${money(t.at_risk_debt)}${t.at_risk_paid ? ` · ${t.at_risk_paid} paid` : ""}` : "none";
-    $("riskRows").innerHTML = s.at_risk.length ? s.at_risk.map((r) => `<tr><td>${who(r)}</td><td>${esc(r.forth_id)}</td><td>${esc(r.client)}</td><td>${esc(r.status)}</td><td>${money(r.debt)}</td><td>${r.since ? day(r.since.slice(0, 10)) : ""}<br><span class="when">${days(r.days)}</span></td><td>${r.payments_cleared >= 2 ? "2+" : r.payments_cleared}</td><td class="${r.commission_paid ? "neg" : ""}">${r.commission_paid ? "Paid" : "Not paid"}</td></tr>`).join("")
-      : '<tr><td colspan="8" class="empty" style="text-align:left">No deals at risk.</td></tr>';
+    $("riskRows").innerHTML = s.at_risk.length ? s.at_risk.map((r) => `<tr><td>${who(r)}</td><td>${esc(r.forth_id)}</td><td>${esc(r.client)}</td><td>${esc(r.status)}</td><td>${money(r.debt)}</td><td>${r.since ? day(r.since.slice(0, 10)) : ""}<br><span class="when">${days(r.days)}</span></td><td>${r.payments_cleared >= 2 ? "2+" : r.payments_cleared}</td><td class="${r.commission_paid ? "neg" : ""}">${r.commission_paid ? "Paid" : "Not paid"}</td><td>${aiBtn(r.forth_id, r.client)}${aiLast(r)}</td></tr>`).join("")
+      : '<tr><td colspan="9" class="empty" style="text-align:left">No deals at risk.</td></tr>';
   }
+  const RESULT = { yes: '<span class="ok">&#10003;</span>', partial: '<span class="wait">partly</span>', no: '<span class="neg">&#10007;</span>', "n/a": '<span class="when">n/a</span>', not_on_recording: '<span class="when">not on recording</span>' };
+  const when = (iso) => iso ? new Date(iso).toLocaleString("en-US", { timeZone: "America/Los_Angeles", weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "";
+  const mins = (m) => m === null || m === undefined ? "" : Math.floor(m) + ":" + String(Math.round((m % 1) * 60)).padStart(2, "0");
+  function renderCalls(d) {
+    $("app").hidden = true; $("hello").textContent = "Manager view · calls"; $("callsMsg").textContent = "";
+    const c = d.counts || {};
+    $("callsN").textContent = `${c.scored || 0} scored` + (c.waiting ? ` · ${c.waiting} waiting` : "") + (c.failed ? ` · ${c.failed} failed` : "");
+    const status = (r) => r.status === "scored" ? (r.closed === true ? "Yes" : r.closed === false ? "No" : "") : r.status === "new" ? '<span class="when">waiting</span>' : r.status === "skipped" ? '<span class="when">under 2 min</span>' : `<span class="neg">${esc(r.status)}</span>`;
+    $("callRows").innerHTML = d.calls.length ? d.calls.map((r) => `<tr data-call="${esc(r.call_id)}" style="cursor:pointer"><td style="text-align:left">${esc(when(r.started_at))}</td><td style="text-align:left"><b>${esc(r.closer)}</b><br><span class="when">${esc(r.call_sign || "")}</span></td><td>${mins(r.minutes)}</td><td>${status(r)}</td><td style="text-align:left">${esc(r.main_loss || "")}</td><td class="${(r.compliance_flags || 0) ? "neg" : ""}">${r.compliance_flags ? r.compliance_flags : ""}</td></tr>`).join("")
+      : '<tr><td colspan="6" class="empty" style="text-align:left">No calls yet. The first pull runs after 5 PM Pacific on a floor day.</td></tr>';
+    const det = d.detail;
+    $("callList").hidden = !!det; $("callDetail").hidden = !det;
+    if (new URLSearchParams(location.hash.replace(/^#calls\??/, "")).get("id") && !det) $("callsMsg").textContent = "That call was not found.";
+    if (!det) return;
+    $("cdTitle").textContent = `${det.closer}${det.call_sign ? " (" + det.call_sign + ")" : ""}`;
+    $("cdWhen").textContent = `${when(det.started_at)} · ${mins(det.minutes)}`;
+    $("cdSummary").innerHTML = det.summary ? `${det.closed === true ? "<b>Closed.</b> " : det.closed === false ? "<b>Not closed.</b> " : ""}${esc(det.summary)}` : `<span class="when">Status: ${esc(det.status)}</span>`;
+    $("cdAudio").innerHTML = det.has_audio ? '<button class="go small" id="cdPlay">Play recording</button>' : '<span class="when">Recording not kept.</span>';
+    const list = (title, items) => items.length ? `<p class="label" style="margin-top:14px"><span>${title}</span></p><ul style="margin:0;padding-left:20px">${items.join("")}</ul>` : "";
+    $("cdBody").innerHTML =
+      (det.compliance.length ? list("Compliance flags", det.compliance.map((x) => `<li class="neg">${esc(typeof x === "string" ? x : (x.issue || x.rule || "") + (x.quote ? ': "' + x.quote + '"' : "") + (x.minute !== undefined && x.minute !== null ? " (min " + x.minute + ")" : ""))}</li>`)) : "")
+      + list("Coaching", det.coaching.map((x) => `<li>${esc(typeof x === "string" ? x : x.point || x.text || JSON.stringify(x))}</li>`))
+      + (det.best_line ? `<p class="label" style="margin-top:14px"><span>Best line</span></p><p style="margin:0">&ldquo;${esc(typeof det.best_line === "string" ? det.best_line : det.best_line.quote || "")}&rdquo;</p>` : "")
+      + list("Where it lost momentum", det.loss_codes.map((l) => `<li><b>${esc(l.code)}</b> ${esc(l.label)}${l.minute !== undefined && l.minute !== null ? ` <span class="when">min ${esc(l.minute)}</span>` : ""}${l.evidence ? `<br><span class="when">${esc(l.evidence)}</span>` : ""}</li>`))
+      + (det.checks.length ? `<p class="label" style="margin-top:14px"><span>The 16 checks</span></p><div style="overflow-x:auto"><table class="tt"><thead><tr><th>Check</th><th>Result</th><th>Evidence</th></tr></thead><tbody>${det.checks.map((g) => `<tr><td style="text-align:left">${esc(g.label)}</td><td>${RESULT[g.result] || esc(g.result || "")}</td><td style="text-align:left"><span class="when">${esc(g.evidence || "")}</span></td></tr>`).join("")}</tbody></table></div>` : "")
+      + (det.outcome_note ? `<p class="note" style="margin-top:14px">Forth: ${esc(det.outcome_note)}</p>` : "");
+    $("cdTranscript").textContent = det.transcript || "No transcript.";
+  }
+  $("callRows").onclick = (e) => { const tr = e.target.closest("[data-call]"); if (tr) location.hash = "calls?id=" + tr.dataset.call; };
+  $("callBack").onclick = () => { location.hash = "calls"; };
+  $("cdAudio").onclick = async (e) => {
+    if (!e.target.closest("#cdPlay")) return;
+    const id = new URLSearchParams(location.hash.replace(/^#calls\??/, "")).get("id");
+    $("cdAudio").innerHTML = '<span class="when">Loading...</span>';
+    try {
+      const r = await fetch(window.BOARD_API + "/calls/audio?id=" + encodeURIComponent(id), { headers: { Authorization: "Bearer " + session } });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok || !j.url) throw new Error(j.error || "Could not load the recording.");
+      $("cdAudio").innerHTML = "";
+      const a = document.createElement("audio"); a.controls = true; a.preload = "auto"; a.src = j.url; a.style.width = "100%"; $("cdAudio").appendChild(a); a.play().catch(() => {});
+    } catch (err) { $("cdAudio").innerHTML = `<span class="neg">${esc(err.message)}</span> <button class="go small" id="cdPlay">Try again</button>`; }
+  };
   let onbRows = [];
   function renderOnboarding(rows) {
     onbRows = rows;
@@ -585,8 +668,10 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
       <td>${r.steps.pay.how === "gusto" ? '<span class="ok">&#10003;</span> Gusto' : r.steps.pay.how === "overseas" ? '<span class="ok">&#10003;</span> Overseas' : '<span class="wait">not in Gusto</span>'}
         <br><button class="link" data-plan="${r.pay_plan === "other" ? "us_commission" : "other"}" data-rep="${esc(r.rep_id)}">${r.pay_plan === "other" ? "Set to US plan" : "Paid overseas"}</button></td>
       <td>${step(r.steps.first_deal)}</td>
+      <td>${r.steps.vici?.id ? esc(r.steps.vici.id) : '<span class="wait">not set</span>'}<br><button class="link" data-vici="${esc(r.rep_id)}">${r.steps.vici?.id ? "Change" : "Set"}</button></td>
+      <td>${r.transfer_to ? esc(r.transfer_to) : '<span class="wait">not set</span>'}<br><button class="link" data-transfer="${esc(r.rep_id)}">${r.transfer_to ? "Change" : "Set"}</button></td>
       <td><button class="go small" data-copy="${i}">Copy welcome text</button></td></tr>`).join("")
-      : '<tr><td colspan="7" class="empty" style="text-align:left">No one is in onboarding right now.</td></tr>';
+      : '<tr><td colspan="9" class="empty" style="text-align:left">No one is in onboarding right now.</td></tr>';
   }
   function renderPayroll(p) {
     $("app").hidden = true; $("hello").textContent = "Manager view · payroll";
@@ -610,7 +695,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
       ? `<p style="margin:0"><b>Approved</b> by ${esc(p.approved_by || "")} on ${esc(new Date(p.approved_at).toLocaleString("en-US", { timeZone: "America/Los_Angeles", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }))}. Locked.</p>`
       : `<p class="label">To approve</p><p style="margin:0">${p.reviews.length ? "Clear the review items first. Then r" : "R"}eply on Telegram: <b>${esc(p.approve_with)}</b></p><p class="note" style="margin:6px 0 0">Approval locks this payroll. A person still clicks Submit in Gusto.</p>`;
   }
-  const fromHash = () => (/^#deals(\?|$)/.test(location.hash) ? "deals" : /^#report(\?|$)/.test(location.hash) ? "report" : ["#payroll", "#team", "#onboarding", "#saves", "#coach"].includes(location.hash) ? location.hash.slice(1) : "");
+  const fromHash = () => (/^#deals(\?|$)/.test(location.hash) ? "deals" : /^#report(\?|$)/.test(location.hash) ? "report" : /^#calls(\?|$)/.test(location.hash) ? "calls" : ["#payroll", "#team", "#onboarding", "#saves", "#coach"].includes(location.hash) ? location.hash.slice(1) : "");
   let viewing = fromHash();
   addEventListener("hashchange", () => {
     if (/^#signin/.test(location.hash)) { const m = takeSignIn(); if (m) showSignIn(m); else if (session) load(); return; }
@@ -618,11 +703,12 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
   });
   async function load() {
     const week = viewing === "report" ? new URLSearchParams(location.hash.replace(/^#report\??/, "")).get("week") : null;
-    try { render(await api("/me" + (viewing ? "?rep=" + encodeURIComponent(viewing) + (week ? "&week=" + encodeURIComponent(week) : "") : ""))); } catch (e) { if (e.message) showErr(e.message); }
+    const callId = viewing === "calls" ? new URLSearchParams(location.hash.replace(/^#calls\??/, "")).get("id") : null;
+    try { render(await api("/me" + (viewing ? "?rep=" + encodeURIComponent(viewing) + (week ? "&week=" + encodeURIComponent(week) : "") + (callId ? "&id=" + encodeURIComponent(callId) : "") : ""))); } catch (e) { if (e.message) showErr(e.message); }
   }
   $("pick").onchange = () => {
     const v = $("pick").value;
-    if (["payroll", "team", "onboarding", "saves", "coach", "deals", "report"].includes(v)) { location.hash = v; return; } // hashchange loads it
+    if (["payroll", "team", "onboarding", "saves", "calls", "coach", "deals", "report"].includes(v)) { location.hash = v; return; } // hashchange loads it
     viewing = v; if (location.hash) history.replaceState(null, "", "/me"); load();
   };
   $("onbRows").onclick = async (e) => {
@@ -638,8 +724,23 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
       if (!confirm(`Put ${r.name} on ${to}?`)) return;
       try { render(await api("/me/pay-plan", { rep_id: plan.dataset.rep, plan: plan.dataset.plan })); $("onbMsg").textContent = `${r.name} updated. The payroll group was told.`; }
       catch (err) { $("onbMsg").textContent = err.message; }
+    } else if (e.target.closest("[data-vici]")) {
+      const r = onbRows.find((x) => x.rep_id === e.target.closest("[data-vici]").dataset.vici);
+      if (!r) return;
+      const v = prompt(`Vici agent ID for ${r.name} (the number they log in to Vici with, for example 9005). Their calls and call numbers are matched by it. Leave empty to clear.`, r.steps.vici?.id || "");
+      if (v === null) return;
+      try { render(await api("/me/vici-user", { rep_id: r.rep_id, vici_user: v.trim() })); $("onbMsg").textContent = v.trim() ? `Vici ID for ${r.name} saved.` : `Vici ID for ${r.name} cleared.`; }
+      catch (err) { $("onbMsg").textContent = err.message; }
+    } else if (e.target.closest("[data-transfer]")) {
+      const r = onbRows.find((x) => x.rep_id === e.target.closest("[data-transfer]").dataset.transfer);
+      if (!r) return;
+      const v = prompt(`Transfer line for ${r.name} (where the assistant sends their clients): a phone like +15551234567 or a SIP address like sip:name@host. Leave empty to clear.`, "");
+      if (v === null) return;
+      try { render(await api("/me/transfer-to", { rep_id: r.rep_id, transfer_to: v.trim() })); $("onbMsg").textContent = `Transfer line for ${r.name} saved.`; }
+      catch (err) { $("onbMsg").textContent = err.message; }
     }
   };
+  $("pcList").onclick = askAssistant; $("retRows").onclick = askAssistant; $("riskRows").onclick = askAssistant;
   $("teamRows").onclick = (e) => { const tr = e.target.closest("tr[data-rep]"); if (tr) { viewing = tr.dataset.rep; history.replaceState(null, "", "/me"); load(); } };
 
   function setWings(name) { $("wingsName").textContent = (name.trim() || "Your call sign").toUpperCase().slice(0, 16); }
@@ -667,7 +768,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     if (!mine || p.get("n") !== mine) return "That sign-in was started somewhere else. Tap Sign in with Google again.";
     session = p.get("signin"); store.set(session);
     let after = ""; try { after = localStorage.getItem("cfn_after") || ""; localStorage.removeItem("cfn_after"); } catch {}
-    if (/^#(report|deals|saves|coach|payroll|team|onboarding)/.test(after)) { history.replaceState(null, "", "/me" + after); viewing = fromHash(); }
+    if (/^#(report|deals|saves|calls|coach|payroll|team|onboarding)/.test(after)) { history.replaceState(null, "", "/me" + after); viewing = fromHash(); }
     try { localStorage.setItem("cfn_manager", p.get("m") === "1" ? "1" : "0"); } catch {}
     return "";
   }
@@ -680,6 +781,6 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
   else if (session) load(); else showSignIn();
 })();
 </script>
-<script src="coach.js?v=06294c5-1792853869"></script>
+<script src="coach.js?v=d2ade16-1792856249"></script>
 </body>
 </html>
