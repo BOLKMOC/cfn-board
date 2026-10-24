@@ -9,8 +9,8 @@
 <title>My CFN Page</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Quicksand:wght@500;700&display=swap">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
-<link rel="stylesheet" href="board.css?v=cf99da2-1792863821">
-<link rel="stylesheet" href="coach.css?v=cf99da2-1792863821">
+<link rel="stylesheet" href="board.css?v=43cd301-1792865126">
+<link rel="stylesheet" href="coach.css?v=43cd301-1792865126">
 <style>
 .wrap{max-width:680px}
 .three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
@@ -61,7 +61,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
 #signin{text-align:center;padding:30px 16px}
 @media (max-width:480px){.three{grid-template-columns:1fr 1fr 1fr}.mini .v{font-size:18px}}
 </style>
-<script src="config.js?v=cf99da2-1792863821"></script>
+<script src="config.js?v=43cd301-1792865126"></script>
 </head>
 <body>
 <div class="wrap">
@@ -105,6 +105,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
       <p style="margin:0 0 10px"><button class="link" id="callBack">&larr; All calls</button></p>
       <p class="label"><span id="cdTitle"></span><span id="cdWhen"></span></p>
       <p id="cdSummary" style="margin:0 0 10px"></p>
+      <p id="cdForth" class="note" style="margin:0 0 10px"></p>
       <p id="cdAudio" style="margin:0 0 12px"></p>
       <div id="cdBody"></div>
       <details style="margin-top:14px"><summary><span>Transcript</span></summary><pre id="cdTranscript" style="white-space:pre-wrap;font:inherit;font-size:14px;line-height:1.5;margin:8px 0 0"></pre></details>
@@ -628,7 +629,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
       const loss = r.main_loss ? `<br><span class="when">${esc(r.main_loss)}</span>` : "";
       return `<b>${r.closed === true ? "Closed" : r.closed === false ? "Not closed" : "Scored"}</b>${flags}${loss}`;
     };
-    $("callRows").innerHTML = d.calls.length ? d.calls.map((r) => `<tr data-call="${esc(r.call_id)}" style="cursor:pointer"><td>${esc(short(r.started_at))}${r.minutes ? `<br><span class="when">${mins(r.minutes)} min</span>` : ""}</td><td><b>${esc(r.closer)}</b><br><span class="when">${esc(r.call_sign || "")}</span></td><td>${result(r)}</td></tr>`).join("")
+    $("callRows").innerHTML = d.calls.length ? d.calls.map((r) => `<tr data-call="${esc(r.call_id)}" style="cursor:pointer"><td>${esc(short(r.started_at))}${r.minutes ? `<br><span class="when">${mins(r.minutes)} min</span>` : ""}</td><td><b>${esc(r.closer)}</b><br><span class="when">${esc(r.call_sign || "")}${r.contact_id ? "<br>Forth " + esc(r.contact_id) : ""}</span></td><td>${result(r)}</td></tr>`).join("")
       : '<tr><td colspan="3" class="empty" style="text-align:left">No calls yet. The first pull runs after 6 PM Pacific on a floor day.</td></tr>';
     const det = d.detail;
     $("callList").hidden = !!det; $("callDetail").hidden = !det;
@@ -637,6 +638,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     $("cdTitle").textContent = `${det.closer}${det.call_sign ? " (" + det.call_sign + ")" : ""}`;
     $("cdWhen").textContent = `${when(det.started_at)} · ${mins(det.minutes)}`;
     $("cdSummary").innerHTML = det.summary ? `${det.closed === true ? "<b>Closed.</b> " : det.closed === false ? "<b>Not closed.</b> " : ""}${esc(det.summary)}` : `<span class="when">Status: ${esc(det.status)}</span>`;
+    $("cdForth").innerHTML = det.outcome_note ? `${det.contact_id ? "<b>Forth file " + esc(det.contact_id) + "</b> · " : ""}${esc(det.outcome_note.replace(/^Forth file \d+: /, ""))}` : "";
     $("cdAudio").innerHTML = det.has_audio ? '<button class="go small" id="cdPlay">Play recording</button>' : '<span class="when">Recording not kept.</span>';
     const list = (title, items) => items.length ? `<p class="label" style="margin-top:14px"><span>${title}</span></p><ul style="margin:0;padding-left:20px">${items.join("")}</ul>` : "";
     $("cdBody").innerHTML =
@@ -645,7 +647,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
       + (det.best_line ? `<p class="label" style="margin-top:14px"><span>Best line</span></p><p style="margin:0">&ldquo;${esc(typeof det.best_line === "string" ? det.best_line : det.best_line.quote || "")}&rdquo;</p>` : "")
       + list("Where it lost momentum", det.loss_codes.map((l) => `<li><b>${esc(l.code)}</b> ${esc(l.label)}${l.minute !== undefined && l.minute !== null ? ` <span class="when">min ${esc(l.minute)}</span>` : ""}${l.evidence ? `<br><span class="when">${esc(l.evidence)}</span>` : ""}</li>`))
       + (det.checks.length ? `<p class="label" style="margin-top:14px"><span>The 16 checks</span></p><table class="tt calls checks"><thead><tr><th>Check</th><th>Result</th></tr></thead><tbody>${det.checks.map((g) => `<tr><td><b>${esc(g.label)}</b>${g.evidence ? `<br><span class="when">${g.minute ? esc(g.minute) + " · " : ""}${esc(g.evidence)}</span>` : ""}</td><td>${RESULT[g.result] || esc(g.result || "")}</td></tr>`).join("")}</tbody></table>` : "")
-      + (det.outcome_note ? `<p class="note" style="margin-top:14px">Forth: ${esc(det.outcome_note)}</p>` : "");
+      ;
     $("cdTranscript").textContent = det.transcript || "No transcript.";
   }
   $("callRows").onclick = (e) => { const tr = e.target.closest("[data-call]"); if (tr) location.hash = "calls?id=" + tr.dataset.call; };
@@ -789,6 +791,6 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
   else if (session) load(); else showSignIn();
 })();
 </script>
-<script src="coach.js?v=cf99da2-1792863821"></script>
+<script src="coach.js?v=43cd301-1792865126"></script>
 </body>
 </html>
