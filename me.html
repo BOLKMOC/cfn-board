@@ -9,8 +9,8 @@
 <title>My CFN Page</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Quicksand:wght@500;700&display=swap">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
-<link rel="stylesheet" href="board.css?v=5f8f3d0-1792822083">
-<link rel="stylesheet" href="coach.css?v=5f8f3d0-1792822083">
+<link rel="stylesheet" href="board.css?v=a0ee485-1792823231">
+<link rel="stylesheet" href="coach.css?v=a0ee485-1792823231">
 <style>
 .wrap{max-width:680px}
 .three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
@@ -48,6 +48,7 @@ button.go.small{padding:5px 10px;font-size:12px}
 .filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:4px 0 10px} .filters label{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted)}
 .actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px} .go.ghost{background:#fff;color:var(--blue);border:1px solid var(--blue)}
 .neg{color:#C62828}
+.savebtn{display:inline-block;margin-top:6px;background:#1F4FD8;color:#fff;border-radius:8px;padding:5px 10px;font-size:12.5px;font-weight:600;text-decoration:none}
 .preview{white-space:pre-wrap;background:var(--tint);border-radius:10px;padding:12px;max-height:420px;overflow:auto;font:13px/1.5 Inter,system-ui,sans-serif}
 ul.list{list-style:none;margin:0;padding:0} ul.list li{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--tint);font-size:14px}
 table.tt tr.sum td{font-weight:700;border-top:2px solid var(--line)}
@@ -55,7 +56,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
 #signin{text-align:center;padding:30px 16px}
 @media (max-width:480px){.three{grid-template-columns:1fr 1fr 1fr}.mini .v{font-size:18px}}
 </style>
-<script src="config.js?v=5f8f3d0-1792822083"></script>
+<script src="config.js?v=a0ee485-1792823231"></script>
 </head>
 <body>
 <div class="wrap">
@@ -201,8 +202,8 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     </div>
 
     <section class="card" style="margin-bottom:14px" id="pcCard" hidden>
-      <p class="label"><span>Pending cancels</span><span id="pcN"></span></p>
-      <p class="note" style="margin:0 0 8px">These clients may cancel. A deal that cancels before 2 payments clear takes back its bonus. Look them up in Forth by ID and work to save them.</p>
+      <p class="label"><span>Deals to save or fix</span><span id="pcN"></span></p>
+      <p class="note" style="margin:0 0 8px">These clients may cancel, or their file came back. A deal that cancels before 2 payments clear takes back its bonus. Tap <b>Help me save this</b> and the Coach walks you through the call.</p>
       <ul class="feed" id="pcList"></ul>
     </section>
 
@@ -344,9 +345,12 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     $("today").textContent = d.today; $("week").textContent = d.week; $("month").textContent = d.month;
 
     const pc = d.pending_cancels || [];
+    const saveLink = (c) => "/coach?ask=" + encodeURIComponent(c.status === "Returned"
+      ? `My deal with ${c.client} (Forth ID ${c.forth_id}) came back Returned${c.since ? " on " + day(c.since) : ""}. Help me fix it and get it resubmitted fast: what to check, what to say to the client, and what to send.`
+      : `Help me save my deal with ${c.client} (Forth ID ${c.forth_id}). Status: ${c.status}${c.since ? " since " + day(c.since) : ""}. ${c.payments_cleared >= 2 ? "2+ payments cleared" : c.payments_cleared === 1 ? "1 payment cleared" : "No payment cleared yet"}. Give me the save call, step by step, with what to say.`);
     $("pcCard").hidden = !pc.length;
     $("pcN").textContent = pc.length + " deal" + (pc.length === 1 ? "" : "s");
-    $("pcList").innerHTML = pc.map((c) => `<li><span><b>${esc(c.client)}</b> <span class="when">Forth ID ${esc(c.forth_id)}</span><br><span class="note">${esc(c.status)}${c.since ? " since " + day(c.since) : ""}${c.enrolled ? " · enrolled " + day(c.enrolled) : ""}${c.payments_cleared >= 2 ? " · 2+ payments cleared (bonus safe)" : c.payments_cleared === 1 ? " · 1 payment cleared" : " · no payment cleared yet"}${c.commission_paid && c.payments_cleared < 2 ? " · bonus already paid (clawback risk)" : ""}</span></span><span>${c.debt ? money(c.debt) : ""}</span></li>`).join("");
+    $("pcList").innerHTML = pc.map((c) => `<li><span><b>${esc(c.client)}</b> <span class="when">Forth ID ${esc(c.forth_id)}</span><br><span class="note">${esc(c.status)}${c.since ? " since " + day(c.since) : ""}${c.enrolled ? " · enrolled " + day(c.enrolled) : ""}${c.payments_cleared >= 2 ? " · 2+ payments cleared (bonus safe)" : c.payments_cleared === 1 ? " · 1 payment cleared" : " · no payment cleared yet"}${c.commission_paid && c.payments_cleared < 2 ? " · bonus already paid (clawback risk)" : ""}</span><br><a class="savebtn" href="${saveLink(c)}">${c.status === "Returned" ? "Help me fix this" : "Help me save this"}</a></span><span>${c.debt ? money(c.debt) : ""}</span></li>`).join("");
     const fp = d.first_pay_month;
     $("fpCard").hidden = !fp || !fp.deals;
     if (fp && fp.deals) {
@@ -643,6 +647,6 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
   else if (session) load(); else showSignIn();
 })();
 </script>
-<script src="coach.js?v=5f8f3d0-1792822083"></script>
+<script src="coach.js?v=a0ee485-1792823231"></script>
 </body>
 </html>

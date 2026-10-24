@@ -104,3 +104,4 @@ body.can-click .tip[data-set]{text-decoration:underline dotted}
 body.noscroll{overflow:hidden}
 @media (max-width:600px){.panel{padding:0}.pbox{border-radius:0;max-height:none;height:100%}}
 .pnote a.full,#pnSum a.full{color:var(--blue);font-weight:600}
+.stick{color:var(--win);font-weight:600}

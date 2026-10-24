@@ -247,6 +247,9 @@
       async init(openId) {
         if (!session) { signInNote(); return; }
         try { start = await call("/coach/start"); } catch (e) { if (e.signin) { signInNote(); return; } }
+        // Opened from "Help me save this": start a new chat with that question.
+        const ask0 = isPage ? new URLSearchParams(location.search).get("ask") : null;
+        if (ask0) { history.replaceState(null, "", location.pathname); conv = null; msgs = []; render(); loadList(); ask(ask0.slice(0, 4000)); return; }
         if (openId) await openChat(openId); else { render(); loadList(); }
       },
       openChat, newChat,

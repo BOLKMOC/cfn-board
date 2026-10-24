@@ -10,10 +10,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Quicksand:wght@500;700&display=swap">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
-<link rel="stylesheet" href="board.css?v=5f8f3d0-1792822083">
-<link rel="stylesheet" href="coach.css?v=5f8f3d0-1792822083">
-<script src="config.js?v=5f8f3d0-1792822083"></script>
-<script src="confetti.browser.js?v=5f8f3d0-1792822083"></script>
+<link rel="stylesheet" href="board.css?v=a0ee485-1792823231">
+<link rel="stylesheet" href="coach.css?v=a0ee485-1792823231">
+<script src="config.js?v=a0ee485-1792823231"></script>
+<script src="confetti.browser.js?v=a0ee485-1792823231"></script>
 </head>
 <body>
 <div class="wrap">
@@ -44,7 +44,7 @@
   <div class="grid">
     <section class="card" aria-labelledby="t-top">
       <p class="label"><span id="t-top">Top reps</span>
-        <span class="tabs" role="group" aria-label="Period"><button id="tabDay" aria-pressed="true">Today</button><button id="tabWeek" aria-pressed="false">Week</button></span></p>
+        <span class="tabs" role="group" aria-label="Period"><button id="tabDay" aria-pressed="true">Today</button><button id="tabWeek" aria-pressed="false">Week</button><button id="tabMonth" aria-pressed="false" title="This month, deals that stuck (returns and cancels taken out)">Month</button></span></p>
       <div class="spot" id="spot" hidden></div>
       <ol class="leaders" id="leaders"></ol>
     </section>
@@ -138,17 +138,20 @@
   $("overlay").onclick = () => $("overlay").classList.remove("show");
   function renderLeaders() {
     if (!data) return;
-    const list = period === "day" ? data.top_today : data.top_week;
-    $("tabDay").setAttribute("aria-pressed", period === "day"); $("tabWeek").setAttribute("aria-pressed", period === "week");
+    const list = period === "day" ? data.top_today : period === "week" ? data.top_week : (data.top_month || []);
+    $("tabDay").setAttribute("aria-pressed", period === "day"); $("tabWeek").setAttribute("aria-pressed", period === "week"); $("tabMonth").setAttribute("aria-pressed", period === "month");
+    const when = period === "day" ? "today" : period === "week" ? "this week" : "this month";
+    const stick = (r) => period === "month" && r.stick !== null && r.stick !== undefined ? ` · <span class="stick" title="Share of their deals since June that were not cancelled or returned">${r.stick}% stick</span>` : "";
     const top = list[0];
     $("spot").hidden = !top;
-    if (top) $("spot").innerHTML = `<span class="crown" aria-hidden="true">&#9819;</span><div><div class="k">Top agent ${period === "day" ? "today" : "this week"}</div><div class="who">${label(top.name)}</div><div class="what">${money(top.debt)} enrolled · ${top.deals} deal${top.deals === 1 ? "" : "s"}</div></div>`;
-    $("leaders").innerHTML = list.length ? list.map((r, i) => `<li data-set="${period}" data-rep="${esc(r.name)}"><span><span class="rank">${i + 1}.</span>${i === 0 ? '<span class="crown" aria-label="leader">&#9819;</span> ' : ""}${label(r.name)}</span><span><b class="size">${money(r.debt)}</b> <span class="when">· ${r.deals} deal${r.deals === 1 ? "" : "s"}</span></span></li>`).join("")
-      : `<li class="empty">First deal ${period === "day" ? "today" : "this week"} takes the crown.</li>`;
+    if (top) $("spot").innerHTML = `<span class="crown" aria-hidden="true">&#9819;</span><div><div class="k">Top agent ${when}${period === "month" ? " (deals that stuck)" : ""}</div><div class="who">${label(top.name)}</div><div class="what">${money(top.debt)} ${period === "month" ? "net" : "enrolled"} · ${top.deals} deal${top.deals === 1 ? "" : "s"}${stick(top)}</div></div>`;
+    $("leaders").innerHTML = list.length ? list.map((r, i) => `<li data-set="${period === "month" ? "month_submitted" : period}" data-rep="${esc(r.name)}"><span><span class="rank">${i + 1}.</span>${i === 0 ? '<span class="crown" aria-label="leader">&#9819;</span> ' : ""}${label(r.name)}</span><span><b class="size">${money(r.debt)}</b> <span class="when">· ${r.deals} deal${r.deals === 1 ? "" : "s"}${stick(r)}</span></span></li>`).join("")
+      : `<li class="empty">First deal ${when} takes the crown.</li>`;
   }
   $("tabDay").onclick = () => { period = "day"; renderLeaders(); };
   $("tabWeek").onclick = () => { period = "week"; renderLeaders(); };
-  if (tv) setInterval(() => { period = period === "day" ? "week" : "day"; renderLeaders(); }, 15000);
+  $("tabMonth").onclick = () => { period = "month"; renderLeaders(); };
+  if (tv) setInterval(() => { period = period === "day" ? "week" : period === "week" ? "month" : "day"; renderLeaders(); }, 15000);
 
   function render(d) {
     data = d;
@@ -265,6 +268,6 @@
   load(); setInterval(load, 15000);
 })();
 </script>
-<script src="coach.js?v=5f8f3d0-1792822083"></script>
+<script src="coach.js?v=a0ee485-1792823231"></script>
 </body>
 </html>
