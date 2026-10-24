@@ -9,8 +9,8 @@
 <title>My CFN Page</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Quicksand:wght@500;700&display=swap">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
-<link rel="stylesheet" href="board.css?v=43cd301-1792865126">
-<link rel="stylesheet" href="coach.css?v=43cd301-1792865126">
+<link rel="stylesheet" href="board.css?v=12cd3c6-1792865918">
+<link rel="stylesheet" href="coach.css?v=12cd3c6-1792865918">
 <style>
 .wrap{max-width:680px}
 .three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
@@ -61,7 +61,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
 #signin{text-align:center;padding:30px 16px}
 @media (max-width:480px){.three{grid-template-columns:1fr 1fr 1fr}.mini .v{font-size:18px}}
 </style>
-<script src="config.js?v=43cd301-1792865126"></script>
+<script src="config.js?v=12cd3c6-1792865918"></script>
 </head>
 <body>
 <div class="wrap">
@@ -626,7 +626,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     const result = (r) => {
       if (r.status !== "scored") return status(r);
       const flags = r.compliance_flags ? `<br><b class="neg">${r.compliance_flags} compliance flag${r.compliance_flags === 1 ? "" : "s"}</b>` : "";
-      const loss = r.main_loss ? `<br><span class="when">${esc(r.main_loss)}</span>` : "";
+      const ls = r.losses || [], loss = ls.length ? `<br><span class="when">${ls.slice(0, 3).map(esc).join("; ")}${ls.length > 3 ? `; +${ls.length - 3} more` : ""}</span>` : "";
       return `<b>${r.closed === true ? "Closed" : r.closed === false ? "Not closed" : "Scored"}</b>${flags}${loss}`;
     };
     $("callRows").innerHTML = d.calls.length ? d.calls.map((r) => `<tr data-call="${esc(r.call_id)}" style="cursor:pointer"><td>${esc(short(r.started_at))}${r.minutes ? `<br><span class="when">${mins(r.minutes)} min</span>` : ""}</td><td><b>${esc(r.closer)}</b><br><span class="when">${esc(r.call_sign || "")}${r.contact_id ? "<br>Forth " + esc(r.contact_id) : ""}</span></td><td>${result(r)}</td></tr>`).join("")
@@ -791,6 +791,6 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
   else if (session) load(); else showSignIn();
 })();
 </script>
-<script src="coach.js?v=43cd301-1792865126"></script>
+<script src="coach.js?v=12cd3c6-1792865918"></script>
 </body>
 </html>
