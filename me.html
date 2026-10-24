@@ -9,8 +9,8 @@
 <title>My CFN Page</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Quicksand:wght@500;700&display=swap">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
-<link rel="stylesheet" href="board.css?v=12cd3c6-1792865918">
-<link rel="stylesheet" href="coach.css?v=12cd3c6-1792865918">
+<link rel="stylesheet" href="board.css?v=8abd7b5-1792868496">
+<link rel="stylesheet" href="coach.css?v=8abd7b5-1792868496">
 <style>
 .wrap{max-width:680px}
 .three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
@@ -56,12 +56,16 @@ button.go.small{padding:5px 10px;font-size:12px}
 .preview{white-space:pre-wrap;background:var(--tint);border-radius:10px;padding:12px;max-height:420px;overflow:auto;font:13px/1.5 Inter,system-ui,sans-serif}
 ul.list{list-style:none;margin:0;padding:0} ul.list li{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--tint);font-size:14px}
 table.tt tr.sum td{font-weight:700;border-top:2px solid var(--line)}
+a.pill{display:inline-block;padding:6px 14px;border:1px solid var(--line);border-radius:999px;text-decoration:none;color:inherit;font-size:14px} a.pill[aria-current]{background:var(--blue,#1F4FD8);color:#fff;border-color:transparent}
+.sc-card{border:1px solid var(--line);border-radius:12px;padding:12px;margin:0 0 10px} .sc-card.top{border-color:#C9A227;box-shadow:0 0 0 1px #C9A227 inset}
+.sc-row{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;font-size:14px;padding:3px 0} .sc-bar{display:inline-block;width:70px;height:8px;border-radius:4px;background:var(--tint);position:relative;overflow:hidden} .sc-bar i{position:absolute;left:0;top:0;bottom:0;background:var(--blue,#1F4FD8)}
+.dots{letter-spacing:2px;color:var(--blue,#1F4FD8)} .gap-neg{color:#b42318} .gap-pos{color:#067647}
 table.calls{width:100%;table-layout:fixed} table.calls th,table.calls td{text-align:left;white-space:normal;vertical-align:top;overflow-wrap:anywhere} table.calls th:nth-child(1){width:24%} table.calls th:nth-child(2){width:34%} table.checks th:nth-child(1){width:74%} table.checks th:nth-child(2){width:26%} table.calls tbody tr:hover{background:var(--tint)}
 table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{background:var(--tint)}
 #signin{text-align:center;padding:30px 16px}
 @media (max-width:480px){.three{grid-template-columns:1fr 1fr 1fr}.mini .v{font-size:18px}}
 </style>
-<script src="config.js?v=12cd3c6-1792865918"></script>
+<script src="config.js?v=8abd7b5-1792868496"></script>
 </head>
 <body>
 <div class="wrap">
@@ -96,6 +100,19 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
   </section>
 
   <section class="card" id="callsTab" style="margin-bottom:14px" hidden>
+    <p style="margin:0 0 12px;display:flex;gap:8px"><a class="pill" id="callsTabList" href="/me#calls">Calls</a><a class="pill" id="callsTabScore" href="/me#calls?view=scorecard">Scorecard</a></p>
+    <div id="scoreView" hidden>
+      <p class="label"><span>Best practices scorecard</span><span><button class="link" id="scPrev">&larr;</button> <b id="scMonth"></b> <button class="link" id="scNext">&rarr;</button></span></p>
+      <p class="note" style="margin:0 0 10px">Layer 1: rules and compliance (pass = no flags on the call). Layer 2: the 4 areas, 1 to 5 from scored calls. Top closer = most net debt this month. Conversion = net deals per 100 Vici calls. Gaps are against the top closer.</p>
+      <div id="scTop"></div>
+      <div id="scCards"></div>
+      <p class="label" style="margin-top:22px"><span>Closers who say X get Y</span><span class="when">last 3 months</span></p>
+      <p class="note" style="margin:0 0 10px">Real lines scored 4 or 5 in each area, with that closer's conversion. The top closer's lines come first.</p>
+      <div id="scLib"></div>
+      <p class="label" style="margin-top:22px"><span>Calibration</span><span id="scCalDue" class="when"></span></p>
+      <p class="note" style="margin:0 0 10px">Each quarter managers rescore calls (open a call, "Your scores"). This shows how often the scorer agrees with managers.</p>
+      <div id="scCal"></div>
+    </div>
     <div id="callList">
       <p class="label"><span>Call QA</span><span id="callsN"></span></p>
       <p class="note" style="margin:0 0 10px">Closer calls from Vici, pulled after 6 PM Pacific, Monday to Saturday. Calls of 5 minutes or longer are transcribed and scored (up to 40 a night, shared across closers) on the 16 CFN checks. Tap a call for the full review. Recordings are kept 90 days.</p>
@@ -107,6 +124,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
       <p id="cdSummary" style="margin:0 0 10px"></p>
       <p id="cdForth" class="note" style="margin:0 0 10px"></p>
       <p id="cdAudio" style="margin:0 0 12px"></p>
+      <div id="cdScore"></div>
       <div id="cdBody"></div>
       <details style="margin-top:14px"><summary><span>Transcript</span></summary><pre id="cdTranscript" style="white-space:pre-wrap;font:inherit;font-size:14px;line-height:1.5;margin:8px 0 0"></pre></details>
     </div>
@@ -617,8 +635,13 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
   const RESULT = { yes: '<span class="ok">&#10003;</span>', partial: '<span class="wait">partly</span>', no: '<span class="neg">&#10007;</span>', "n/a": '<span class="when">n/a</span>', not_on_recording: '<span class="when">not on recording</span>' };
   const when = (iso) => iso ? new Date(iso).toLocaleString("en-US", { timeZone: "America/Los_Angeles", weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "";
   const mins = (m) => m === null || m === undefined ? "" : Math.floor(m) + ":" + String(Math.round((m % 1) * 60)).padStart(2, "0");
+  const dots = (n) => n ? "&#9679;".repeat(n) + '<span style="opacity:.25">' + "&#9679;".repeat(5 - n) + "</span>" : '<span class="when">not reached</span>';
   function renderCalls(d) {
     $("app").hidden = true; $("hello").textContent = "Manager view · calls"; $("callsMsg").textContent = "";
+    const sc = d.view === "scorecard";
+    $("callsTabList").toggleAttribute("aria-current", !sc); $("callsTabScore").toggleAttribute("aria-current", sc);
+    $("scoreView").hidden = !sc;
+    if (sc) { $("callList").hidden = true; $("callDetail").hidden = true; renderScorecard(d.scorecard); return; }
     const c = d.counts || {};
     $("callsN").textContent = `${c.scored || 0} scored` + (c.waiting ? ` · ${c.waiting} waiting` : "") + (c.failed ? ` · ${c.failed} failed` : "");
     const status = (r) => r.status === "scored" ? (r.closed === true ? "Yes" : r.closed === false ? "No" : "") : r.status === "new" ? '<span class="when">waiting to be scored</span>' : r.status === "transcribed" ? '<span class="when">being scored</span>' : r.status === "skipped" ? `<span class="when">not scored: ${esc(r.error || "skipped")}</span>` : `<span class="neg">${esc(r.status)}</span>${r.error ? `<br><span class="when">${esc(String(r.error).slice(0, 120))}</span>` : ""}`;
@@ -649,6 +672,14 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
       + (det.checks.length ? `<p class="label" style="margin-top:14px"><span>The 16 checks</span></p><table class="tt calls checks"><thead><tr><th>Check</th><th>Result</th></tr></thead><tbody>${det.checks.map((g) => `<tr><td><b>${esc(g.label)}</b>${g.evidence ? `<br><span class="when">${g.minute ? esc(g.minute) + " · " : ""}${esc(g.evidence)}</span>` : ""}</td><td>${RESULT[g.result] || esc(g.result || "")}</td></tr>`).join("")}</tbody></table>` : "")
       ;
     $("cdTranscript").textContent = det.transcript || "No transcript.";
+    const areas = det.areas || [];
+    $("cdScore").innerHTML = areas.some((a) => a.score !== null) || det.status === "scored" ? `<p class="label" style="margin-top:6px"><span>Scorecard</span><span>${det.compliance_pass ? '<b class="ok">Compliance: pass</b>' : '<b class="neg">Compliance: ' + det.compliance.length + ' flag' + (det.compliance.length === 1 ? "" : "s") + '</b>'}</span></p>`
+      + areas.map((a) => `<div style="padding:8px 0;border-bottom:1px solid var(--tint)"><div style="display:flex;justify-content:space-between;gap:8px"><b>${esc(a.label)}</b><span class="dots" style="white-space:nowrap">${a.score === null ? '<span class="when">not scored</span>' : dots(a.score) + (a.score ? ` <b style="letter-spacing:0;color:inherit">${a.score}/5</b>` : "")}</span></div>
+          ${a.feedback ? `<div style="font-size:14px;margin-top:4px">${esc(a.feedback)}</div>` : ""}${a.quote ? `<div class="when" style="margin-top:4px">Their line${a.minute ? " at " + esc(a.minute) : ""}: &ldquo;${esc(a.quote)}&rdquo;</div>` : ""}</div>`).join("")
+      + (areas.length ? `<details style="margin-top:10px"${areas.some((a) => a.my_score !== null) ? " open" : ""}><summary><span>Your scores (calibration)</span></summary><form id="calForm" style="margin-top:8px">
+          ${areas.map((a) => `<label style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:4px 0;font-size:14px">${esc(a.label)}<select name="${esc(a.key)}"><option value="">-</option>${[0, 1, 2, 3, 4, 5].map((n) => `<option value="${n}"${a.my_score === n ? " selected" : ""}>${n === 0 ? "0 not reached" : n}</option>`).join("")}</select></label>`).join("")}
+          <textarea name="note" rows="2" maxlength="500" placeholder="Note (optional)" style="width:100%;box-sizing:border-box;margin-top:6px">${esc(areas.find((a) => a.my_note)?.my_note || "")}</textarea>
+          <button class="go small" type="submit" style="margin-top:6px">Save my scores</button> <span id="calMsg" class="when"></span></form></details>` : "") : "";
   }
   $("callRows").onclick = (e) => { const tr = e.target.closest("[data-call]"); if (tr) location.hash = "calls?id=" + tr.dataset.call; };
   $("callBack").onclick = () => { location.hash = "calls"; };
@@ -664,6 +695,34 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
       const a = document.createElement("audio"); a.controls = true; a.preload = "auto"; a.src = j.url; a.style.width = "100%"; $("cdAudio").appendChild(a); a.play().catch(() => {});
     } catch (err) { $("cdAudio").innerHTML = `<span class="neg">${esc(err.message)}</span> <button class="go small" id="cdPlay">Try again</button>`; }
   };
+  function renderScorecard(s) {
+    const AREA = s.areas, money = (n) => "$" + Math.round(n || 0).toLocaleString("en-US");
+    $("scMonth").textContent = new Date(s.month + "-15T12:00:00Z").toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" });
+    $("scTop").innerHTML = s.top ? `<p style="margin:0 0 10px">Top closer: <b>${esc(s.top.closer)}</b> · ${s.top.net_deals} net deals · ${money(s.top.net_debt)} net debt</p>` : '<p class="when" style="margin:0 0 10px">No net deals this month yet.</p>';
+    const pct = (v) => v === null || v === undefined ? "-" : v + "%";
+    $("scCards").innerHTML = s.closers.length ? s.closers.map((c) => `<div class="sc-card${c.is_top ? " top" : ""}">
+        <div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline"><b>${esc(c.closer)}${c.is_top ? " &#9733;" : ""}</b><span class="when">${esc(c.call_sign || "")}</span></div>
+        <div class="when" style="margin:4px 0 8px">${c.net_deals} net of ${c.submitted} · ${money(c.net_debt)} · ${c.conversion === null ? "no Vici calls" : c.conversion + " per 100 calls"} · ${c.calls_scored ? `compliance pass ${pct(c.compliance_pass_pct)} of ${c.calls_scored} scored call${c.calls_scored === 1 ? "" : "s"}` : "no calls scored yet"}</div>
+        ${AREA.map((a) => { const v = c.areas[a.key], g = c.gaps[a.key];
+          return `<div class="sc-row"><span>${esc(a.label)}</span><span class="sc-bar"><i style="width:${v.avg ? (v.avg / 5) * 100 : 0}%"></i></span><span style="min-width:74px;text-align:right">${v.avg === null ? '<span class="when">-</span>' : "<b>" + v.avg + "</b>"}${g === null || c.is_top ? "" : ` <span class="${g < 0 ? "gap-neg" : "gap-pos"}">${g > 0 ? "+" : ""}${g}</span>`}</span></div>`; }).join("")}
+      </div>`).join("") : '<p class="empty">No closers with deals or calls this month yet.</p>';
+    $("scLib").innerHTML = AREA.map((a) => { const l = s.library[a.key] || [];
+      return `<p style="margin:12px 0 4px"><b>${esc(a.label)}</b></p>` + (l.length ? `<ul style="margin:0;padding-left:20px">${l.map((x) => `<li style="margin:0 0 6px">&ldquo;${esc(x.quote)}&rdquo;<br><span class="when">${esc(x.closer)}${x.top ? " (top closer)" : ""} · ${x.closer_conversion === null ? "conversion not known yet" : x.closer_conversion + " deals per 100 calls"}${x.converted ? " · this call became a deal" : ""} · <a href="/me#calls?id=${esc(x.call_id)}">call</a></span></li>`).join("")}</ul>` : '<p class="when" style="margin:0">No lines scored 4 or 5 yet.</p>'); }).join("");
+    $("scCalDue").textContent = s.calibration.due_this_month ? "due this month" : "";
+    $("scCal").innerHTML = `<div style="font-size:14px">${AREA.map((a) => { const k = s.calibration.areas[a.key]; return `<div class="sc-row"><span>${esc(a.label)}</span><span></span><span>${k.n ? `${k.within_1_pct}% within 1 point (${k.n})` : '<span class="when">no rescored calls yet</span>'}</span></div>`; }).join("")}</div>`;
+  }
+  const shiftMonth = (k) => { const p = new URLSearchParams(location.hash.replace(/^#calls\??/, "")); const d = new Date((p.get("month") || new Date().toISOString().slice(0, 7)) + "-15T12:00:00Z"); d.setUTCMonth(d.getUTCMonth() + k); location.hash = "calls?view=scorecard&month=" + d.toISOString().slice(0, 7); };
+  $("scPrev").onclick = () => shiftMonth(-1); $("scNext").onclick = () => shiftMonth(1);
+  $("cdScore").addEventListener("submit", async (e) => {
+    if (e.target.id !== "calForm") return;
+    e.preventDefault();
+    const f = new FormData(e.target), scores = {};
+    for (const [k, v] of f.entries()) if (k !== "note" && v !== "") scores[k] = Number(v);
+    const id = new URLSearchParams(location.hash.replace(/^#calls\??/, "")).get("id");
+    $("calMsg").textContent = "Saving...";
+    try { await api("/calls/calibrate", { call_id: id, scores, note: f.get("note") }); $("calMsg").textContent = "Saved."; }
+    catch (err) { $("calMsg").textContent = err.message; }
+  });
   let onbRows = [];
   function renderOnboarding(rows) {
     onbRows = rows;
@@ -713,8 +772,9 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
   });
   async function load() {
     const week = viewing === "report" ? new URLSearchParams(location.hash.replace(/^#report\??/, "")).get("week") : null;
-    const callId = viewing === "calls" ? new URLSearchParams(location.hash.replace(/^#calls\??/, "")).get("id") : null;
-    try { render(await api("/me" + (viewing ? "?rep=" + encodeURIComponent(viewing) + (week ? "&week=" + encodeURIComponent(week) : "") + (callId ? "&id=" + encodeURIComponent(callId) : "") : ""))); } catch (e) { if (e.message) showErr(e.message); }
+    const cp = viewing === "calls" ? new URLSearchParams(location.hash.replace(/^#calls\??/, "")) : new URLSearchParams();
+    const extra = ["id", "view", "month"].map((k) => cp.get(k) ? "&" + k + "=" + encodeURIComponent(cp.get(k)) : "").join("");
+    try { render(await api("/me" + (viewing ? "?rep=" + encodeURIComponent(viewing) + (week ? "&week=" + encodeURIComponent(week) : "") + extra : ""))); } catch (e) { if (e.message) showErr(e.message); }
   }
   $("pick").onchange = () => {
     const v = $("pick").value;
@@ -791,6 +851,6 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
   else if (session) load(); else showSignIn();
 })();
 </script>
-<script src="coach.js?v=12cd3c6-1792865918"></script>
+<script src="coach.js?v=8abd7b5-1792868496"></script>
 </body>
 </html>
