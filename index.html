@@ -10,10 +10,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Quicksand:wght@500;700&display=swap">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
-<link rel="stylesheet" href="board.css?v=a0ee485-1792823231">
-<link rel="stylesheet" href="coach.css?v=a0ee485-1792823231">
-<script src="config.js?v=a0ee485-1792823231"></script>
-<script src="confetti.browser.js?v=a0ee485-1792823231"></script>
+<link rel="stylesheet" href="board.css?v=06294c5-1792853869">
+<link rel="stylesheet" href="coach.css?v=06294c5-1792853869">
+<script src="config.js?v=06294c5-1792853869"></script>
+<script src="confetti.browser.js?v=06294c5-1792853869"></script>
 </head>
 <body>
 <div class="wrap">
@@ -250,10 +250,11 @@
       $("pnTitle").textContent = j.title + (rep ? " · " + rep : "") + (manager ? "" : " (your deals)");
       const full = `/me#deals?set=${encodeURIComponent(set)}${rep ? "&rep=" + encodeURIComponent(rep) : ""}`;
       $("pnSum").innerHTML = `${j.count} deal${j.count === 1 ? "" : "s"} · ${dollars(j.total_debt)} debt${j.truncated ? " · showing the first 500" : ""} · ${manager ? `<a href="${full}" class="full">Open full list (filter, sort, download)</a>` : ""}`;
-      $("pnHead").innerHTML = `<tr><th>When</th><th>Closer</th><th>Forth ID</th><th>Client</th><th>Debt</th><th>Status now</th><th>1st payment</th><th>Paid</th>${speed ? "<th>Days</th>" : ""}</tr>`;
+      const why = j.rows.some((x) => x.reason);
+      $("pnHead").innerHTML = `<tr><th>When</th><th>Closer</th><th>Forth ID</th><th>Client</th><th>Debt</th><th>Status now</th><th>1st payment</th><th>Paid</th>${speed ? "<th>Days</th>" : ""}${why ? "<th>Why</th>" : ""}</tr>`;
       $("pnRows").innerHTML = j.rows.length ? j.rows.map((x) => `<tr><td>${shortDay(x.at)}</td><td>${esc(x.shown_as)}${x.shown_as !== x.closer ? ` <span class="when">${esc(x.closer)}</span>` : ""}</td>
         <td>${esc(x.forth_id)}</td><td>${esc(x.client)}</td><td>${dollars(x.debt)}</td><td>${esc(x.status ?? "")}</td>
-        <td>${shortDay(x.first_payment)}${x.first_cleared ? ' <span class="ok">&#10003;</span>' : ""}</td><td>${x.payments_cleared >= 2 ? "2+" : x.payments_cleared}</td>${speed ? `<td><b>${x.days}</b></td>` : ""}</tr>`).join("")
+        <td>${shortDay(x.first_payment)}${x.first_cleared ? ' <span class="ok">&#10003;</span>' : ""}</td><td>${x.payments_cleared >= 2 ? "2+" : x.payments_cleared}</td>${speed ? `<td><b>${x.days}</b></td>` : ""}${why ? `<td style="white-space:normal;min-width:200px">${esc(x.reason || "")}</td>` : ""}</tr>`).join("")
         : `<tr><td colspan="9" class="empty">No deals in this number.</td></tr>`;
     } catch (e) { $("pnTitle").textContent = "Deals"; $("pnSum").textContent = e.message; }
   }
@@ -268,6 +269,6 @@
   load(); setInterval(load, 15000);
 })();
 </script>
-<script src="coach.js?v=a0ee485-1792823231"></script>
+<script src="coach.js?v=06294c5-1792853869"></script>
 </body>
 </html>
