@@ -9,8 +9,8 @@
 <title>My CFN Page</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Quicksand:wght@500;700&display=swap">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
-<link rel="stylesheet" href="board.css?v=d2ade16-1792856605">
-<link rel="stylesheet" href="coach.css?v=d2ade16-1792856605">
+<link rel="stylesheet" href="board.css?v=ee337e1-1792861411">
+<link rel="stylesheet" href="coach.css?v=ee337e1-1792861411">
 <style>
 .wrap{max-width:680px}
 .three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
@@ -61,7 +61,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
 #signin{text-align:center;padding:30px 16px}
 @media (max-width:480px){.three{grid-template-columns:1fr 1fr 1fr}.mini .v{font-size:18px}}
 </style>
-<script src="config.js?v=d2ade16-1792856605"></script>
+<script src="config.js?v=ee337e1-1792861411"></script>
 </head>
 <body>
 <div class="wrap">
@@ -98,7 +98,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
   <section class="card" id="callsTab" style="margin-bottom:14px" hidden>
     <div id="callList">
       <p class="label"><span>Call QA</span><span id="callsN"></span></p>
-      <p class="note" style="margin:0 0 10px">Closer calls from Vici, pulled after 5 PM Pacific (up to 40 a night, 2 minutes or longer), transcribed and scored on the 16 CFN checks. Tap a call for the full review. Recordings are kept 90 days.</p>
+      <p class="note" style="margin:0 0 10px">Closer calls from Vici, pulled after 6 PM Pacific, Monday to Saturday (up to 40 a night, 2 minutes or longer), transcribed and scored on the 16 CFN checks. Tap a call for the full review. Recordings are kept 90 days.</p>
       <div><table class="tt calls"><thead><tr><th>When</th><th>Closer</th><th>Result</th></tr></thead><tbody id="callRows"></tbody></table></div>
     </div>
     <div id="callDetail" hidden>
@@ -629,7 +629,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
       return `<b>${r.closed === true ? "Closed" : r.closed === false ? "Not closed" : "Scored"}</b>${flags}${loss}`;
     };
     $("callRows").innerHTML = d.calls.length ? d.calls.map((r) => `<tr data-call="${esc(r.call_id)}" style="cursor:pointer"><td>${esc(short(r.started_at))}${r.minutes ? `<br><span class="when">${mins(r.minutes)} min</span>` : ""}</td><td><b>${esc(r.closer)}</b><br><span class="when">${esc(r.call_sign || "")}</span></td><td>${result(r)}</td></tr>`).join("")
-      : '<tr><td colspan="3" class="empty" style="text-align:left">No calls yet. The first pull runs after 5 PM Pacific on a floor day.</td></tr>';
+      : '<tr><td colspan="3" class="empty" style="text-align:left">No calls yet. The first pull runs after 6 PM Pacific on a floor day.</td></tr>';
     const det = d.detail;
     $("callList").hidden = !!det; $("callDetail").hidden = !det;
     if (new URLSearchParams(location.hash.replace(/^#calls\??/, "")).get("id") && !det) $("callsMsg").textContent = "That call was not found.";
@@ -789,6 +789,6 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
   else if (session) load(); else showSignIn();
 })();
 </script>
-<script src="coach.js?v=d2ade16-1792856605"></script>
+<script src="coach.js?v=ee337e1-1792861411"></script>
 </body>
 </html>
