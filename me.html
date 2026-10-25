@@ -9,8 +9,8 @@
 <title>My CFN Page</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Quicksand:wght@500;700&display=swap">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
-<link rel="stylesheet" href="board.css?v=8abd7b5-1792868496">
-<link rel="stylesheet" href="coach.css?v=8abd7b5-1792868496">
+<link rel="stylesheet" href="board.css?v=67b9f4f-1792886821">
+<link rel="stylesheet" href="coach.css?v=67b9f4f-1792886821">
 <style>
 .wrap{max-width:680px}
 .three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
@@ -65,7 +65,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
 #signin{text-align:center;padding:30px 16px}
 @media (max-width:480px){.three{grid-template-columns:1fr 1fr 1fr}.mini .v{font-size:18px}}
 </style>
-<script src="config.js?v=8abd7b5-1792868496"></script>
+<script src="config.js?v=67b9f4f-1792886821"></script>
 </head>
 <body>
 <div class="wrap">
@@ -97,6 +97,19 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     <p class="note" style="margin:0 0 10px">New closers and anyone still setting up. Steps: in Forth, signed in, call sign, pay set up (Gusto or overseas), first deal, Vici ID. Copy the welcome text into a text or email to the new rep.</p>
     <div style="overflow-x:auto"><table class="tt onb"><thead><tr><th>Closer</th><th>Added</th><th>Signed in</th><th>Call sign</th><th>Pay</th><th>First deal</th><th>Vici ID</th><th>Transfer line</th><th></th></tr></thead><tbody id="onbRows"></tbody></table></div>
     <p class="note" id="onbMsg" aria-live="polite"></p>
+  </section>
+
+  <section class="card" id="finTab" style="margin-bottom:14px" hidden>
+    <p class="label"><span>QuickBooks</span><span id="qboState" class="when"></span></p>
+    <div id="qboBox" style="margin:0 0 6px"></div>
+    <p class="note" id="finMsg" aria-live="polite"></p>
+    <p class="label" style="margin-top:18px"><span>Profit per rep</span><span><button class="link" id="finPrev">&larr;</button> <b id="finMonth"></b> <button class="link" id="finNext">&rarr;</button></span></p>
+    <p class="note" id="finRepNote" style="margin:0 0 10px"></p>
+    <div id="finRepTotals"></div>
+    <div id="finReps"></div>
+    <p class="label" style="margin-top:22px"><span>Actual vs pro forma</span><span class="when">by month</span></p>
+    <p class="note" style="margin:0 0 10px">Revenue is 8% of enrolled debt on deals whose 1st deposit cleared that month (Cordoba payout files). Operating profit is from QuickBooks once it is connected. The pro forma assumed 9%.</p>
+    <div id="finMonths"></div>
   </section>
 
   <section class="card" id="callsTab" style="margin-bottom:14px" hidden>
@@ -326,7 +339,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
   function showSignIn(msg) {
     $("app").hidden = true; $("logout").hidden = true; $("signin").hidden = false; showErr(msg || "");
     // Opened a link to a tab (for example the weekly report from Telegram) while signed out: come back to it after sign-in.
-    if (/^#(report|deals|saves|calls|coach|payroll|team|onboarding)/.test(location.hash)) { try { localStorage.setItem("cfn_after", location.hash); } catch {} }
+    if (/^#(report|deals|saves|calls|coach|payroll|team|onboarding|finance)/.test(location.hash)) { try { localStorage.setItem("cfn_after", location.hash); } catch {} }
     const start = () => {
       if (!window.google?.accounts?.id) return setTimeout(start, 200);
       // Full-page sign-in (no pop-up): pop-ups come up blank in phone browsers opened from Telegram, Gmail, or Messages.
@@ -365,11 +378,14 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     try { localStorage.setItem("cfn_manager", mgr ? "1" : "0"); } catch {}
     $("pageTitle").textContent = mgr ? "CFN Staff" : "My CFN Page"; document.title = mgr ? "CFN Staff" : "My CFN Page";
     if (!$("nav").querySelector('a[href="/coach"]')) $("nav").querySelector("[data-v='']").insertAdjacentHTML("afterend", '<a href="/coach">Coach</a>');
+    try { if (mgr) localStorage.setItem("cfn_owner", d.owner ? "1" : (d.owner === false ? "0" : localStorage.getItem("cfn_owner") || "0")); } catch {}
+    let isOwner = false; try { isOwner = mgr && localStorage.getItem("cfn_owner") === "1"; } catch {}
+    if (isOwner && !$("nav").querySelector("[data-v=finance]")) $("nav").insertAdjacentHTML("beforeend", '<a href="/me#finance" data-v="finance">Finance</a>');
     if (mgr && !$("nav").querySelector("[data-v=payroll]")) {
       $("nav").querySelector("[data-v='']").textContent = "Reps";
       $("nav").insertAdjacentHTML("beforeend", '<a href="/me#payroll" data-v="payroll">Payroll</a><a href="/me#team" data-v="team">Team pay</a><a href="/me#onboarding" data-v="onboarding">Onboarding</a><a href="/me#report" data-v="report">Reports</a><a href="/me#deals" data-v="deals">Deals</a><a href="/me#saves" data-v="saves">Saves</a><a href="/me#calls" data-v="calls">Calls</a><a href="/me#coach" data-v="coach">Coach library</a>');
     }
-    $("nav").querySelectorAll("a").forEach((a) => a.toggleAttribute("aria-current", a.dataset.v !== undefined && a.dataset.v === (mgr ? (["payroll", "team", "onboarding", "saves", "coach", "deals", "report", "calls"].includes(d.viewing) ? d.viewing : "") : "")));
+    $("nav").querySelectorAll("a").forEach((a) => a.toggleAttribute("aria-current", a.dataset.v !== undefined && a.dataset.v === (mgr ? (["payroll", "team", "onboarding", "saves", "coach", "deals", "report", "calls", "finance"].includes(d.viewing) ? d.viewing : "") : "")));
     $("nav").querySelectorAll("a[aria-current]").forEach((a) => a.setAttribute("aria-current", "page"));
     $("mgr").hidden = !mgr;
     if (mgr) {
@@ -380,6 +396,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
       $("onb").hidden = d.viewing !== "onboarding";
       $("saves").hidden = d.viewing !== "saves";
       $("callsTab").hidden = d.viewing !== "calls";
+      $("finTab").hidden = d.viewing !== "finance";
       $("coachTab").hidden = d.viewing !== "coach";
       $("dealsTab").hidden = d.viewing !== "deals";
       $("reportTab").hidden = d.viewing !== "report";
@@ -388,6 +405,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
       if (d.viewing === "coach") { renderCoach(d.coach); return; }
       if (d.viewing === "saves") { saveCallsReady = !!d.save_calls_ready; renderSaves(d.saves, d.reasons); return; }
       if (d.viewing === "calls") { renderCalls(d); return; }
+      if (d.viewing === "finance") { renderFinance(d.finance); return; }
       if (d.viewing === "onboarding") { renderOnboarding(d.onboarding); return; }
       if (d.viewing === "payroll") { renderPayroll(d.payroll); return; }
       if (d.viewing === "team") {
@@ -723,6 +741,42 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     try { await api("/calls/calibrate", { call_id: id, scores, note: f.get("note") }); $("calMsg").textContent = "Saved."; }
     catch (err) { $("calMsg").textContent = err.message; }
   });
+  const usd = (n) => n === null || n === undefined ? "-" : (n < 0 ? "-$" : "$") + Math.abs(Math.round(n)).toLocaleString("en-US");
+  const vsPlan = (a, p) => p ? ` <span class="${a >= p ? "gap-pos" : "gap-neg"}">${Math.round((a / p) * 100)}%</span>` : "";
+  function renderFinance(f) {
+    $("app").hidden = true; $("hello").textContent = "Owners · finance";
+    const hp = new URLSearchParams(location.hash.replace(/^#finance\??/, ""));
+    if (hp.get("qbo")) { $("finMsg").innerHTML = `<b class="${hp.get("qbo") === "ok" ? "ok" : "neg"}">${esc(hp.get("m") || "")}</b>`; history.replaceState(null, "", "/me#finance"); }
+    const q = f.qbo;
+    $("qboState").textContent = q ? "connected" : "not connected";
+    $("qboBox").innerHTML = q
+      ? `<div style="font-size:14px"><b>${esc(q.company_name || "CFN")}</b> · connected by ${esc(q.connected_by)}<br><span class="when">${q.last_sync_at ? "Last refreshed " + new Date(q.last_sync_at).toLocaleString("en-US", { timeZone: "America/Los_Angeles", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "First refresh tonight about 4 AM Pacific"}</span>${q.last_error ? `<br><span class="neg">Last refresh failed: ${esc(q.last_error)}</span>` : ""}<br><button class="link" id="qboOff">Disconnect QuickBooks</button></div>`
+      : `<p style="margin:0 0 6px;font-size:14px">Link CFN's QuickBooks so real income and costs show here. You sign in to Intuit yourself and pick the CFN company. Read only.</p><button class="go small" id="qboOn">Connect QuickBooks</button>`;
+    const r = f.reps;
+    $("finMonth").textContent = new Date(r.month + "-15T12:00:00Z").toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" });
+    $("finRepNote").innerHTML = `Revenue = ${f.rate_pct}% of debt on deals cleared this month. Costs from <b>${esc(r.cost_source)}</b>${r.estimate ? " (estimates)" : ""}. Leads and credit pulls are split by Vici calls${r.no_calls ? " (no Vici calls this month yet, so none are charged)" : ""}; overhead is split evenly. Verixa takes ${20}% of what is left.`;
+    const t = r.totals;
+    $("finRepTotals").innerHTML = `<p style="margin:0 0 10px;font-size:14px">${t.deals} cleared deals · ${usd(t.debt)} debt · revenue <b>${usd(t.revenue)}</b> · costs ${usd(t.costs)} · Verixa ${usd(t.verixa)} · profit <b class="${t.profit < 0 ? "neg" : "ok"}">${usd(t.profit)}</b></p>`;
+    $("finReps").innerHTML = r.rows.length ? r.rows.map((x) => `<details class="sc-card"><summary style="display:flex;justify-content:space-between;gap:8px;cursor:pointer"><span><b>${esc(x.closer)}</b><br><span class="when">${x.deals} deal${x.deals === 1 ? "" : "s"} · ${usd(x.revenue)} revenue${x.margin_pct === null ? "" : " · " + x.margin_pct + "% margin"}</span></span><b class="${x.profit < 0 ? "neg" : "ok"}" style="white-space:nowrap">${usd(x.profit)}</b></summary>
+        <div style="font-size:14px;margin-top:8px">${[["Revenue", x.revenue], ["Base pay", -x.base_pay], ["Commission" + (x.commission_estimated ? " (part estimated)" : ""), -x.commission], ["Clawbacks", -x.clawbacks], ["Leads (" + x.calls + " calls)", -x.leads], ["Credit pulls", -x.credit_pulls], ["Overhead share", -x.overhead], ["Verixa", -x.verixa], ["Profit", x.profit]].map(([k, v]) => `<div class="sc-row"><span>${esc(k)}</span><span></span><span class="${v < 0 ? "neg" : ""}">${usd(v)}</span></div>`).join("")}${x.overseas ? '<div class="when">Paid overseas: base pay is not in Gusto, so it is not counted.</div>' : ""}</div></details>`).join("")
+      : '<p class="empty">No cleared deals, calls, or pay for this month.</p>';
+    $("finMonths").innerHTML = f.months.map((m) => { const a = m.actual, p = m.plan, qb = a.qbo;
+      return `<div class="sc-card"><div style="display:flex;justify-content:space-between"><b>${new Date(m.month + "-15T12:00:00Z").toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" })}</b><span class="when">Month ${m.month_n}${m.current ? " · so far" : ""}</span></div>
+        ${[["Clients submitted", a.clients, p.clients, false], ["Debt submitted", a.submitted_debt, p.submitted_debt, true], ["Net debt (after cancels, returns)", a.net_debt, null, true], ["1st deposits cleared (debt)", a.first_deposit_debt, p.first_deposit_debt, true], ["Revenue (8%)", a.revenue, p.revenue, true], ["Operating profit", qb ? qb.operating_profit : null, p.operating_profit, true]]
+          .map(([k, v, pl, money]) => `<div class="sc-row"><span>${esc(k)}</span><span class="when">${pl === null || pl === undefined ? "" : "plan " + (money ? usd(pl) : Math.round(pl))}</span><span>${v === null ? '<span class="when">QuickBooks</span>' : (money ? usd(v) : v)}${v === null || pl === null || pl === undefined || m.current ? "" : vsPlan(v, pl)}</span></div>`).join("")}
+        ${qb ? `<div class="when" style="margin-top:4px">QuickBooks: income ${usd(qb.income)} · marketing ${usd(qb.marketing)} · credit pulls ${usd(qb.credit_pulls)} · payroll ${usd(qb.payroll)} · other ${usd(qb.overhead)}</div>` : ""}</div>`; }).join("");
+  }
+  const finShift = (k) => { const p = new URLSearchParams(location.hash.replace(/^#finance\??/, "")); const d = new Date((p.get("month") || new Date().toISOString().slice(0, 7)) + "-15T12:00:00Z"); d.setUTCMonth(d.getUTCMonth() + k); location.hash = "finance?month=" + d.toISOString().slice(0, 7); };
+  $("finPrev").onclick = () => finShift(-1); $("finNext").onclick = () => finShift(1);
+  $("qboBox").onclick = async (e) => {
+    if (e.target.closest("#qboOn")) {
+      $("finMsg").textContent = "Opening Intuit...";
+      try { const j = await api("/qbo/connect", {}); location.href = j.url; } catch (err) { $("finMsg").textContent = err.message; }
+    } else if (e.target.closest("#qboOff")) {
+      if (!confirm("Disconnect CFN's QuickBooks from the site? The dashboard keeps the numbers already pulled.")) return;
+      try { await api("/qbo/disconnect", {}); $("finMsg").textContent = "QuickBooks disconnected."; load(); } catch (err) { $("finMsg").textContent = err.message; }
+    }
+  };
   let onbRows = [];
   function renderOnboarding(rows) {
     onbRows = rows;
@@ -764,7 +818,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
       ? `<p style="margin:0"><b>Approved</b> by ${esc(p.approved_by || "")} on ${esc(new Date(p.approved_at).toLocaleString("en-US", { timeZone: "America/Los_Angeles", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }))}. Locked.</p>`
       : `<p class="label">To approve</p><p style="margin:0">${p.reviews.length ? "Clear the review items first. Then r" : "R"}eply on Telegram: <b>${esc(p.approve_with)}</b></p><p class="note" style="margin:6px 0 0">Approval locks this payroll. A person still clicks Submit in Gusto.</p>`;
   }
-  const fromHash = () => (/^#deals(\?|$)/.test(location.hash) ? "deals" : /^#report(\?|$)/.test(location.hash) ? "report" : /^#calls(\?|$)/.test(location.hash) ? "calls" : ["#payroll", "#team", "#onboarding", "#saves", "#coach"].includes(location.hash) ? location.hash.slice(1) : "");
+  const fromHash = () => (/^#deals(\?|$)/.test(location.hash) ? "deals" : /^#report(\?|$)/.test(location.hash) ? "report" : /^#calls(\?|$)/.test(location.hash) ? "calls" : /^#finance(\?|$)/.test(location.hash) ? "finance" : ["#payroll", "#team", "#onboarding", "#saves", "#coach"].includes(location.hash) ? location.hash.slice(1) : "");
   let viewing = fromHash();
   addEventListener("hashchange", () => {
     if (/^#signin/.test(location.hash)) { const m = takeSignIn(); if (m) showSignIn(m); else if (session) load(); return; }
@@ -772,13 +826,13 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
   });
   async function load() {
     const week = viewing === "report" ? new URLSearchParams(location.hash.replace(/^#report\??/, "")).get("week") : null;
-    const cp = viewing === "calls" ? new URLSearchParams(location.hash.replace(/^#calls\??/, "")) : new URLSearchParams();
+    const cp = viewing === "calls" ? new URLSearchParams(location.hash.replace(/^#calls\??/, "")) : viewing === "finance" ? new URLSearchParams(location.hash.replace(/^#finance\??/, "")) : new URLSearchParams();
     const extra = ["id", "view", "month"].map((k) => cp.get(k) ? "&" + k + "=" + encodeURIComponent(cp.get(k)) : "").join("");
     try { render(await api("/me" + (viewing ? "?rep=" + encodeURIComponent(viewing) + (week ? "&week=" + encodeURIComponent(week) : "") + extra : ""))); } catch (e) { if (e.message) showErr(e.message); }
   }
   $("pick").onchange = () => {
     const v = $("pick").value;
-    if (["payroll", "team", "onboarding", "saves", "calls", "coach", "deals", "report"].includes(v)) { location.hash = v; return; } // hashchange loads it
+    if (["payroll", "team", "onboarding", "saves", "calls", "coach", "deals", "report", "finance"].includes(v)) { location.hash = v; return; } // hashchange loads it
     viewing = v; if (location.hash) history.replaceState(null, "", "/me"); load();
   };
   $("onbRows").onclick = async (e) => {
@@ -838,7 +892,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     if (!mine || p.get("n") !== mine) return "That sign-in was started somewhere else. Tap Sign in with Google again.";
     session = p.get("signin"); store.set(session);
     let after = ""; try { after = localStorage.getItem("cfn_after") || ""; localStorage.removeItem("cfn_after"); } catch {}
-    if (/^#(report|deals|saves|calls|coach|payroll|team|onboarding)/.test(after)) { history.replaceState(null, "", "/me" + after); viewing = fromHash(); }
+    if (/^#(report|deals|saves|calls|coach|payroll|team|onboarding|finance)/.test(after)) { history.replaceState(null, "", "/me" + after); viewing = fromHash(); }
     try { localStorage.setItem("cfn_manager", p.get("m") === "1" ? "1" : "0"); } catch {}
     return "";
   }
@@ -851,6 +905,6 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
   else if (session) load(); else showSignIn();
 })();
 </script>
-<script src="coach.js?v=8abd7b5-1792868496"></script>
+<script src="coach.js?v=67b9f4f-1792886821"></script>
 </body>
 </html>
