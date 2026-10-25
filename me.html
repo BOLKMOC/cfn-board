@@ -9,8 +9,8 @@
 <title>My CFN Page</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Quicksand:wght@500;700&display=swap">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
-<link rel="stylesheet" href="board.css?v=67b9f4f-1792886971">
-<link rel="stylesheet" href="coach.css?v=67b9f4f-1792886971">
+<link rel="stylesheet" href="board.css?v=67b9f4f-1792887155">
+<link rel="stylesheet" href="coach.css?v=67b9f4f-1792887155">
 <style>
 .wrap{max-width:680px}
 .three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
@@ -65,7 +65,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
 #signin{text-align:center;padding:30px 16px}
 @media (max-width:480px){.three{grid-template-columns:1fr 1fr 1fr}.mini .v{font-size:18px}}
 </style>
-<script src="config.js?v=67b9f4f-1792886971"></script>
+<script src="config.js?v=67b9f4f-1792887155"></script>
 </head>
 <body>
 <div class="wrap">
@@ -108,7 +108,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     <div id="finRepTotals"></div>
     <div id="finReps"></div>
     <p class="label" style="margin-top:22px"><span>Actual vs pro forma</span><span class="when">by month</span></p>
-    <p class="note" style="margin:0 0 10px">Revenue is 8% of enrolled debt on deals whose 1st deposit cleared that month (Cordoba payout files). Operating profit is from QuickBooks once it is connected. The pro forma assumed 9%.</p>
+    <p class="note" style="margin:0 0 10px">Each month is the deals sold that month, like the pro forma. Revenue is 8% of debt: earned when the 1st deposit clears (Cordoba payout files), expected at the pro forma clear rate while waiting. Operating profit is from QuickBooks once it is connected. The pro forma assumed 9%.</p>
     <div id="finMonths"></div>
   </section>
 
@@ -754,15 +754,15 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
       : `<p style="margin:0 0 6px;font-size:14px">Link CFN's QuickBooks so real income and costs show here. You sign in to Intuit yourself and pick the CFN company. Read only.</p><button class="go small" id="qboOn">Connect QuickBooks</button>`;
     const r = f.reps;
     $("finMonth").textContent = new Date(r.month + "-15T12:00:00Z").toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" });
-    $("finRepNote").innerHTML = `Revenue = ${f.rate_pct}% of debt on deals cleared this month. Costs from <b>${esc(r.cost_source)}</b>${r.estimate ? " (estimates)" : ""}. Leads and credit pulls are split by ${esc(r.split_by)}${r.no_calls ? " (no Vici call counts for this month yet)" : ""}; overhead is split evenly. Verixa takes 20% of what is left. A deal counts in the month its 1st deposit clears, so this lags submissions by a few weeks.`;
+    $("finRepNote").innerHTML = `Deals sold this month. Revenue = ${f.rate_pct}% of debt: earned once the 1st deposit clears, expected at a ${r.clear_rate_pct}% clear rate while still waiting, nothing for cancels and returns. Costs from <b>${esc(r.cost_source)}</b>${r.estimate ? " (estimates)" : ""}. Leads and credit pulls are split by ${esc(r.split_by)}${r.no_calls ? " (no Vici call counts for this month yet)" : ""}; overhead is split evenly. Verixa takes 20% of what is left.`;
     const t = r.totals;
-    $("finRepTotals").innerHTML = `<p style="margin:0 0 10px;font-size:14px">${t.deals} cleared deals · ${usd(t.debt)} debt · revenue <b>${usd(t.revenue)}</b> · costs ${usd(t.costs)} · Verixa ${usd(t.verixa)} · profit <b class="${t.profit < 0 ? "neg" : "ok"}">${usd(t.profit)}</b>${r.unassigned.deals ? `<br><span class="when">Plus ${usd(r.unassigned.revenue)} revenue from ${r.unassigned.deals} cleared deal${r.unassigned.deals === 1 ? "" : "s"} no current closer owns (former reps).</span>` : ""}</p>`;
-    $("finReps").innerHTML = r.rows.length ? r.rows.map((x) => `<details class="sc-card"><summary style="display:flex;justify-content:space-between;gap:8px;cursor:pointer"><span><b>${esc(x.closer)}</b><br><span class="when">${x.deals} deal${x.deals === 1 ? "" : "s"} · ${usd(x.revenue)} revenue${x.margin_pct === null ? "" : " · " + x.margin_pct + "% margin"}</span></span><b class="${x.profit < 0 ? "neg" : "ok"}" style="white-space:nowrap">${usd(x.profit)}</b></summary>
-        <div style="font-size:14px;margin-top:8px">${[["Revenue", x.revenue], ["Base pay", -x.base_pay], ["Commission" + (x.commission_estimated ? " (part estimated)" : ""), -x.commission], ["Clawbacks", -x.clawbacks], ["Leads (" + (r.split_by === "calls" ? x.calls + " calls" : x.submitted + " submitted") + ")", -x.leads], ["Credit pulls", -x.credit_pulls], ["Overhead share", -x.overhead], ["Verixa", -x.verixa], ["Profit", x.profit]].map(([k, v]) => `<div class="sc-row"><span>${esc(k)}</span><span></span><span class="${v < 0 ? "neg" : ""}">${usd(v)}</span></div>`).join("")}${x.overseas ? '<div class="when">Paid overseas: base pay is not in Gusto, so it is not counted.</div>' : ""}</div></details>`).join("")
+    $("finRepTotals").innerHTML = `<p style="margin:0 0 10px;font-size:14px">${t.deals} sold (${t.cleared} cleared, ${t.waiting} waiting, ${t.lost} lost) · revenue <b>${usd(t.revenue)}</b> (${usd(t.revenue_earned)} earned + ${usd(t.revenue_expected)} expected) · costs ${usd(t.costs)} · Verixa ${usd(t.verixa)} · profit <b class="${t.profit < 0 ? "neg" : "ok"}">${usd(t.profit)}</b>${r.unassigned.deals ? `<br><span class="when">Plus ${usd(r.unassigned.revenue)} revenue from ${r.unassigned.deals} cleared deal${r.unassigned.deals === 1 ? "" : "s"} no current closer owns (former reps).</span>` : ""}</p>`;
+    $("finReps").innerHTML = r.rows.length ? r.rows.map((x) => `<details class="sc-card"><summary style="display:flex;justify-content:space-between;gap:8px;cursor:pointer"><span><b>${esc(x.closer)}</b><br><span class="when">${x.deals} sold · ${x.cleared} cleared${x.waiting ? " · " + x.waiting + " waiting" : ""}${x.lost ? " · " + x.lost + " lost" : ""} · ${usd(x.revenue)}${x.margin_pct === null ? "" : " · " + x.margin_pct + "% margin"}</span></span><b class="${x.profit < 0 ? "neg" : "ok"}" style="white-space:nowrap">${usd(x.profit)}</b></summary>
+        <div style="font-size:14px;margin-top:8px">${[["Revenue earned (cleared)", x.revenue_earned], ["Revenue expected (waiting)", x.revenue_expected], ["Base pay", -x.base_pay], ["Commission" + (x.commission_estimated ? " (part estimated)" : ""), -x.commission], ["Clawbacks", -x.clawbacks], ["Leads (" + (r.split_by === "calls" ? x.calls + " calls" : x.submitted + " submitted") + ")", -x.leads], ["Credit pulls", -x.credit_pulls], ["Overhead share", -x.overhead], ["Verixa", -x.verixa], ["Profit", x.profit]].map(([k, v]) => `<div class="sc-row"><span>${esc(k)}</span><span></span><span class="${v < 0 ? "neg" : ""}">${usd(v)}</span></div>`).join("")}${x.overseas ? '<div class="when">Paid overseas: base pay is not in Gusto, so it is not counted.</div>' : ""}</div></details>`).join("")
       : '<p class="empty">No cleared deals, calls, or pay for this month.</p>';
     $("finMonths").innerHTML = f.months.map((m) => { const a = m.actual, p = m.plan, qb = a.qbo;
       return `<div class="sc-card"><div style="display:flex;justify-content:space-between"><b>${new Date(m.month + "-15T12:00:00Z").toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" })}</b><span class="when">Month ${m.month_n}${m.current ? " · so far" : ""}</span></div>
-        ${[["Clients submitted", a.clients, p.clients, false], ["Debt submitted", a.submitted_debt, p.submitted_debt, true], ["Net debt (after cancels, returns)", a.net_debt, null, true], ["1st deposits cleared (debt)", a.first_deposit_debt, p.first_deposit_debt, true], ["Revenue (8%)", a.revenue, p.revenue, true], ["Operating profit", qb ? qb.operating_profit : null, p.operating_profit, true]]
+        ${[["Clients submitted", a.clients, p.clients, false], ["Debt submitted", a.submitted_debt, p.submitted_debt, true], ["Net debt (after cancels, returns)", a.net_debt, null, true], ["1st deposits cleared (debt)", a.first_deposit_debt, p.first_deposit_debt, true], ["Still waiting (debt)", a.waiting_debt, null, true], ["Revenue (earned + expected)", a.revenue, p.revenue, true], ["Operating profit", qb ? qb.operating_profit : null, p.operating_profit, true]]
           .map(([k, v, pl, money]) => `<div class="sc-row"><span>${esc(k)}</span><span class="when">${pl === null || pl === undefined ? "" : "plan " + (money ? usd(pl) : Math.round(pl))}</span><span>${v === null ? '<span class="when">QuickBooks</span>' : (money ? usd(v) : v)}${v === null || pl === null || pl === undefined || m.current ? "" : vsPlan(v, pl)}</span></div>`).join("")}
         ${qb ? `<div class="when" style="margin-top:4px">QuickBooks: income ${usd(qb.income)} · marketing ${usd(qb.marketing)} · credit pulls ${usd(qb.credit_pulls)} · payroll ${usd(qb.payroll)} · other ${usd(qb.overhead)}</div>` : ""}</div>`; }).join("");
   }
@@ -905,6 +905,6 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
   else if (session) load(); else showSignIn();
 })();
 </script>
-<script src="coach.js?v=67b9f4f-1792886971"></script>
+<script src="coach.js?v=67b9f4f-1792887155"></script>
 </body>
 </html>
