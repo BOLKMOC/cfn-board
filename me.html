@@ -9,8 +9,8 @@
 <title>My CFN Page</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Quicksand:wght@500;700&display=swap">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
-<link rel="stylesheet" href="board.css?v=4ad56d2-1793029670">
-<link rel="stylesheet" href="coach.css?v=4ad56d2-1793029670">
+<link rel="stylesheet" href="board.css?v=74ec228-1793038527">
+<link rel="stylesheet" href="coach.css?v=74ec228-1793038527">
 <style>
 .wrap{max-width:680px}
 .three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
@@ -67,7 +67,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
 #signin{text-align:center;padding:30px 16px}
 @media (max-width:480px){.three{grid-template-columns:1fr 1fr 1fr}.mini .v{font-size:18px}}
 </style>
-<script src="config.js?v=4ad56d2-1793029670"></script>
+<script src="config.js?v=74ec228-1793038527"></script>
 </head>
 <body>
 <div class="wrap">
@@ -124,6 +124,9 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
       <p class="label" style="margin-top:22px"><span>Closers who say X get Y</span><span class="when">last 3 months</span></p>
       <p class="note" style="margin:0 0 10px">Real lines scored 4 or 5 in each area, with that closer's conversion. The top closer's lines come first.</p>
       <div id="scLib"></div>
+      <p class="label" style="margin-top:22px"><span>Is the playbook backed by results?</span><span id="scValN" class="when"></span></p>
+      <p class="note" style="margin:0 0 10px">For each check: scored calls where the closer did it against calls where they skipped it (last 90 days). "Deal" = the client's Forth file was submitted; "1st dep" = the first deposit cleared. A check is only proven when both sides have enough calls.</p>
+      <table class="tt why"><thead><tr><th>Check</th><th>Did it</th><th>Skipped</th><th>Gap</th></tr></thead><tbody id="scVal"></tbody></table>
       <p class="label" style="margin-top:22px"><span>Calibration</span><span id="scCalDue" class="when"></span></p>
       <p class="note" style="margin:0 0 10px">Each quarter managers rescore calls (open a call, "Your scores"). This shows how often the scorer agrees with managers.</p>
       <div id="scCal"></div>
@@ -148,6 +151,9 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
 
   <section class="card" id="saves" style="margin-bottom:14px" hidden>
     <p class="note" style="margin:0 0 12px">Active closers only. Tap a closer to see their deals. Former closers are under <b>Past closers</b> at the bottom.</p>
+    <p class="label"><span>First deposits coming up</span><span id="ciTeamN"></span></p>
+    <p class="note" style="margin:0 0 8px">Deals waiting on a first deposit in the next 3 business days, or whose date passed without clearing. The closer checks in 2 business days before. A check mark means it was done.</p>
+    <div id="ciTeam"></div>
     <p class="label"><span>Returned to fix</span><span id="retN"></span></p>
     <p class="note" style="margin:0 0 8px">Sent back by Forth in the last 30 days. They do not count on the board until fixed and resubmitted. Longest waiting first.</p>
     <div id="retGroups"></div>
@@ -270,6 +276,12 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
       <div class="card"><p class="label">This week</p><div class="big num" id="week">-</div><div class="note">deals</div></div>
       <div class="card"><p class="label">This month</p><div class="big num" id="month">-</div><div class="note">deals</div></div>
     </div>
+
+    <section class="card" style="margin-bottom:14px" id="ciCard" hidden>
+      <p class="label"><span>Check in before the first deposit</span><span id="ciN"></span></p>
+      <p class="note" style="margin:0 0 8px" id="ciWords"></p>
+      <ul class="feed" id="ciList"></ul>
+    </section>
 
     <section class="card" style="margin-bottom:14px" id="pcCard" hidden>
       <p class="label"><span>Deals to save or fix</span><span id="pcN"></span></p>
@@ -408,7 +420,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
       if (d.viewing === "report") { renderReport(d.report); renderCards(d.cards); return; }
       if (d.viewing === "deals") { openDealsPage(d.reps); return; }
       if (d.viewing === "coach") { renderCoach(d.coach); return; }
-      if (d.viewing === "saves") { saveCallsReady = !!d.save_calls_ready; renderSaves(d.saves, d.reasons); return; }
+      if (d.viewing === "saves") { saveCallsReady = !!d.save_calls_ready; renderSaves(d.saves, d.reasons); renderTeamCheckins(d.checkins); return; }
       if (d.viewing === "calls") { renderCalls(d); return; }
       if (d.viewing === "finance") { renderFinance(d.finance); return; }
       if (d.viewing === "onboarding") { renderOnboarding(d.onboarding); return; }
@@ -436,6 +448,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     if (d.me.call_sign && document.activeElement !== $("cs")) $("cs").value = d.me.call_sign;
     $("today").textContent = d.today; $("week").textContent = d.week; $("month").textContent = d.month;
 
+    renderCheckins(d.checkins);
     const pc = d.pending_cancels || [];
     saveCallsReady = !!d.save_calls_ready;
     const saveLink = (c) => "/coach?ask=" + encodeURIComponent(c.status === "Returned"
@@ -643,6 +656,37 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     const cl = w.by_closer.filter((x) => x.status === "Cancelled");
     $("whyCloser").innerHTML = cl.length ? cl.map((x) => `<tr><td style="text-align:left"><b>${esc(x.closer)}</b><br><span class="when">${esc(x.top_reason)}</span></td><td>${x.n} of ${x.total}</td></tr>`).join("") : '<tr><td colspan="2" class="empty" style="text-align:left">None yet.</td></tr>';
   }
+  const ciWhen = (c) => c.when === "passed" ? `<span class="neg">deposit date ${day(c.deposit_date)} passed, not cleared</span>` : c.business_days === 0 ? `<b>deposit today</b>` : `deposit ${day(c.deposit_date)} (${c.business_days} business day${c.business_days === 1 ? "" : "s"})`;
+  const ciDone = (c) => c.checked_in ? `<span class="ok">&#10003; checked in</span>` : `<button class="savebtn" data-checkin="${esc(c.forth_id)}">Checked in</button>`;
+  function renderCheckins(ci) {
+    const rows = (ci && ci.rows) || [];
+    $("ciCard").hidden = !rows.length;
+    if (!rows.length) return;
+    const due = rows.filter((c) => c.when !== "soon" && !c.checked_in).length;
+    $("ciN").textContent = due ? `${due} to call` : "all done";
+    $("ciWords").innerHTML = `Call 2 business days before the deposit: ${esc(ci.words)}`;
+    $("ciList").innerHTML = rows.map((c) => `<li><span><b>${esc(c.client)}</b> <span class="when">Forth ID ${esc(c.forth_id)}</span><br><span class="note">${ciWhen(c)}</span><br>${ciDone(c)}</span><span>${c.debt ? money(c.debt) : ""}</span></li>`).join("");
+  }
+  function renderTeamCheckins(ci) {
+    const rows = ((ci && ci.rows) || []).filter((c) => c.active);
+    const t = rows.filter((c) => c.when !== "soon");
+    $("ciTeamN").textContent = rows.length ? `${t.filter((c) => c.checked_in).length} of ${t.length} checked in` : "none";
+    const by = new Map();
+    for (const c of rows) by.set(c.closer, [...(by.get(c.closer) || []), c]);
+    const open = (list) => list.filter((c) => c.when !== "soon" && !c.checked_in).length;
+    $("ciTeam").innerHTML = rows.length ? [...by.entries()].sort((a, b) => open(b[1]) - open(a[1]) || b[1].length - a[1].length).map(([name, list]) => {
+      const o = open(list), passed = list.filter((c) => c.when === "passed").length;
+      return `<details class="sc-card"><summary style="display:flex;justify-content:space-between;gap:8px;cursor:pointer"><b>${esc(name)}</b><span style="white-space:nowrap">${list.length}${o ? ` · <span class="neg">${o} to call</span>` : ` · <span class="ok">&#10003;</span>`}${passed ? ` · <span class="neg">${passed} passed</span>` : ""}</span></summary>
+        <div style="margin-top:6px">${list.map((c) => `<div class="deal"><div><b>Forth ${esc(c.forth_id)}</b> · ${esc(c.client)} · ${money(c.debt)}</div><div class="when">${ciWhen(c)}</div><div class="ai">${ciDone(c)}</div></div>`).join("")}</div></details>`; }).join("")
+      : '<p class="empty">No first deposits in the next 3 business days.</p>';
+  }
+  async function markCheckin(e) {
+    const b = e.target.closest("[data-checkin]");
+    if (!b || b.disabled) return;
+    b.disabled = true;
+    try { await api("/me/checkin", { contact_id: b.dataset.checkin }); b.outerHTML = '<span class="ok">&#10003; checked in</span>'; }
+    catch (err) { b.disabled = false; if (err.message) alert(err.message); }
+  }
   function renderSaves(s, reasons) {
     renderReasons(reasons);
     $("app").hidden = true; $("hello").textContent = "Manager view · saves";
@@ -748,6 +792,9 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
       </div>`).join("") : '<p class="empty">No closers with deals or calls this month yet.</p>';
     $("scLib").innerHTML = AREA.map((a) => { const l = s.library[a.key] || [];
       return `<p style="margin:12px 0 4px"><b>${esc(a.label)}</b></p>` + (l.length ? `<ul style="margin:0;padding-left:20px">${l.map((x) => `<li style="margin:0 0 6px">&ldquo;${esc(x.quote)}&rdquo;<br><span class="when">${esc(x.closer)}${x.top ? " (top closer)" : ""} · ${x.closer_conversion === null ? "conversion not known yet" : x.closer_conversion + " deals per 100 calls"}${x.converted ? " · this call became a deal" : ""} · <a href="/me#calls?id=${esc(x.call_id)}">call</a></span></li>`).join("")}</ul>` : '<p class="when" style="margin:0">No lines scored 4 or 5 yet.</p>'); }).join("");
+    const v = s.validation, side = (x) => x.n ? `${x.deal_pct}% deal<br><span class="when">${x.cleared_pct}% 1st dep · ${x.n} calls</span>` : '<span class="when">no calls</span>';
+    $("scValN").textContent = `${v.calls} scored calls`;
+    $("scVal").innerHTML = v.rows.map((r) => `<tr><td><b>${esc(r.label)}</b><br><span class="when">${esc(r.area)}</span></td><td>${side(r.did)}</td><td>${side(r.missed)}</td><td>${r.lift === null ? '<span class="when">-</span>' : `<b class="${r.lift > 0 ? "gap-pos" : r.lift < 0 ? "gap-neg" : ""}">${r.lift > 0 ? "+" : ""}${r.lift}</b>`}${r.enough ? "" : `<br><span class="when">need ${v.min}+ each side</span>`}</td></tr>`).join("");
     $("scCalDue").textContent = s.calibration.due_this_month ? "due this month" : "";
     $("scCal").innerHTML = `<div style="font-size:14px">${AREA.map((a) => { const k = s.calibration.areas[a.key]; return `<div class="sc-row"><span>${esc(a.label)}</span><span></span><span>${k.n ? `${k.within_1_pct}% within 1 point (${k.n})` : '<span class="when">no rescored calls yet</span>'}</span></div>`; }).join("")}</div>`;
   }
@@ -886,6 +933,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
       catch (err) { $("onbMsg").textContent = err.message; }
     }
   };
+  $("ciList").onclick = markCheckin; $("ciTeam").onclick = markCheckin;
   $("pcList").onclick = askAssistant; $("retGroups").onclick = askAssistant; $("riskGroups").onclick = askAssistant; $("pastGroups").onclick = askAssistant;
   $("teamRows").onclick = (e) => { const tr = e.target.closest("tr[data-rep]"); if (tr) { viewing = tr.dataset.rep; history.replaceState(null, "", "/me"); load(); } };
 
@@ -927,6 +975,6 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
   else if (session) load(); else showSignIn();
 })();
 </script>
-<script src="coach.js?v=4ad56d2-1793029670"></script>
+<script src="coach.js?v=74ec228-1793038527"></script>
 </body>
 </html>
