@@ -9,8 +9,8 @@
 <title>My CFN Page</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Quicksand:wght@500;700&display=swap">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
-<link rel="stylesheet" href="board.css?v=67b9f4f-1792887155">
-<link rel="stylesheet" href="coach.css?v=67b9f4f-1792887155">
+<link rel="stylesheet" href="board.css?v=4ad56d2-1793029612">
+<link rel="stylesheet" href="coach.css?v=4ad56d2-1793029612">
 <style>
 .wrap{max-width:680px}
 .three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
@@ -52,6 +52,8 @@ button.go.small{padding:5px 10px;font-size:12px}
 .savebtn.ai{background:#0E7C66;border:0;cursor:pointer;margin-left:6px;font-family:inherit}
 .savebtn.ai[disabled]{background:#9AA3B2;cursor:default}
 .two-tables{display:grid;grid-template-columns:1fr 1fr;gap:14px} @media (max-width:700px){.two-tables{grid-template-columns:1fr}}
+table.why{width:100%} table.why td:first-child,table.why td:nth-child(2){white-space:normal} table.why td:not(:first-child){width:1%}
+.deal{border-top:1px solid var(--tint);padding:9px 0;font-size:14px;line-height:1.45} .deal:first-child{border-top:none} .deal .st{font-weight:600} .deal .ai{margin-top:6px}
 .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px} .ccard{border:1px solid var(--line);border-radius:12px;padding:12px} .ccard .note{margin-top:4px} .cc-h{font-size:15px} .cc-f{margin-top:8px;background:var(--tint);border-radius:8px;padding:8px;font-size:13.5px}
 .preview{white-space:pre-wrap;background:var(--tint);border-radius:10px;padding:12px;max-height:420px;overflow:auto;font:13px/1.5 Inter,system-ui,sans-serif}
 ul.list{list-style:none;margin:0;padding:0} ul.list li{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--tint);font-size:14px}
@@ -65,7 +67,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
 #signin{text-align:center;padding:30px 16px}
 @media (max-width:480px){.three{grid-template-columns:1fr 1fr 1fr}.mini .v{font-size:18px}}
 </style>
-<script src="config.js?v=67b9f4f-1792887155"></script>
+<script src="config.js?v=4ad56d2-1793029612"></script>
 </head>
 <body>
 <div class="wrap">
@@ -145,20 +147,23 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
   </section>
 
   <section class="card" id="saves" style="margin-bottom:14px" hidden>
+    <p class="note" style="margin:0 0 12px">Active closers only. Tap a closer to see their deals. Former closers are under <b>Past closers</b> at the bottom.</p>
     <p class="label"><span>Returned to fix</span><span id="retN"></span></p>
-    <p class="note" style="margin:0 0 10px">Deals Forth sent back in the last 30 days, longest waiting first. They do not count on the board until fixed and resubmitted.</p>
-    <div style="overflow-x:auto"><table class="tt"><thead><tr><th>Closer</th><th>Forth ID</th><th>Client</th><th>Debt</th><th>Waiting</th><th>Assistant</th></tr></thead><tbody id="retRows"></tbody></table></div>
-    <p class="label" style="margin-top:22px"><span>At risk of cancel</span><span id="riskN"></span></p>
-    <p class="note" style="margin:0 0 10px">Pending cancel, NSF, admin pause, cancellation review. Biggest debt first. "Paid" means commission was already paid, so a cancel means a clawback.</p>
-    <div style="overflow-x:auto"><table class="tt"><thead><tr><th>Closer</th><th>Forth ID</th><th>Client</th><th>Status</th><th>Debt</th><th>Since</th><th>Payments</th><th>Commission</th><th>Assistant</th></tr></thead><tbody id="riskRows"></tbody></table></div>
+    <p class="note" style="margin:0 0 8px">Sent back by Forth in the last 30 days. They do not count on the board until fixed and resubmitted. Longest waiting first.</p>
+    <div id="retGroups"></div>
+    <p class="label" style="margin-top:20px"><span>At risk of cancel</span><span id="riskN"></span></p>
+    <p class="note" style="margin:0 0 8px">Pending cancel, NSF, admin pause, cancellation review. Most debt first. "Paid" means commission was already paid, so a cancel means a clawback.</p>
+    <div id="riskGroups"></div>
+    <details class="sc-card" id="pastBox" style="margin-top:16px"><summary style="display:flex;justify-content:space-between;gap:8px;cursor:pointer"><b>Past closers</b><span id="pastN" class="when"></span></summary>
+      <p class="note" style="margin:8px 0">Deals of closers who are no longer active (and deals with no closer). Someone still needs to save or fix these.</p>
+      <div id="pastGroups"></div>
+    </details>
     <p class="label" style="margin-top:22px"><span>Why deals cancel and come back</span><span id="whyN"></span></p>
-    <p class="note" style="margin:0 0 10px">Read from the Forth notes on each cancelled or returned deal (last 90 days). Only the reason is kept, never the note.</p>
-    <div class="two-tables">
-      <div style="overflow-x:auto"><table class="tt"><thead><tr><th>Cancelled because</th><th>Deals</th><th>Debt</th></tr></thead><tbody id="whyCancel"></tbody></table></div>
-      <div style="overflow-x:auto"><table class="tt"><thead><tr><th>Returned because</th><th>Deals</th><th>Debt</th></tr></thead><tbody id="whyReturn"></tbody></table></div>
-    </div>
-    <p class="label" style="margin-top:18px"><span>Each closer's most common cancel reason</span></p>
-    <div style="overflow-x:auto"><table class="tt"><thead><tr><th>Closer</th><th>Top reason</th><th>Of their cancels</th></tr></thead><tbody id="whyCloser"></tbody></table></div>
+    <p class="note" style="margin:0 0 10px">Read from the Forth notes on each cancelled or returned deal (last 90 days), all closers. Only the reason is kept, never the note.</p>
+    <table class="tt why"><thead><tr><th>Cancelled because</th><th>Deals</th><th>Debt</th></tr></thead><tbody id="whyCancel"></tbody></table>
+    <table class="tt why" style="margin-top:14px"><thead><tr><th>Returned because</th><th>Deals</th><th>Debt</th></tr></thead><tbody id="whyReturn"></tbody></table>
+    <p class="label" style="margin-top:18px"><span>Each active closer's most common cancel reason</span></p>
+    <table class="tt why"><thead><tr><th>Closer</th><th>Top reason</th><th>Of their cancels</th></tr></thead><tbody id="whyCloser"></tbody></table>
   </section>
 
   <section class="card" id="reportTab" style="margin-bottom:14px" hidden>
@@ -361,7 +366,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
   let saveCallsReady = false;
   const aiBtn = (id, client) => saveCallsReady
     ? `<button class="savebtn ai" data-aicall="${esc(id)}" data-client="${esc(client)}">Have the assistant call</button>`
-    : '<button class="savebtn ai" disabled>Assistant calling is not set up yet</button>';
+    : ""; // hidden until the assistant is set up (Vapi key, script, phone line)
   const aiLast = (c) => c.save_call ? `<br><span class="note">Assistant call ${c.save_call.today ? "today" : day(c.save_call.at)}: ${esc(c.save_call.outcome_text || c.save_call.status.replace("_", " "))}</span>` : "";
   async function askAssistant(e) {
     const b = e.target.closest("[data-aicall]");
@@ -641,14 +646,31 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
   function renderSaves(s, reasons) {
     renderReasons(reasons);
     $("app").hidden = true; $("hello").textContent = "Manager view · saves";
-    const t = s.totals, who = (r) => `<b>${esc(r.closer)}</b>${r.shown_as && r.shown_as !== r.closer ? `<br><span class="when">${esc(r.shown_as)}</span>` : ""}`;
-    const days = (n) => n === null ? "" : n + " day" + (n === 1 ? "" : "s");
-    $("retN").textContent = t.returned ? `${t.returned} · ${money(t.returned_debt)}` : "none";
-    $("retRows").innerHTML = s.returned.length ? s.returned.map((r) => `<tr><td>${who(r)}</td><td>${esc(r.forth_id)}</td><td>${esc(r.client)}</td><td>${money(r.debt)}</td><td class="${r.days >= 2 ? "neg" : ""}">${days(r.days)}</td><td>${aiBtn(r.forth_id, r.client)}${aiLast(r)}</td></tr>`).join("")
-      : '<tr><td colspan="6" class="empty" style="text-align:left">Nothing returned. Nice.</td></tr>';
-    $("riskN").textContent = t.at_risk ? `${t.at_risk} · ${money(t.at_risk_debt)}${t.at_risk_paid ? ` · ${t.at_risk_paid} paid` : ""}` : "none";
-    $("riskRows").innerHTML = s.at_risk.length ? s.at_risk.map((r) => `<tr><td>${who(r)}</td><td>${esc(r.forth_id)}</td><td>${esc(r.client)}</td><td>${esc(r.status)}</td><td>${money(r.debt)}</td><td>${r.since ? day(r.since.slice(0, 10)) : ""}<br><span class="when">${days(r.days)}</span></td><td>${r.payments_cleared >= 2 ? "2+" : r.payments_cleared}</td><td class="${r.commission_paid ? "neg" : ""}">${r.commission_paid ? "Paid" : "Not paid"}</td><td>${aiBtn(r.forth_id, r.client)}${aiLast(r)}</td></tr>`).join("")
-      : '<tr><td colspan="9" class="empty" style="text-align:left">No deals at risk.</td></tr>';
+    const days = (n) => n === null || n === undefined ? "" : n + " day" + (n === 1 ? "" : "s");
+    const sum = (xs) => xs.reduce((t, x) => t + (x.debt || 0), 0);
+    // One card per closer; `kind` decides the order (returned: longest waiting; at risk: most debt).
+    const groups = (rows, kind) => {
+      const by = new Map();
+      for (const r of rows) { const k = r.closer + "|" + (r.shown_as || ""); by.set(k, [...(by.get(k) || []), r]); }
+      return [...by.values()].map((list) => ({ list: list.sort(kind === "returned" ? (a, b) => (b.days || 0) - (a.days || 0) : (a, b) => (b.debt || 0) - (a.debt || 0)) }))
+        .sort(kind === "returned" ? (a, b) => (b.list[0].days || 0) - (a.list[0].days || 0) : (a, b) => sum(b.list) - sum(a.list));
+    };
+    const deal = (r, kind) => `<div class="deal"><div><b>Forth ${esc(r.forth_id)}</b> · ${esc(r.client)}${kind === "risk" ? ` · <span class="st">${esc(r.status)}</span>` : ""}</div>
+      <div class="when">${money(r.debt)}${kind === "risk" ? ` · since ${r.since ? day(r.since.slice(0, 10)) : "?"} (${days(r.days)}) · ${r.payments_cleared >= 2 ? "2+" : r.payments_cleared} payment${r.payments_cleared === 1 ? "" : "s"} · <span class="${r.commission_paid ? "neg" : ""}">${r.commission_paid ? "Paid" : "Not paid"}</span>` : ` · <span class="${r.days >= 2 ? "neg" : ""}">waiting ${days(r.days)}</span>`}</div>
+      <div class="ai">${aiBtn(r.forth_id, r.client)}${aiLast(r)}</div></div>`;
+    const cards = (rows, kind, empty) => rows.length ? groups(rows, kind).map((g) => { const r0 = g.list[0], paid = g.list.filter((x) => x.commission_paid).length;
+        return `<details class="sc-card"><summary style="display:flex;justify-content:space-between;gap:8px;cursor:pointer"><span><b>${esc(r0.closer)}</b>${r0.shown_as && r0.shown_as !== r0.closer ? ` <span class="when">${esc(r0.shown_as)}</span>` : ""}</span>
+          <span style="white-space:nowrap">${g.list.length} · <b>${money(sum(g.list))}</b>${kind === "risk" && paid ? ` · <span class="neg">${paid} paid</span>` : kind === "returned" ? ` · <span class="${(r0.days || 0) >= 2 ? "neg" : "when"}">${days(r0.days)}</span>` : ""}</span></summary>
+          <div style="margin-top:6px">${g.list.map((r) => deal(r, kind)).join("")}</div></details>`; }).join("")
+      : `<p class="empty">${empty}</p>`;
+    const act = (xs) => xs.filter((r) => r.active), past = (xs) => xs.filter((r) => !r.active);
+    const rA = act(s.returned), kA = act(s.at_risk), rP = past(s.returned), kP = past(s.at_risk);
+    $("retN").textContent = rA.length ? `${rA.length} · ${money(sum(rA))}` : "none";
+    $("riskN").textContent = kA.length ? `${kA.length} · ${money(sum(kA))}${kA.filter((r) => r.commission_paid).length ? ` · ${kA.filter((r) => r.commission_paid).length} paid` : ""}` : "none";
+    $("retGroups").innerHTML = cards(rA, "returned", "Nothing returned. Nice.");
+    $("riskGroups").innerHTML = cards(kA, "risk", "No deals at risk.");
+    $("pastN").textContent = rP.length || kP.length ? `${kP.length} at risk · ${money(sum(kP))}${rP.length ? ` · ${rP.length} returned` : ""}` : "none";
+    $("pastGroups").innerHTML = (rP.length ? `<p class="label"><span>Returned to fix</span></p>${cards(rP, "returned", "")}` : "") + (kP.length ? `<p class="label" style="margin-top:12px"><span>At risk of cancel</span></p>${cards(kP, "risk", "")}` : "") || '<p class="empty">Nothing from past closers.</p>';
   }
   const RESULT = { yes: '<span class="ok">&#10003;</span>', partial: '<span class="wait">partly</span>', no: '<span class="neg">&#10007;</span>', "n/a": '<span class="when">n/a</span>', not_on_recording: '<span class="when">not on recording</span>' };
   const when = (iso) => iso ? new Date(iso).toLocaleString("en-US", { timeZone: "America/Los_Angeles", weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "";
@@ -864,7 +886,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
       catch (err) { $("onbMsg").textContent = err.message; }
     }
   };
-  $("pcList").onclick = askAssistant; $("retRows").onclick = askAssistant; $("riskRows").onclick = askAssistant;
+  $("pcList").onclick = askAssistant; $("retGroups").onclick = askAssistant; $("riskGroups").onclick = askAssistant; $("pastGroups").onclick = askAssistant;
   $("teamRows").onclick = (e) => { const tr = e.target.closest("tr[data-rep]"); if (tr) { viewing = tr.dataset.rep; history.replaceState(null, "", "/me"); load(); } };
 
   function setWings(name) { $("wingsName").textContent = (name.trim() || "Your call sign").toUpperCase().slice(0, 16); }
@@ -905,6 +927,6 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
   else if (session) load(); else showSignIn();
 })();
 </script>
-<script src="coach.js?v=67b9f4f-1792887155"></script>
+<script src="coach.js?v=4ad56d2-1793029612"></script>
 </body>
 </html>
