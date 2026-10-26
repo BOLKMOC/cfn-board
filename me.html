@@ -9,8 +9,8 @@
 <title>My CFN Page</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Quicksand:wght@500;700&display=swap">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
-<link rel="stylesheet" href="board.css?v=74ec228-1793038838">
-<link rel="stylesheet" href="coach.css?v=74ec228-1793038838">
+<link rel="stylesheet" href="board.css?v=f8a8e32-1793045542">
+<link rel="stylesheet" href="coach.css?v=f8a8e32-1793045542">
 <style>
 .wrap{max-width:680px}
 .three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
@@ -67,7 +67,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
 #signin{text-align:center;padding:30px 16px}
 @media (max-width:480px){.three{grid-template-columns:1fr 1fr 1fr}.mini .v{font-size:18px}}
 </style>
-<script src="config.js?v=74ec228-1793038838"></script>
+<script src="config.js?v=f8a8e32-1793045542"></script>
 </head>
 <body>
 <div class="wrap">
@@ -133,7 +133,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     </div>
     <div id="callList">
       <p class="label"><span>Call QA</span><span id="callsN"></span></p>
-      <p class="note" style="margin:0 0 10px">Closer calls from Vici, pulled after 6 PM Pacific, Monday to Saturday. Calls of 5 minutes or longer are transcribed and scored (up to 40 a night, shared across closers) on the 16 CFN checks. Tap a call for the full review. Recordings are kept 90 days.</p>
+      <p class="note" style="margin:0 0 10px">Closer calls from Vici, pulled after 6 PM Pacific, Monday to Saturday. Calls of 5 minutes or longer are transcribed and scored (up to 40 a night, shared across closers) on the CFN checks. Tap a call for the full review. Recordings are kept 90 days.</p>
       <div><table class="tt calls"><thead><tr><th>When</th><th>Closer</th><th>Result</th></tr></thead><tbody id="callRows"></tbody></table></div>
     </div>
     <div id="callDetail" hidden>
@@ -166,8 +166,10 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     </details>
     <p class="label" style="margin-top:22px"><span>Why deals cancel and come back</span><span id="whyN"></span></p>
     <p class="note" style="margin:0 0 10px">Read from the Forth notes on each cancelled or returned deal (last 90 days), all closers. Only the reason is kept, never the note.</p>
-    <table class="tt why"><thead><tr><th>Cancelled because</th><th>Deals</th><th>Debt</th></tr></thead><tbody id="whyCancel"></tbody></table>
-    <table class="tt why" style="margin-top:14px"><thead><tr><th>Returned because</th><th>Deals</th><th>Debt</th></tr></thead><tbody id="whyReturn"></tbody></table>
+    <p class="label"><span>Cancelled because</span><span class="when">tap a reason to see its deals</span></p>
+    <div id="whyCancel"></div>
+    <p class="label" style="margin-top:14px"><span>Returned because</span></p>
+    <div id="whyReturn"></div>
     <p class="label" style="margin-top:18px"><span>Each active closer's most common cancel reason</span></p>
     <table class="tt why"><thead><tr><th>Closer and top reason</th><th>Of their cancels</th></tr></thead><tbody id="whyCloser"></tbody></table>
   </section>
@@ -649,8 +651,19 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
   function renderReasons(w) {
     if (!w) return;
     const rows = (st) => w.by_category.filter((x) => x.status === st);
-    const tbl = (list) => list.length ? list.map((x) => `<tr><td style="text-align:left">${esc(x.category)}</td><td>${x.deals}</td><td>${money(x.debt)}</td></tr>`).join("") : '<tr><td colspan="3" class="empty" style="text-align:left">None yet.</td></tr>';
-    $("whyCancel").innerHTML = tbl(rows("Cancelled")); $("whyReturn").innerHTML = tbl(rows("Returned"));
+    const deals = (st, cat) => (w.details || []).filter((d) => d.status === st && d.category === cat);
+    const verb = (st) => st === "Cancelled" ? "cancelled" : "returned";
+    const list = (st) => rows(st).length ? rows(st).map((x) => {
+      const ds = deals(st, x.category), byCloser = {};
+      for (const d of ds) byCloser[d.closer + (d.active ? "" : " (past)")] = (byCloser[d.closer + (d.active ? "" : " (past)")] || 0) + 1;
+      const who = Object.entries(byCloser).sort((a, b) => b[1] - a[1]).map(([k, n]) => `${esc(k)} ${n}`).join(" · ");
+      const fast = ds.filter((d) => d.days_to_change !== null).map((d) => d.days_to_change).sort((a, b) => a - b), noPay = ds.filter((d) => !d.payments_cleared).length;
+      return `<details class="sc-card"><summary style="display:flex;justify-content:space-between;gap:8px;cursor:pointer"><span>${esc(x.category)}</span><span style="white-space:nowrap">${x.deals} · <b>${money(x.debt)}</b></span></summary>
+        <div style="margin-top:6px"><p class="note" style="margin:0 0 6px">${who ? "By closer: " + who + "." : ""}${fast.length ? ` Half ${verb(st)} within ${fast[Math.floor(fast.length / 2)]} days of being submitted.` : ""}${ds.length ? ` ${noPay} of ${ds.length} before any payment cleared.` : ""}</p>
+        ${ds.map((d) => `<div class="deal"><div><b>${esc(d.closer)}</b>${d.active ? "" : ' <span class="when">past closer</span>'} · Forth ${esc(d.forth_id)} · ${esc(d.client)} · ${money(d.debt)}</div>
+          <div>${esc(d.summary || "")}</div><div class="when">${d.days_to_change === null ? "" : verb(st) + " " + d.days_to_change + " days after submitted · "}${d.payments_cleared >= 2 ? "2+" : d.payments_cleared} payment${d.payments_cleared === 1 ? "" : "s"} cleared</div></div>`).join("") || '<p class="empty">No deal details yet.</p>'}</div></details>`; }).join("")
+      : '<p class="empty">None yet.</p>';
+    $("whyCancel").innerHTML = list("Cancelled"); $("whyReturn").innerHTML = list("Returned");
     const n = w.by_category.reduce((s, x) => s + x.deals, 0);
     $("whyN").textContent = n ? `${n} deals read` : "reading notes, check back in an hour";
     const cl = w.by_closer.filter((x) => x.status === "Cancelled");
@@ -753,7 +766,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
       + list("Coaching", det.coaching.map((x) => `<li>${esc(typeof x === "string" ? x : x.point || x.text || JSON.stringify(x))}</li>`))
       + (det.best_line ? `<p class="label" style="margin-top:14px"><span>Best line</span></p><p style="margin:0">&ldquo;${esc(typeof det.best_line === "string" ? det.best_line : det.best_line.quote || "")}&rdquo;</p>` : "")
       + list("Where it lost momentum", det.loss_codes.map((l) => `<li><b>${esc(l.code)}</b> ${esc(l.label)}${l.minute !== undefined && l.minute !== null ? ` <span class="when">min ${esc(l.minute)}</span>` : ""}${l.evidence ? `<br><span class="when">${esc(l.evidence)}</span>` : ""}</li>`))
-      + (det.checks.length ? `<p class="label" style="margin-top:14px"><span>The 16 checks</span></p><table class="tt calls checks"><thead><tr><th>Check</th><th>Result</th></tr></thead><tbody>${det.checks.map((g) => `<tr><td><b>${esc(g.label)}</b>${g.evidence ? `<br><span class="when">${g.minute ? esc(g.minute) + " · " : ""}${esc(g.evidence)}</span>` : ""}</td><td>${RESULT[g.result] || esc(g.result || "")}</td></tr>`).join("")}</tbody></table>` : "")
+      + (det.checks.length ? `<p class="label" style="margin-top:14px"><span>The ${det.checks.length} checks</span></p><table class="tt calls checks"><thead><tr><th>Check</th><th>Result</th></tr></thead><tbody>${det.checks.map((g) => `<tr><td><b>${esc(g.label)}</b>${g.evidence ? `<br><span class="when">${g.minute ? esc(g.minute) + " · " : ""}${esc(g.evidence)}</span>` : ""}</td><td>${RESULT[g.result] || esc(g.result || "")}</td></tr>`).join("")}</tbody></table>` : "")
       ;
     $("cdTranscript").textContent = det.transcript || "No transcript.";
     const areas = det.areas || [];
@@ -976,6 +989,6 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
   else if (session) load(); else showSignIn();
 })();
 </script>
-<script src="coach.js?v=74ec228-1793038838"></script>
+<script src="coach.js?v=f8a8e32-1793045542"></script>
 </body>
 </html>

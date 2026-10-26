@@ -205,7 +205,7 @@
     }
     async function scoreCall() {
       if (busy || !conv) return;
-      const wait = { role: "assistant", content: "Scoring your call against the 16 CFN checks...", pending: true }; msgs.push(wait); render(); setBusy(new AbortController());
+      const wait = { role: "assistant", content: "Scoring your call against the CFN checks...", pending: true }; msgs.push(wait); render(); setBusy(new AbortController());
       try { const r = await call("/coach/score", { conv_id: conv.conv_id }); msgs.pop(); msgs.push({ role: "assistant", content: r.text, id: r.message_id }); }
       catch (e) { msgs.pop(); msgs.push({ role: "assistant", content: e.message, err: true }); }
       setBusy(null); render();
