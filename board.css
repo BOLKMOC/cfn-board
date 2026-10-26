@@ -105,3 +105,7 @@ body.noscroll{overflow:hidden}
 @media (max-width:600px){.panel{padding:0}.pbox{border-radius:0;max-height:none;height:100%}}
 .pnote a.full,#pnSum a.full{color:var(--blue);font-weight:600}
 .stick{color:var(--win);font-weight:600}
+.pswitch{margin:0 0 14px;justify-content:flex-start}
+.pswitch button{font-size:15px;font-weight:600;padding:8px 16px;border-radius:10px;flex:0 1 auto}
+@media (max-width:480px){.pswitch button{flex:1 1 0;padding:9px 6px}}
+body.tv .pswitch button{font-size:20px;padding:8px 18px}

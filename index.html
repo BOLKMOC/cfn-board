@@ -10,10 +10,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Quicksand:wght@500;700&display=swap">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
-<link rel="stylesheet" href="board.css?v=f8a8e32-1793045542">
-<link rel="stylesheet" href="coach.css?v=f8a8e32-1793045542">
-<script src="config.js?v=f8a8e32-1793045542"></script>
-<script src="confetti.browser.js?v=f8a8e32-1793045542"></script>
+<link rel="stylesheet" href="board.css?v=bb0e957-1793049298">
+<link rel="stylesheet" href="coach.css?v=bb0e957-1793049298">
+<script src="config.js?v=bb0e957-1793049298"></script>
+<script src="confetti.browser.js?v=bb0e957-1793049298"></script>
 </head>
 <body>
 <div class="wrap">
@@ -26,38 +26,39 @@
   <div id="error" class="err" hidden></div>
   <div class="banner idle" id="banner" aria-live="polite"><span id="bannerText">Let's go, team.</span></div>
 
+  <div class="pswitch tabs" role="group" aria-label="Show the board for"><button data-p="day" aria-pressed="true">Today</button><button data-p="week" aria-pressed="false">This week</button><button data-p="month" aria-pressed="false">This month</button></div>
+
   <div class="grid">
-    <section class="card" aria-labelledby="t-today" data-set="day">
-      <p class="label"><span id="t-today">Today</span><span id="todayGoal"></span></p>
-      <div class="big num" id="todayDebt">-</div><div class="sub" id="todayDeals"></div>
-      <div class="bar" role="img" id="todayBarWrap"><div class="fill" id="todayBar" style="width:0"></div><div class="pace" id="todayPace" title="Where we should be by now"></div></div>
-      <div class="note" id="todayNote"></div>
+    <section class="card" aria-labelledby="t-debt" id="cardDebt" data-set="day">
+      <p class="label"><span id="t-debt">Today: enrolled debt</span><span id="debtGoal"></span></p>
+      <div class="big num" id="debtBig">-</div><div class="sub" id="debtSub"></div>
+      <div class="bar" role="img" id="debtBarWrap"><div class="fill" id="debtBar" style="width:0"></div><div class="pace" id="debtPace" title="Where we should be by now"></div></div>
+      <div class="note" id="debtNote"></div>
     </section>
-    <section class="card" aria-labelledby="t-week" data-set="week">
-      <p class="label"><span id="t-week">This week</span><span id="weekGoal"></span></p>
-      <div class="big num" id="weekDebt">-</div><div class="sub" id="weekDeals"></div>
-      <div class="bar" role="img" id="weekBarWrap"><div class="fill" id="weekBar" style="width:0"></div><div class="pace" id="weekPace" title="Where we should be by now"></div></div>
-      <div class="note" id="weekNote"></div>
+    <section class="card" aria-labelledby="t-deals" id="cardDeals" data-set="day">
+      <p class="label"><span id="t-deals">Today: deals</span><span id="dealsGoal"></span></p>
+      <div class="big num" id="dealsBig">-</div><div class="sub" id="dealsSub"></div>
+      <div class="bar" role="img" id="dealsBarWrap"><div class="fill" id="dealsBar" style="width:0"></div><div class="pace" id="dealsPace" title="Where we should be by now"></div></div>
+      <div class="note" id="dealsNote"></div>
     </section>
   </div>
 
   <div class="grid">
     <section class="card" aria-labelledby="t-top">
-      <p class="label"><span id="t-top">Top reps</span>
-        <span class="tabs" role="group" aria-label="Period"><button id="tabDay" aria-pressed="true">Today</button><button id="tabWeek" aria-pressed="false">Week</button><button id="tabMonth" aria-pressed="false" title="This month, deals that stuck (returns and cancels taken out)">Month</button></span></p>
+      <p class="label"><span id="t-top">Top reps today</span></p>
       <div class="spot" id="spot" hidden></div>
       <ol class="leaders" id="leaders"></ol>
     </section>
     <section class="card" aria-labelledby="t-feed">
-      <p class="label"><span id="t-feed">Live wins</span></p>
+      <p class="label"><span id="t-feed">Live wins today</span></p>
       <ul class="feed" id="feed"></ul>
     </section>
   </div>
 
   <section class="card" aria-labelledby="t-month">
     <p class="label"><span id="t-month">This month</span><span id="monthGoal"></span></p>
-    <div class="sub" id="monthLine"></div>
-    <div class="bar"><div class="fill" id="monthBar" style="width:0"></div></div>
+    <div id="monthSum"><div class="sub" id="monthLine"></div>
+    <div class="bar"><div class="fill" id="monthBar" style="width:0"></div></div></div>
     <p class="label sec"><span>This month's deals: where they are now</span><span class="clickhint" hidden>Tap any number to see the deals</span></p>
     <div class="pipe funnel">
       <div data-set="month_submitted"><div class="k">Submitted</div><div class="v num" id="pSub">-</div></div>
@@ -136,11 +137,43 @@
     setTimeout(() => $("overlay").classList.remove("show"), 8000);
   }
   $("overlay").onclick = () => $("overlay").classList.remove("show");
-  function renderLeaders() {
+  // One switch for the page: the debt and deals cards, Top reps, and the wins list all follow it.
+  const PERIODS = ["day", "week", "month"];
+  try { const p = localStorage.getItem("cfnBoardPeriod"); if (PERIODS.includes(p)) period = p; } catch {}
+  function renderPeriod() {
+    document.querySelectorAll(".pswitch button").forEach((x) => x.setAttribute("aria-pressed", x.dataset.p === period));
     if (!data) return;
-    const list = period === "day" ? data.top_today : period === "week" ? data.top_week : (data.top_month || []);
-    $("tabDay").setAttribute("aria-pressed", period === "day"); $("tabWeek").setAttribute("aria-pressed", period === "week"); $("tabMonth").setAttribute("aria-pressed", period === "month");
+    const d = data, g = d.goals || {}, P = d[period];
     const when = period === "day" ? "today" : period === "week" ? "this week" : "this month";
+    const name = period === "day" ? "Today" : period === "week" ? "This week" : "This month";
+    const goal = period === "day" ? g.daily : period === "week" ? g.weekly : g.month;
+    const goalDeals = period === "day" ? g.daily_deals : period === "week" ? g.weekly_deals : g.month_deals;
+    const set = period === "month" ? "month_submitted" : period;
+    const retSet = period === "month" ? "month_returned" : "returned_" + period;
+    const pace = (pct) => pct >= P.pace_pct ? "ahead of pace" : "behind pace";
+    const left = period === "month" ? ` · ${P.workdays_left} working day${P.workdays_left === 1 ? "" : "s"} left` : "";
+    $("cardDebt").dataset.set = set; $("cardDeals").dataset.set = set;
+    $("t-debt").textContent = name + ": enrolled debt"; $("t-deals").textContent = name + ": deals";
+    $("debtGoal").textContent = goal ? "Goal " + money(goal) : "";
+    $("debtBig").textContent = money(P.debt);
+    $("debtSub").textContent = `${P.debt_pct ?? 0}% of goal${P.avg_deal ? " · avg " + money(P.avg_deal) + " per deal" : ""}`;
+    bar("debtBar", "debtPace", P.debt_pct, P.pace_pct, P.goal_hit);
+    $("debtBarWrap").setAttribute("aria-label", `${P.debt_pct ?? 0}% of the goal ${when}`);
+    $("debtNote").textContent = (P.goal_hit ? (period === "day" ? "Goal hit! Keep stacking." : "Goal hit!") : goal ? `${money(Math.max(0, goal - P.debt))} to go · ${pace(P.debt_pct)}` : "") + left;
+    $("dealsGoal").textContent = goalDeals ? "Goal " + whole(goalDeals) : "";
+    $("dealsBig").textContent = P.deals;
+    $("dealsSub").innerHTML = `deal${P.deals === 1 ? "" : "s"} ${when}${goalDeals ? ` · ${P.deals_pct ?? 0}% of goal` : ""}${P.returned?.deals ? ` · <span data-set="${retSet}" class="neg">${P.returned.deals} returned to fix (${money(P.returned.debt)})</span>` : ""}`;
+    const dealsHit = goalDeals && P.deals >= goalDeals;
+    bar("dealsBar", "dealsPace", P.deals_pct, P.pace_pct, dealsHit);
+    $("dealsBarWrap").setAttribute("aria-label", `${P.deals_pct ?? 0}% of the deal goal ${when}`);
+    $("dealsNote").textContent = dealsHit ? "Deal goal hit!" : goalDeals ? `${whole(Math.max(0, goalDeals - P.deals))} to go · ${pace(P.deals_pct)}` : "";
+    // The month card's summary line repeats the big cards when Month is picked.
+    $("monthSum").hidden = period === "month"; $("monthGoal").hidden = period === "month";
+    renderLeaders(when); renderFeed(when);
+  }
+  function renderLeaders(when) {
+    const list = period === "day" ? data.top_today : period === "week" ? data.top_week : (data.top_month || []);
+    $("t-top").textContent = "Top reps " + when + (period === "month" ? " (deals that stuck)" : "");
     const stick = (r) => period === "month" && r.stick !== null && r.stick !== undefined ? ` · <span class="stick" title="Share of their deals since June that were not cancelled or returned">${r.stick}% stick</span>` : "";
     const top = list[0];
     $("spot").hidden = !top;
@@ -148,27 +181,24 @@
     $("leaders").innerHTML = list.length ? list.map((r, i) => `<li data-set="${period === "month" ? "month_submitted" : period}" data-rep="${esc(r.name)}"><span><span class="rank">${i + 1}.</span>${i === 0 ? '<span class="crown" aria-label="leader">&#9819;</span> ' : ""}${label(r.name)}</span><span><b class="size">${money(r.debt)}</b> <span class="when">· ${r.deals} deal${r.deals === 1 ? "" : "s"}${stick(r)}</span></span></li>`).join("")
       : `<li class="empty">First deal ${when} takes the crown.</li>`;
   }
-  $("tabDay").onclick = () => { period = "day"; renderLeaders(); };
-  $("tabWeek").onclick = () => { period = "week"; renderLeaders(); };
-  $("tabMonth").onclick = () => { period = "month"; renderLeaders(); };
-  if (tv) setInterval(() => { period = period === "day" ? "week" : period === "week" ? "month" : "day"; renderLeaders(); }, 15000);
+  function renderFeed(when) {
+    // Week and month: the latest 15, so the list stays next to Top reps instead of running down the page.
+    const all = (period === "day" ? data.feed : period === "week" ? data.feed_week : data.feed_month) || [];
+    const list = period === "day" ? all : all.slice(0, 15);
+    const set = period === "month" ? "month_submitted" : period;
+    $("t-feed").textContent = period === "day" ? "Live wins today" : `Wins ${when}` + (all.length > list.length ? ` (latest ${list.length})` : "");
+    $("feed").innerHTML = list.length ? list.map((f) => `<li${f.kind === "deal" ? ` data-set="${set}" data-rep="${esc(f.name)}"` : ""}><span>${f.kind === "loan" ? "&#127974;" : "&#127942;"} ${label(f.name)} · ${f.kind === "loan" ? "Nationwide loan" : "deal"}${f.debt ? ` <b class="size">${money(f.debt)}</b>` : ""}</span><span class="when">${ago(f.at)}</span></li>`).join("")
+      : `<li class="empty">No wins yet ${when}. Be first.</li>`;
+  }
+  const pick = (p) => { period = p; try { localStorage.setItem("cfnBoardPeriod", p); } catch {} renderPeriod(); };
+  document.querySelectorAll(".pswitch button").forEach((x) => x.onclick = () => pick(x.dataset.p));
+  if (tv) setInterval(() => { period = PERIODS[(PERIODS.indexOf(period) + 1) % 3]; renderPeriod(); }, 15000);
+  renderPeriod();
 
   function render(d) {
     data = d;
     const g = d.goals || {};
     $("date").textContent = new Date(d.as_of).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", timeZone: "America/Los_Angeles" });
-    $("todayGoal").textContent = g.daily ? "Goal " + money(g.daily) : "";
-    $("todayDebt").textContent = money(d.day.debt);
-    $("todayDeals").innerHTML = `${d.day.deals} deal${d.day.deals === 1 ? "" : "s"}${d.day.returned?.deals ? ` · <span data-set="returned_day" class="neg">${d.day.returned.deals} returned to fix (${money(d.day.returned.debt)})</span>` : ""} · goal ${whole(g.daily_deals)} deals${d.day.avg_deal ? " · avg " + money(d.day.avg_deal) : ""}`;
-    bar("todayBar", "todayPace", d.day.debt_pct, d.day.pace_pct, d.day.goal_hit);
-    $("todayBarWrap").setAttribute("aria-label", `${d.day.debt_pct ?? 0}% of today's goal`);
-    $("todayNote").textContent = d.day.goal_hit ? "Goal hit! Keep stacking." : g.daily ? `${money(Math.max(0, g.daily - d.day.debt))} to go · ${d.day.debt_pct >= d.day.pace_pct ? "ahead of pace" : "behind pace"}` : "";
-    $("weekGoal").textContent = g.weekly ? "Goal " + money(g.weekly) : "";
-    $("weekDebt").textContent = money(d.week.debt);
-    $("weekDeals").textContent = `${d.week.deals} deal${d.week.deals === 1 ? "" : "s"} · goal ${whole(g.weekly_deals)} deals${d.week.avg_deal ? " · avg " + money(d.week.avg_deal) : ""}`;
-    bar("weekBar", "weekPace", d.week.debt_pct, d.week.pace_pct, d.week.goal_hit);
-    $("weekBarWrap").setAttribute("aria-label", `${d.week.debt_pct ?? 0}% of this week's goal`);
-    $("weekNote").textContent = d.week.goal_hit ? "Weekly goal hit!" : g.weekly ? `${money(Math.max(0, g.weekly - d.week.debt))} to go · ${d.week.debt_pct >= d.week.pace_pct ? "ahead of pace" : "behind pace"}` : "";
     $("monthGoal").textContent = g.month ? "Monthly goal " + money(g.month) + " · " + g.month_deals + " deals" : "";
     $("monthLine").textContent = `${money(d.month.debt)} · ${d.month.deals} deals${d.month.avg_deal ? " · avg " + money(d.month.avg_deal) + " per deal" : ""} · ${d.month.debt_pct ?? 0}% · ${d.month.workdays_left} working day${d.month.workdays_left === 1 ? "" : "s"} left`;
     bar("monthBar", null, d.month.debt_pct, 0, d.month.debt_pct >= 100);
@@ -193,8 +223,7 @@
     if (fp) $("fpMax").textContent = fp.fast_max;
     $("fpDayAvg").innerHTML = days(fd); $("fpDayN").textContent = within(fd);
     $("fpAvg").innerHTML = days(fp); $("fpN").textContent = within(fp);
-    $("feed").innerHTML = d.feed.length ? d.feed.map((f) => `<li${f.kind === "deal" ? ` data-set="day" data-rep="${esc(f.name)}"` : ""}><span>${f.kind === "loan" ? "&#127974;" : "&#127942;"} ${label(f.name)} · ${f.kind === "loan" ? "Nationwide loan" : "deal"}${f.debt ? ` <b class="size">${money(f.debt)}</b>` : ""}</span><span class="when">${ago(f.at)}</span></li>`).join("") : '<li class="empty">No wins yet today. Be first.</li>';
-    renderLeaders();
+    renderPeriod();
     // New win since last look: banner + confetti. First load just shows the latest.
     const top = d.feed.find((f) => f.kind === "deal");
     const k = top ? top.name + top.at : null;
@@ -269,6 +298,6 @@
   load(); setInterval(load, 15000);
 })();
 </script>
-<script src="coach.js?v=f8a8e32-1793045542"></script>
+<script src="coach.js?v=bb0e957-1793049298"></script>
 </body>
 </html>
