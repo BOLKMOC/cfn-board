@@ -9,8 +9,8 @@
 <title>My CFN Page</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Quicksand:wght@500;700&display=swap">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
-<link rel="stylesheet" href="board.css?v=74ec228-1793038527">
-<link rel="stylesheet" href="coach.css?v=74ec228-1793038527">
+<link rel="stylesheet" href="board.css?v=74ec228-1793038677">
+<link rel="stylesheet" href="coach.css?v=74ec228-1793038677">
 <style>
 .wrap{max-width:680px}
 .three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
@@ -67,7 +67,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
 #signin{text-align:center;padding:30px 16px}
 @media (max-width:480px){.three{grid-template-columns:1fr 1fr 1fr}.mini .v{font-size:18px}}
 </style>
-<script src="config.js?v=74ec228-1793038527"></script>
+<script src="config.js?v=74ec228-1793038677"></script>
 </head>
 <body>
 <div class="wrap">
@@ -152,7 +152,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
   <section class="card" id="saves" style="margin-bottom:14px" hidden>
     <p class="note" style="margin:0 0 12px">Active closers only. Tap a closer to see their deals. Former closers are under <b>Past closers</b> at the bottom.</p>
     <p class="label"><span>First deposits coming up</span><span id="ciTeamN"></span></p>
-    <p class="note" style="margin:0 0 8px">Deals waiting on a first deposit in the next 3 business days, or whose date passed without clearing. The closer checks in 2 business days before. A check mark means it was done.</p>
+    <p class="note" style="margin:0 0 8px">Deals waiting on a first deposit in the next 3 business days, and deposits that likely did not clear (not on a Cordoba payout file a week after the date). The closer checks in 2 business days before. A check mark means it was done.</p>
     <div id="ciTeam"></div>
     <p class="label"><span>Returned to fix</span><span id="retN"></span></p>
     <p class="note" style="margin:0 0 8px">Sent back by Forth in the last 30 days. They do not count on the board until fixed and resubmitted. Longest waiting first.</p>
@@ -656,7 +656,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     const cl = w.by_closer.filter((x) => x.status === "Cancelled");
     $("whyCloser").innerHTML = cl.length ? cl.map((x) => `<tr><td style="text-align:left"><b>${esc(x.closer)}</b><br><span class="when">${esc(x.top_reason)}</span></td><td>${x.n} of ${x.total}</td></tr>`).join("") : '<tr><td colspan="2" class="empty" style="text-align:left">None yet.</td></tr>';
   }
-  const ciWhen = (c) => c.when === "passed" ? `<span class="neg">deposit date ${day(c.deposit_date)} passed, not cleared</span>` : c.business_days === 0 ? `<b>deposit today</b>` : `deposit ${day(c.deposit_date)} (${c.business_days} business day${c.business_days === 1 ? "" : "s"})`;
+  const ciWhen = (c) => c.when === "passed" ? `<span class="neg">deposit ${day(c.deposit_date)} likely did not clear (not on a payout file). Call the client.</span>` : c.business_days === 0 ? `<b>deposit today</b>` : `deposit ${day(c.deposit_date)} (${c.business_days} business day${c.business_days === 1 ? "" : "s"})`;
   const ciDone = (c) => c.checked_in ? `<span class="ok">&#10003; checked in</span>` : `<button class="savebtn" data-checkin="${esc(c.forth_id)}">Checked in</button>`;
   function renderCheckins(ci) {
     const rows = (ci && ci.rows) || [];
@@ -975,6 +975,6 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
   else if (session) load(); else showSignIn();
 })();
 </script>
-<script src="coach.js?v=74ec228-1793038527"></script>
+<script src="coach.js?v=74ec228-1793038677"></script>
 </body>
 </html>
