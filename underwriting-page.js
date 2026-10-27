@@ -20,6 +20,7 @@ async function start() {
   $("ruleNote").textContent = `Under ${money(rules.min_enrolled)} enrolled does not qualify. Out: secured, auto, mortgage, student loans, military debt, authorized-user accounts, Pinnacle. Repo balances only while half or less of the enrolled debt. Joint accounts need the co-signer on the program.`;
   $("listDate").textContent = rules.creditor_list?.accepted?.length ? `Cordoba creditor list of ${rules.creditor_list.date}` : "Cordoba creditor list not loaded yet";
   $("pdf").onchange = readPdf;
+  $("pick").onclick = () => $("pdf").click();
   $("readPaste").onclick = () => { add(parsePull($("paste").value), "the pasted text"); $("paste").value = ""; };
   $("addRow").onclick = () => { accounts.push(blank()); drawAccounts(); const c = document.querySelectorAll(".acct .cr input"); c[c.length - 1]?.focus(); };
   $("clear").onclick = () => { accounts = []; $("paste").value = ""; $("pdf").value = ""; $("pdfMsg").textContent = ""; drawAccounts(); };
