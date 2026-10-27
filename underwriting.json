@@ -1,9 +1,9 @@
 {
-  "comment": "Underwriting rules for the Underwriting page (web/underwriting.html, web/underwriting.js). Owner, 2026-10-26: quote the longest program for the enrolled debt, always; to lower the price, remove a credit card (smallest first, two at most), never a shorter length. Minimum enrolled debt $7,500 (the table's $7,000 band is not used). Rules from Cordoba's WC Guidelines workbook (unacceptable creditors, debt types, requirements; list dated July 03 2026) plus the owner's additions, and config/playbook/Knowledge_Card.md section 4. Cordoba's own minimum is $7,000; CFN uses $7,500. The page runs only in the rep's browser: nothing about the client is sent or saved.",
-  "min_enrolled": 7500,
+  "comment": "Underwriting rules for the Underwriting page (web/underwriting.html, web/underwriting.js). Owner, 2026-10-26: quote the longest program for the enrolled debt, always; to lower the price, remove a credit card (smallest first, two at most), never a shorter length. Minimum enrolled debt $7,000 (owner, 2026-10-26, matching Cordoba). Rules from Cordoba's WC Guidelines workbook (unacceptable creditors, debt types, requirements; list dated July 03 2026) plus the owner's additions, and config/playbook/Knowledge_Card.md section 4. The page runs only in the rep's browser: nothing about the client is sent or saved.",
+  "min_enrolled": 7000,
   "bands": [
     {
-      "from": 7500,
+      "from": 7000,
       "to": 7999.99,
       "min_months": 12,
       "max_months": 24
