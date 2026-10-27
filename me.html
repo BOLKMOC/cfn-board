@@ -9,8 +9,8 @@
 <title>My CFN Page</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Quicksand:wght@500;700&display=swap">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
-<link rel="stylesheet" href="board.css?v=59e8e1d-1793070719">
-<link rel="stylesheet" href="coach.css?v=59e8e1d-1793070719">
+<link rel="stylesheet" href="board.css?v=da829c6-1793071109">
+<link rel="stylesheet" href="coach.css?v=da829c6-1793071109">
 <style>
 .wrap{max-width:680px}
 .three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
@@ -67,7 +67,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
 #signin{text-align:center;padding:30px 16px}
 @media (max-width:480px){.three{grid-template-columns:1fr 1fr 1fr}.mini .v{font-size:18px}}
 </style>
-<script src="config.js?v=59e8e1d-1793070719"></script>
+<script src="config.js?v=da829c6-1793071109"></script>
 </head>
 <body>
 <div class="wrap">
@@ -102,15 +102,16 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
   </section>
 
   <section class="card" id="finTab" style="margin-bottom:14px" hidden>
-    <p class="label"><span>QuickBooks</span><span id="qboState" class="when"></span></p>
-    <div id="qboBox" style="margin:0 0 6px"></div>
+    <!-- QuickBooks is on hold (owner, 2026-10-26): the connect box stays hidden until the Intuit app is approved. -->
+    <div id="qboArea" hidden><p class="label"><span>QuickBooks</span><span id="qboState" class="when"></span></p>
+    <div id="qboBox" style="margin:0 0 6px"></div></div>
     <p class="note" id="finMsg" aria-live="polite"></p>
     <p class="label" style="margin-top:18px"><span>Profit per rep</span><span><button class="link" id="finPrev">&larr;</button> <b id="finMonth"></b> <button class="link" id="finNext">&rarr;</button></span></p>
     <p class="note" id="finRepNote" style="margin:0 0 10px"></p>
     <div id="finRepTotals"></div>
     <div id="finReps"></div>
     <p class="label" style="margin-top:22px"><span>Actual vs pro forma</span><span class="when">by month</span></p>
-    <p class="note" style="margin:0 0 10px">Each month is the deals sold that month, like the pro forma. Revenue is 8% of debt: earned when the 1st deposit clears (Cordoba payout files), expected at the pro forma clear rate while waiting. Operating profit is from QuickBooks once it is connected. The pro forma assumed 9%.</p>
+    <p class="note" style="margin:0 0 10px">Each month is the deals sold that month, like the pro forma. Revenue is 8% of debt: earned when the 1st deposit clears (Cordoba payout files), expected at the pro forma clear rate while waiting. Costs use the pro forma's figures for now and are marked as estimates. The pro forma assumed 9%.</p>
     <div id="finMonths"></div>
   </section>
 
@@ -1023,6 +1024,6 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
   else if (session) load(); else showSignIn();
 })();
 </script>
-<script src="coach.js?v=59e8e1d-1793070719"></script>
+<script src="coach.js?v=da829c6-1793071109"></script>
 </body>
 </html>
