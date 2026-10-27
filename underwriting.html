@@ -10,7 +10,7 @@
 <title>CFN Underwriting</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Quicksand:wght@500;700&display=swap">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
-<link rel="stylesheet" href="board.css?v=f21ef69-1793066473">
+<link rel="stylesheet" href="board.css?v=bf42c03-1793068454">
 <style>
 .wrap{max-width:860px}
 [hidden]{display:none !important}
@@ -54,6 +54,7 @@ table.bands tr.on td{background:var(--tint);font-weight:700}
   <div id="app" hidden>
     <section class="card" style="margin-bottom:14px">
       <p class="label"><span>1. The credit pull</span></p>
+      <label class="note" style="display:block;margin:0 0 10px">Client's state <select class="f" id="state" style="width:auto;margin-left:6px"><option value="">Pick...</option></select></label>
       <p class="priv"><b>Private:</b> the PDF and the text are read on this device only. Nothing is uploaded, sent, or saved, not even to CFN. Tap Clear when you're done.</p>
       <div class="actions" style="margin-top:0">
         <button class="go" id="pick" type="button">Upload credit pull PDF</button>
@@ -89,9 +90,11 @@ table.bands tr.on td{background:var(--tint);font-weight:700}
       <p class="label"><span>Program length by enrolled debt</span><span id="listDate"></span></p>
       <table class="bands"><thead><tr><th>Enrolled debt</th><th>Program to quote</th></tr></thead><tbody id="bands"></tbody></table>
       <p class="note" style="margin:8px 0 0" id="ruleNote"></p>
+      <details style="margin-top:10px"><summary class="note" style="cursor:pointer">Creditors Cordoba won't take (<span id="exN"></span>)</summary><p class="note" style="margin:6px 0 0;line-height:1.6" id="exList"></p></details>
+      <details style="margin-top:6px"><summary class="note" style="cursor:pointer">Other Cordoba requirements</summary><ul class="rules" id="reqList"></ul></details>
     </section>
   </div>
 </div>
-<script type="module" src="underwriting-page.js?v=f21ef69-1793066473"></script>
+<script type="module" src="underwriting-page.js?v=bf42c03-1793068454"></script>
 </body>
 </html>

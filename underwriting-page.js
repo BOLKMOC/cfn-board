@@ -17,13 +17,20 @@ async function start() {
   catch { $("gate").hidden = false; $("gate").innerHTML = '<p style="margin:0">The underwriting rules did not load. Refresh the page.</p>'; return; }
   $("app").hidden = false;
   $("bands").innerHTML = rules.bands.map((b) => `<tr data-from="${b.from}"><td>${money(b.from)}${b.to === null ? " and up" : " to " + money(b.to)}</td><td><b>${b.max_months} months</b></td></tr>`).join("");
-  $("ruleNote").textContent = `Under ${money(rules.min_enrolled)} enrolled does not qualify. Out: secured, auto, mortgage, student loans, military debt, authorized-user accounts, Pinnacle. Repo balances only while half or less of the enrolled debt. Joint accounts need the co-signer on the program.`;
-  $("listDate").textContent = rules.creditor_list?.accepted?.length ? `Cordoba creditor list of ${rules.creditor_list.date}` : "Cordoba creditor list not loaded yet";
+  $("ruleNote").textContent = `Under ${money(rules.min_enrolled)} enrolled does not qualify. Out: secured, auto, title, mortgage and home equity, home improvement and solar, student loans, military, IRS, utilities, insurance, leases and rent to own, authorized-user accounts, debts under $${rules.min_account}, and under $${rules.min_per_creditor} per creditor. Repo, medical, back rent, and business debt together: half or less of the enrolled debt.`;
+  $("listDate").textContent = `Cordoba list of ${new Date(rules.cordoba_list_date + "T12:00:00Z").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" })}`;
+  $("exN").textContent = rules.excluded_creditors.length + (rules.secured_only_creditors?.length ? ` plus ${rules.secured_only_creditors.length} secured-only` : "");
+  $("exList").innerHTML = rules.excluded_creditors.map((e) => esc(e.name)).sort((a, b) => a.localeCompare(b)).join(" · ")
+    + (rules.secured_only_creditors?.length ? `<br><b>Secured loans only:</b> ${rules.secured_only_creditors.map((e) => esc(e.name)).join(" · ")}` : "");
+  $("reqList").innerHTML = (rules.notes ?? []).map((n) => `<li>${esc(n)}</li>`).join("");
+  const STATES = "AL AK AZ AR CA CO CT DE DC FL GA HI ID IL IN IA KS KY LA ME MD MA MI MN MS MO MT NE NV NH NJ NM NY NC ND OH OK OR PA RI SC SD TN TX UT VT VA WA WV WI WY PR GU VI AS MP".split(" ");
+  $("state").insertAdjacentHTML("beforeend", STATES.map((s) => `<option>${s}</option>`).join(""));
+  $("state").onchange = update;
   $("pdf").onchange = readPdf;
   $("pick").onclick = () => $("pdf").click();
   $("readPaste").onclick = () => { add(parsePull($("paste").value), "the pasted text"); $("paste").value = ""; };
   $("addRow").onclick = () => { accounts.push(blank()); drawAccounts(); const c = document.querySelectorAll(".acct .cr input"); c[c.length - 1]?.focus(); };
-  $("clear").onclick = () => { accounts = []; $("paste").value = ""; $("pdf").value = ""; $("pdfMsg").textContent = ""; drawAccounts(); };
+  $("clear").onclick = () => { accounts = []; $("state").value = ""; $("paste").value = ""; $("pdf").value = ""; $("pdfMsg").textContent = ""; drawAccounts(); };
   drawAccounts();
 }
 
@@ -79,7 +86,7 @@ function drawAccounts() {
 }
 
 function update() {
-  const r = checkAccounts(accounts.map((a) => ({ ...a, balance: Number(a.balance) || 0 })), rules);
+  const r = checkAccounts(accounts.map((a) => ({ ...a, balance: Number(a.balance) || 0 })), rules, { state: $("state").value });
   const LABEL = { in: "In", out: "Out", aside: "Set aside", check: "Ask a manager" };
   for (const row of r.rows) {
     const el = document.querySelector(`.acct[data-id="${row.id}"]`); if (!el) continue;
@@ -93,7 +100,7 @@ function update() {
   if (!accounts.length) return;
   const head = r.qualifies
     ? `<div class="note">Quote the longest program</div><div class="big">${r.months} months</div>`
-    : `<div class="dq">Does not qualify</div><div class="note">${r.enrolled ? `Enrolled debt is ${money(r.enrolled)}. ` : ""}The minimum is ${money(rules.min_enrolled)} of enrollable debt.</div>`;
+    : `<div class="dq">Does not qualify</div><div class="note">${r.underMin ? `${r.enrolled ? `Enrolled debt is ${money(r.enrolled)}. ` : ""}The minimum is ${money(rules.min_enrolled)} of enrollable debt.` : "See the reason below."}</div>`;
   const pull = r.qualifies && r.pullCard.length ? `<p class="label" style="margin-top:14px"><span>If they can't afford the payment</span></p>
       <p class="note" style="margin:0 0 6px">Remove a credit card, smallest first, two at most. The program stays the longest for the new total. Never quote a shorter length.</p>
       ${r.pullCard.map((p, i) => `<div style="display:flex;justify-content:space-between;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--tint);font-size:14px"><span>${i + 1}. Set aside <b>${esc(p.creditor || "this card")}</b> (${money(p.balance)}): ${p.qualifies ? `enrolled ${money(p.total)}, <b>${p.months} months</b>${p.months !== r.months && i === 0 ? ` (was ${r.months})` : ""}` : `<span class="warn">drops under ${money(rules.min_enrolled)}: can't</span>`}</span>${p.qualifies && i === 0 ? `<button class="go small ghost" data-aside="${p.id}">Set aside</button>` : ""}</div>`).join("")}` : "";

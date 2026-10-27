@@ -13,43 +13,49 @@ export function programLength(total, rules) {
   return band ? { months: band.max_months, band } : null;
 }
 
-function creditorRule(name, rules) {
-  const n = norm(name);
-  const ex = rules.excluded_creditors.find((e) => n.includes(norm(e.match)));
-  if (ex) return { out: ex.reason };
-  const list = (rules.creditor_list?.accepted ?? []).map(norm).filter(Boolean);
-  if (list.length && n && !list.some((a) => n.includes(a) || a.includes(n))) return { check: "Not on Cordoba's creditor list: check with a manager before enrolling it." };
-  return {};
+// Creditor names on a pull are short and spelled many ways ("MARINR FINC"). A pattern matches at the start of a word;
+// a pattern ending in "!" must also end on a word ("FIRST BANK!" is not "FIRST BANKCARD").
+function matches(name, patterns) {
+  const n = " " + norm(name) + " ";
+  return patterns.some((p) => { const end = p.endsWith("!"), q = norm(p); return end ? n.includes(` ${q} `) : n.includes(` ${q}`); });
 }
+const creditorKey = (name) => norm(String(name).replace(/\(orig\..*$/i, ""));
 
-// accounts: [{ id, creditor, balance, type, au, joint, aside, payment }]. Returns each row's verdict, the totals, and the program.
-export function checkAccounts(accounts, rules) {
+// accounts: [{ id, creditor, balance, type, au, joint, aside, payment }]; opts.state: the client's state (two letters).
+// Returns each row's verdict, the totals, and the program to quote.
+export function checkAccounts(accounts, rules, opts = {}) {
+  const perCreditor = new Map();
+  for (const a of accounts) if (!a.aside && !a.au && Number(a.balance) >= rules.min_account) perCreditor.set(creditorKey(a.creditor), (perCreditor.get(creditorKey(a.creditor)) ?? 0) + (Number(a.balance) || 0));
   const rows = accounts.map((a) => {
     const balance = cents(a.balance) || 0, type = rules.types[a.type] ? a.type : "other", t = rules.types[type];
     const r = { ...a, balance, type, status: "in", reason: "", notes: [] };
-    const cr = creditorRule(a.creditor, rules);
+    const ex = rules.excluded_creditors.find((e) => matches(a.creditor, e.match));
+    const so = (rules.secured_only_creditors ?? []).find((e) => matches(a.creditor, e.match));
     if (!(balance > 0)) Object.assign(r, { status: "out", reason: "No balance." });
     else if (!t.ok) Object.assign(r, { status: "out", reason: t.reason });
     else if (a.au) Object.assign(r, { status: "out", reason: "Authorized user only: not the client's debt to settle." });
-    else if (cr.out) Object.assign(r, { status: "out", reason: cr.out });
-    else if (cr.check) Object.assign(r, { status: "check", reason: cr.check });
+    else if (ex) Object.assign(r, { status: "out", reason: ex.reason });
     else if (a.aside) Object.assign(r, { status: "aside", reason: "Set aside by the rep." });
-    if (r.status === "in" && a.joint) r.notes.push("Joint: the co-signer must be on the program too.");
-    if (r.status === "in" && t.note) r.notes.push(t.note);
+    else if (balance < rules.min_account) Object.assign(r, { status: "out", reason: `Under $${rules.min_account}: Cordoba won't take a debt this small.` });
+    else if ((perCreditor.get(creditorKey(a.creditor)) ?? 0) < rules.min_per_creditor) Object.assign(r, { status: "out", reason: `Under $${rules.min_per_creditor} with this creditor: Cordoba needs $${rules.min_per_creditor} or more per creditor.` });
+    if (r.status === "in" && so) r.notes.push(`${so.name}: Cordoba refuses their secured loans. Make sure this one is unsecured.`);
+    if (r.status === "in" && a.joint) r.notes.push("Joint: the co-applicant must be on the program too (unless legally married).");
+    if (r.status === "in" && t.secondary) r.notes.push("Counts toward the 50% cap on repo, medical, back rent, and business debt.");
     return r;
   });
   const sum = (xs) => cents(xs.reduce((s, x) => s + x.balance, 0));
   const inRows = () => rows.filter((r) => r.status === "in");
-  // Repo balances come in only while they are half or less of the enrolled debt.
-  const repo = sum(inRows().filter((r) => r.type === "repo")), all = sum(inRows());
-  if (repo > 0 && repo > rules.repo_max_share * all) for (const r of inRows()) if (r.type === "repo") Object.assign(r, { status: "out", reason: `Repo balances ($${repo.toLocaleString("en-US")}) are over half of the enrolled debt.` });
-  const enrolled = sum(inRows()), program = programLength(enrolled, rules);
+  const enrolled = sum(inRows()), secondary = sum(inRows().filter((r) => rules.types[r.type]?.secondary));
+  const overCap = enrolled > 0 && secondary > rules.secondary_max_share * enrolled;
+  const state = String(opts.state ?? "").toUpperCase(), badState = rules.excluded_states?.[state];
+  const length = programLength(enrolled, rules), program = overCap || badState ? null : length;
   const asideN = rows.filter((r) => r.status === "aside").length;
   const payments = cents(inRows().reduce((s, r) => s + (Number(r.payment) || 0), 0));
   const warnings = [];
+  if (badState) warnings.push(`Cordoba does not take clients in ${badState}.`);
+  if (overCap) warnings.push(`Repo, medical, back rent, and business debt are ${Math.round((100 * secondary) / enrolled)}% of the enrolled debt. Cordoba caps them at 50%: credit cards and loans must be at least half.`);
   if (asideN > rules.max_set_aside) warnings.push(`${asideN} accounts set aside. The rule is two at most.`);
-  if (rows.some((r) => r.status === "in" && r.joint)) warnings.push("A joint account is in: get the co-signer on the program.");
-  if (rows.some((r) => r.status === "check")) warnings.push("An account is not on Cordoba's creditor list: a manager decides before it goes in.");
+  if (rows.some((r) => r.status === "in" && r.joint)) warnings.push("A joint account is in: get the co-applicant on the program.");
   // If the client can't afford it: remove a credit card, smallest first, within the two allowed. Never a shorter program.
   const pullCard = [];
   let left = enrolled;
@@ -59,13 +65,16 @@ export function checkAccounts(accounts, rules) {
     pullCard.push({ id: c.id, creditor: c.creditor, balance: c.balance, total: left, months: p?.months ?? null, qualifies: !!p });
     if (!p) break;
   }
-  return { rows, enrolled, program, months: program?.months ?? null, qualifies: !!program, payments, aside: asideN, warnings, pullCard };
+  return { rows, enrolled, program, months: program?.months ?? null, qualifies: !!program, underMin: !length, payments, aside: asideN, warnings, pullCard };
 }
 
 const MONEY = /\$\s?\d{1,3}(?:,\d{3})*(?:\.\d{2})?|\$\s?\d+(?:\.\d{2})?|\b\d{1,3}(?:,\d{3})+(?:\.\d{2})?\b|\b\d+\.\d{2}\b/g;
 const amount = (s) => Number(String(s).replace(/[$,\s]/g, ""));
 const KIND = [
   ["mortgage", /MORTGAGE|HOME EQUITY|HELOC|REAL ESTATE/],
+  ["tax", /\bIRS\b|TREASURY|\bTAX\b/],
+  ["home_improvement", /SOLAR|GOODLEAP|HOME IMPROVE/],
+  ["title", /\bTITLE\b/],
   ["student", /STUDENT|NAVIENT|NELNET|SALLIE MAE|DEPT OF ED|MOHELA|AIDVANTAGE|EDFINANCIAL/],
   ["repo", /\bREPO/], // before auto: a repo deficiency after a car is taken back is a repo balance
   ["auto", /\bAUTO\b|VEHICLE|CAR LOAN|MOTOR/],
@@ -83,6 +92,11 @@ const SKIP = /\bTOTALS?\b|SUMMARY|SCORE|INQUIR|SSN|SOCIAL SECURITY|DATE OF BIRTH
 //   "PLACED FOR COLLECTION; ORIGINAL CREDITOR: MEDICAL"                                 (collections)
 const TRADE = /^([A-Z])\s+([A-Z])\s+(.+?)\s+(?:\d\d\/\d\d|--\/--)\s+(?:\d\d\/\d\d|--\/--)\s+\$(\d+)\s+\$(\d+)\s+\$(\d+)\b(.*)$/;
 const TRADE2 = /^\S+\s+(?:\d\d\/\d\d|--\/--)\s+([A-Z]+)\b(.*)$/;
+// A collection's original creditor tells what kind of debt it is (some kinds Cordoba refuses).
+const origType = (o) => /MEDICAL|HOSPITAL|HEALTH|CLINIC|PHYSICIAN|RADIOLOG|AMBULANCE|EMERGENCY/.test(o) ? "medical"
+  : /INSURANCE|\bINS\b|INS CO|ALLSTATE|GEICO|PROGRESSIVE|STATE FARM/.test(o) ? "insurance"
+  : /ELECTRIC|ENERGY|POWER|WATER|\bGAS\b|UTILIT/.test(o) ? "utility"
+  : /\bRENT\b|APARTMENT|\bAPTS?\b|PROPERTY MGMT|PROPERTIES|LEASING/.test(o) ? "back_rent" : null;
 const CIC_TYPE = { AUTO: "auto", MTG: "mortgage", EDU: "student", REV: "credit_card", INST: "personal_loan", COLL: "collection", OPEN: "other" };
 
 export function parseTradelines(text) {
@@ -100,11 +114,11 @@ export function parseTradelines(text) {
     const note = /ORIGINAL CREDITOR:\s*(?:\d+\s+)?(.+)$/.exec((lines[i + 2] ?? "").toUpperCase());
     if (!(balance > 0)) continue;
     let type = CIC_TYPE[code] ?? "other";
-    if (type === "collection" && note && /MEDICAL/.test(note[1])) type = "medical";
+    if (type === "collection" && note) type = origType(note[1]) ?? type;
     if (type === "personal_loan" && /\bSECURED\b/.test(name.toUpperCase())) type = "secured";
     const codes = [whose, ecoa];
     out.push({
-      creditor: (name + (note && !/MEDICAL/.test(note[1]) ? ` (orig. ${note[1].trim()})` : "")).slice(0, 60), balance,
+      creditor: (name + (note && origType(note[1]) !== "medical" ? ` (orig. ${note[1].trim()})` : "")).slice(0, 80), balance,
       payment: pay && Number(pay[1]) > 0 ? Number(pay[1]) : null, type,
       au: codes.includes("A"), joint: codes.some((c) => c === "J" || c === "C" || c === "S"), aside: false,
     });

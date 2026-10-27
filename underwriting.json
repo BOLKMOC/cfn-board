@@ -1,36 +1,750 @@
 {
-  "comment": "Underwriting rules for the Underwriting page (web/underwriting.html, web/underwriting.js). Owner, 2026-10-26: quote the longest program for the enrolled debt, always; to lower the price, remove a credit card (smallest first, two at most), never a shorter length. Minimum enrolled debt $7,500 (the table's $7,000 band is not used). Rules from config/playbook/Knowledge_Card.md section 4. The page runs only in the rep's browser: nothing about the client is sent or saved.",
+  "comment": "Underwriting rules for the Underwriting page (web/underwriting.html, web/underwriting.js). Owner, 2026-10-26: quote the longest program for the enrolled debt, always; to lower the price, remove a credit card (smallest first, two at most), never a shorter length. Minimum enrolled debt $7,500 (the table's $7,000 band is not used). Rules from Cordoba's WC Guidelines workbook (unacceptable creditors, debt types, requirements; list dated July 03 2026) plus the owner's additions, and config/playbook/Knowledge_Card.md section 4. Cordoba's own minimum is $7,000; CFN uses $7,500. The page runs only in the rep's browser: nothing about the client is sent or saved.",
   "min_enrolled": 7500,
   "bands": [
-    { "from": 7500, "to": 7999.99, "min_months": 12, "max_months": 24 },
-    { "from": 8000, "to": 9999.99, "min_months": 12, "max_months": 28 },
-    { "from": 10000, "to": 14999.99, "min_months": 12, "max_months": 38 },
-    { "from": 15000, "to": 19999.99, "min_months": 12, "max_months": 42 },
-    { "from": 20000, "to": 29999.99, "min_months": 12, "max_months": 50 },
-    { "from": 30000, "to": null, "min_months": 12, "max_months": 60 }
+    {
+      "from": 7500,
+      "to": 7999.99,
+      "min_months": 12,
+      "max_months": 24
+    },
+    {
+      "from": 8000,
+      "to": 9999.99,
+      "min_months": 12,
+      "max_months": 28
+    },
+    {
+      "from": 10000,
+      "to": 14999.99,
+      "min_months": 12,
+      "max_months": 38
+    },
+    {
+      "from": 15000,
+      "to": 19999.99,
+      "min_months": 12,
+      "max_months": 42
+    },
+    {
+      "from": 20000,
+      "to": 29999.99,
+      "min_months": 12,
+      "max_months": 50
+    },
+    {
+      "from": 30000,
+      "to": null,
+      "min_months": 12,
+      "max_months": 60
+    }
   ],
-  "repo_max_share": 0.5,
   "max_set_aside": 2,
   "types": {
-    "credit_card": { "label": "Credit card", "ok": true },
-    "personal_loan": { "label": "Personal loan (unsecured)", "ok": true },
-    "collection": { "label": "Collection", "ok": true },
-    "medical": { "label": "Medical", "ok": true },
-    "repo": { "label": "Repo balance", "ok": true, "note": "In only while all repo balances are half or less of the enrolled debt." },
-    "other": { "label": "Other unsecured", "ok": true },
-    "secured": { "label": "Secured loan", "ok": false, "reason": "Secured debt does not qualify: the creditor can take the collateral." },
-    "auto": { "label": "Auto loan", "ok": false, "reason": "Auto loans do not qualify." },
-    "mortgage": { "label": "Mortgage or home equity", "ok": false, "reason": "Mortgages do not qualify." },
-    "student": { "label": "Student loan", "ok": false, "reason": "Student loans do not qualify." },
-    "military": { "label": "Military debt (AAFES, Navy Federal military loan)", "ok": false, "reason": "Military debt is excluded." }
+    "credit_card": {
+      "label": "Credit card",
+      "ok": true
+    },
+    "personal_loan": {
+      "label": "Personal loan (unsecured)",
+      "ok": true
+    },
+    "collection": {
+      "label": "Collection",
+      "ok": true
+    },
+    "medical": {
+      "label": "Medical (collection)",
+      "ok": true,
+      "secondary": true
+    },
+    "repo": {
+      "label": "Repo balance (vehicle gone)",
+      "ok": true,
+      "secondary": true
+    },
+    "back_rent": {
+      "label": "Back rent (in collections)",
+      "ok": true,
+      "secondary": true
+    },
+    "business": {
+      "label": "Business debt (business closed or failing)",
+      "ok": true,
+      "secondary": true
+    },
+    "other": {
+      "label": "Other unsecured",
+      "ok": true
+    },
+    "secured": {
+      "label": "Secured loan or secured card",
+      "ok": false,
+      "reason": "Secured debt does not qualify (Cordoba's one exception: a loan secured only by small household items, with a note on the file)."
+    },
+    "auto": {
+      "label": "Auto loan",
+      "ok": false,
+      "reason": "Auto loans do not qualify."
+    },
+    "title": {
+      "label": "Title loan",
+      "ok": false,
+      "reason": "Title loans do not qualify."
+    },
+    "mortgage": {
+      "label": "Mortgage or home equity",
+      "ok": false,
+      "reason": "Mortgages and home equity do not qualify."
+    },
+    "home_improvement": {
+      "label": "Home improvement or solar loan",
+      "ok": false,
+      "reason": "Home improvement and solar loans do not qualify (lien rights on the home)."
+    },
+    "student": {
+      "label": "Student loan",
+      "ok": false,
+      "reason": "Student loans do not qualify, private or federal, even in collections."
+    },
+    "military": {
+      "label": "Military debt (Military Star, AAFES)",
+      "ok": false,
+      "reason": "Military debt is excluded."
+    },
+    "tax": {
+      "label": "IRS or tax debt",
+      "ok": false,
+      "reason": "IRS and tax debt do not qualify."
+    },
+    "utility": {
+      "label": "Utility",
+      "ok": false,
+      "reason": "Utilities do not qualify, even in collections."
+    },
+    "insurance": {
+      "label": "Insurance company",
+      "ok": false,
+      "reason": "Insurance company debt does not qualify, even in collections."
+    },
+    "lease": {
+      "label": "Lease, rent to own, or lease to own",
+      "ok": false,
+      "reason": "Leases and rent to own do not qualify."
+    },
+    "timeshare": {
+      "label": "Timeshare",
+      "ok": false,
+      "reason": "Timeshares do not qualify."
+    },
+    "other_excluded": {
+      "label": "Other excluded (overdraft, cash advance, child support, judgment fees, security system, car rental or EZPass, funeral, SBA, farm, trading platform)",
+      "ok": false,
+      "reason": "Cordoba does not accept this kind of debt."
+    }
   },
   "excluded_creditors": [
-    { "match": "PINNACLE", "reason": "Cordoba excludes Pinnacle Financial Group." },
-    { "match": "REGIONAL FINANCE", "reason": "Regional Finance is secured by household goods: does not qualify." }
+    {
+      "name": "First Franklin",
+      "match": [
+        "FIRST FRANKLIN",
+        "1ST FRANKLIN",
+        "1ST FRANKLN"
+      ],
+      "reason": "First Franklin: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "Acceptance Now",
+      "match": [
+        "ACCEPTANCE NOW",
+        "ACCEPTANCENOW"
+      ],
+      "reason": "Acceptance Now: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "ACIMA",
+      "match": [
+        "ACIMA"
+      ],
+      "reason": "ACIMA: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "Advance Financial",
+      "match": [
+        "ADVANCE FINANCIAL",
+        "ADVANCE FIN"
+      ],
+      "reason": "Advance Financial: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "AGCO Finance",
+      "match": [
+        "AGCO"
+      ],
+      "reason": "AGCO Finance: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "Aqua Finance",
+      "match": [
+        "AQUA FIN"
+      ],
+      "reason": "Aqua Finance: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "BHG",
+      "match": [
+        "BHG!",
+        "BHG FIN",
+        "BHG MONEY",
+        "BANKERS HEALTHCARE"
+      ],
+      "reason": "BHG: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "Bob's Furniture / Bob's Finance",
+      "match": [
+        "BOBS FURN",
+        "BOBS DISCOUNT",
+        "BOBS FIN",
+        "BOB S FURN"
+      ],
+      "reason": "Bob's Furniture / Bob's Finance: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "Civic Credit Union",
+      "match": [
+        "CIVIC CU",
+        "CIVIC CREDIT",
+        "CIVIC FCU"
+      ],
+      "reason": "Civic Credit Union: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "Cornerstone Financial Credit Union",
+      "match": [
+        "CORNERSTONE FIN",
+        "CORNERSTONE FCU",
+        "CORNERSTONE CU"
+      ],
+      "reason": "Cornerstone Financial Credit Union: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "Covington Credit",
+      "match": [
+        "COVINGTON"
+      ],
+      "reason": "Covington Credit: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "Concord Servicing",
+      "match": [
+        "CONCORD SERV",
+        "CONCORD SVC"
+      ],
+      "reason": "Concord Servicing: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "CU Hawaii",
+      "match": [
+        "CU HAWAII",
+        "CUHAWAII"
+      ],
+      "reason": "CU Hawaii: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "CreditCentral",
+      "match": [
+        "CREDIT CENTRAL",
+        "CREDITCENTRAL"
+      ],
+      "reason": "CreditCentral: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "Credologi",
+      "match": [
+        "CREDOLOGI"
+      ],
+      "reason": "Credologi: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "DR Bank",
+      "match": [
+        "DR BANK"
+      ],
+      "reason": "DR Bank: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "Enerbank",
+      "match": [
+        "ENERBANK"
+      ],
+      "reason": "Enerbank: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "ESL Credit Union",
+      "match": [
+        "ESL CU",
+        "ESL FCU",
+        "ESL FED"
+      ],
+      "reason": "ESL Credit Union: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "Farmers Furniture",
+      "match": [
+        "FARMERS FURN",
+        "FRMRS FURN"
+      ],
+      "reason": "Farmers Furniture: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "FCC Finance",
+      "match": [
+        "FCC FIN"
+      ],
+      "reason": "FCC Finance: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "FCRP Capital",
+      "match": [
+        "FCRP"
+      ],
+      "reason": "FCRP Capital: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "Founders FCU",
+      "match": [
+        "FOUNDERS FCU",
+        "FOUNDERS FED"
+      ],
+      "reason": "Founders FCU: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "Fortera Credit Union",
+      "match": [
+        "FORTERA"
+      ],
+      "reason": "Fortera Credit Union: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "1 First Bank / First Bank",
+      "match": [
+        "1 FIRST BANK!",
+        "FIRST BANK!"
+      ],
+      "reason": "1 First Bank / First Bank: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "Fort Worth Credit Union",
+      "match": [
+        "FORT WORTH CU",
+        "FORT WORTH CREDIT",
+        "FORTH WORTH"
+      ],
+      "reason": "Fort Worth Credit Union: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "Garden Federal Credit Union",
+      "match": [
+        "GARDEN FCU",
+        "GARDEN FED"
+      ],
+      "reason": "Garden Federal Credit Union: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "GoodLeap",
+      "match": [
+        "GOODLEAP"
+      ],
+      "reason": "GoodLeap: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "Grupo Estrella",
+      "match": [
+        "GRUPO ESTRELLA"
+      ],
+      "reason": "Grupo Estrella: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "Heights Financial",
+      "match": [
+        "HEIGHTS FIN"
+      ],
+      "reason": "Heights Financial: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "Royal Prestige / Hycite",
+      "match": [
+        "HC ROYA",
+        "HYCITE",
+        "ROYAL PRESTIGE"
+      ],
+      "reason": "Royal Prestige / Hycite: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "Island Finance",
+      "match": [
+        "ISLAND FIN"
+      ],
+      "reason": "Island Finance: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "ISPC",
+      "match": [
+        "ISPC!"
+      ],
+      "reason": "ISPC: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "Kabbage",
+      "match": [
+        "KABBAGE"
+      ],
+      "reason": "Kabbage: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "Kikoff",
+      "match": [
+        "KIKOFF"
+      ],
+      "reason": "Kikoff: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "Koalafi",
+      "match": [
+        "KOALAFI"
+      ],
+      "reason": "Koalafi: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "LHPCC Trust",
+      "match": [
+        "LHPCC"
+      ],
+      "reason": "LHPCC Trust: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "Loanpal",
+      "match": [
+        "LOAN PAL",
+        "LOANPAL"
+      ],
+      "reason": "Loanpal: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "Local Government FCU",
+      "match": [
+        "LOCAL GOVERNMENT",
+        "LOCAL GOVT",
+        "LGFCU"
+      ],
+      "reason": "Local Government FCU: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "Mariner Finance",
+      "match": [
+        "MARINER",
+        "MARINR"
+      ],
+      "reason": "Mariner Finance: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "Matco Tools",
+      "match": [
+        "MATCO"
+      ],
+      "reason": "Matco Tools: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "Military Star",
+      "match": [
+        "MILITARY STAR",
+        "MILSTAR"
+      ],
+      "reason": "Military Star: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "National Finance",
+      "match": [
+        "NATL FIN",
+        "NAT FINAN",
+        "NATIONALFN",
+        "NATIONAL FINANCIAL",
+        "NATIONAL FINANCE"
+      ],
+      "reason": "National Finance: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "Nebraska Furniture",
+      "match": [
+        "NEBRASKA FURN"
+      ],
+      "reason": "Nebraska Furniture: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "Omni Loans",
+      "match": [
+        "OMNI LOAN",
+        "OMNI FIN"
+      ],
+      "reason": "Omni Loans: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "OpenSky",
+      "match": [
+        "OPENSKY",
+        "OPEN SKY"
+      ],
+      "reason": "OpenSky: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "Pioneer Loans",
+      "match": [
+        "PIONEER LOAN",
+        "PIONEER CREDIT",
+        "PIONEER SVC"
+      ],
+      "reason": "Pioneer Loans: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "Banco Popular",
+      "match": [
+        "BANCO POPULAR",
+        "POPULAR BANK"
+      ],
+      "reason": "Banco Popular: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "PowerPay",
+      "match": [
+        "POWERPAY",
+        "POWER PAY"
+      ],
+      "reason": "PowerPay: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "Preferred Loans",
+      "match": [
+        "PREFERRED LOAN"
+      ],
+      "reason": "Preferred Loans: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "Quick Help Loans",
+      "match": [
+        "QUICK HELP"
+      ],
+      "reason": "Quick Help Loans: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "Rent-A-Center",
+      "match": [
+        "RENT A CENTER",
+        "RENTACENTER",
+        "RENT A CTR"
+      ],
+      "reason": "Rent-A-Center: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "Red River Credit",
+      "match": [
+        "RED RIVER",
+        "REDRIVERCR"
+      ],
+      "reason": "Red River Credit: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "Redstone Credit Union",
+      "match": [
+        "REDSTONE"
+      ],
+      "reason": "Redstone Credit Union: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "RFFC Financial",
+      "match": [
+        "RFFC"
+      ],
+      "reason": "RFFC Financial: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "Robinhood",
+      "match": [
+        "ROBINHOOD"
+      ],
+      "reason": "Robinhood: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "Self / Lead Bank",
+      "match": [
+        "SELF FIN",
+        "SELF INC",
+        "LEAD BANK",
+        "SELF LENDER"
+      ],
+      "reason": "Self / Lead Bank: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "Service Finance Company",
+      "match": [
+        "SERVICE FIN",
+        "SVCFIN",
+        "SRVFINCO",
+        "SVC FIN"
+      ],
+      "reason": "Service Finance Company: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "Southern Finance",
+      "match": [
+        "SOUTHERN FIN"
+      ],
+      "reason": "Southern Finance: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "State Employees Credit Union",
+      "match": [
+        "STATE EMPLOYEE",
+        "NCSTATEEMP",
+        "STATE EMP"
+      ],
+      "reason": "State Employees Credit Union: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "Sunset Financial",
+      "match": [
+        "SUNSET FIN"
+      ],
+      "reason": "Sunset Financial: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "Toledo Finance",
+      "match": [
+        "TOLEDO FIN"
+      ],
+      "reason": "Toledo Finance: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "Tower Loan",
+      "match": [
+        "TOWER LOAN"
+      ],
+      "reason": "Tower Loan: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "Tinker FCU",
+      "match": [
+        "TINKER"
+      ],
+      "reason": "Tinker FCU: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "WSECU",
+      "match": [
+        "WSECU"
+      ],
+      "reason": "WSECU: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "West Creek Financial",
+      "match": [
+        "WEST CREEK",
+        "WESTCREEK"
+      ],
+      "reason": "West Creek Financial: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "Yard Card",
+      "match": [
+        "YRDCARD",
+        "YARD CARD"
+      ],
+      "reason": "Yard Card: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "Yendo",
+      "match": [
+        "YENDO"
+      ],
+      "reason": "Yendo: Cordoba does not accept this creditor."
+    },
+    {
+      "name": "Equity Sales",
+      "match": [
+        "EQUITY SALES"
+      ],
+      "reason": "Equity Sales: Cordoba does not accept this creditor (owner, 2026-10-26)."
+    },
+    {
+      "name": "Auto Group Sales",
+      "match": [
+        "AUTO GROUP SALES"
+      ],
+      "reason": "Auto Group Sales: Cordoba does not accept this creditor (owner, 2026-10-26)."
+    },
+    {
+      "name": "Primis / Momnt",
+      "match": [
+        "PRIMIS",
+        "MOMNT"
+      ],
+      "reason": "Primis / Momnt: Cordoba does not accept this creditor (owner, 2026-10-26)."
+    },
+    {
+      "name": "Pinnacle Financial Group",
+      "match": [
+        "PINNACLE"
+      ],
+      "reason": "Pinnacle Financial Group: Cordoba does not accept this creditor (CFN routing rule)."
+    }
   ],
-  "creditor_list": {
-    "comment": "Cordoba's acceptable creditors list goes here when the owner sends it: names as they appear on the pull (upper case, any of them matches). While empty, the page does not check creditors against a list and says so.",
-    "date": null,
-    "accepted": []
-  }
+  "min_account": 100,
+  "min_per_creditor": 300,
+  "secondary_max_share": 0.5,
+  "secured_only_creditors": [
+    {
+      "name": "Lendmark",
+      "match": [
+        "LENDMARK"
+      ]
+    },
+    {
+      "name": "OneMain",
+      "match": [
+        "ONEMAIN",
+        "ONE MAIN"
+      ]
+    },
+    {
+      "name": "Regional Finance",
+      "match": [
+        "REGIONAL FIN",
+        "REGIONAL MGMT",
+        "REGIONAL MANAGEMENT"
+      ]
+    },
+    {
+      "name": "Republic Finance",
+      "match": [
+        "REPUBLIC FIN"
+      ]
+    }
+  ],
+  "excluded_states": {
+    "OR": "Oregon",
+    "PR": "Puerto Rico",
+    "AS": "American Samoa",
+    "GU": "Guam",
+    "MP": "Northern Mariana Islands",
+    "VI": "US Virgin Islands"
+  },
+  "cordoba_list_date": "2026-07-03",
+  "notes": [
+    "The client must have made at least one payment on each debt.",
+    "No accounts in active litigation without the lawsuit reviewed first (Cordoba adds $550 at enrollment if they can help).",
+    "Bankruptcy accounts only if the report shows dismissed.",
+    "Age limit 90 for the client and co-applicant.",
+    "Street address only, no PO Box. Credit report under 30 days old and not frozen.",
+    "A co-applicant needs a shared debt unless they are legally married."
+  ]
 }
