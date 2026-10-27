@@ -9,8 +9,8 @@
 <title>My CFN Page</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Quicksand:wght@500;700&display=swap">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
-<link rel="stylesheet" href="board.css?v=582c35a-1793065902">
-<link rel="stylesheet" href="coach.css?v=582c35a-1793065902">
+<link rel="stylesheet" href="board.css?v=f21ef69-1793066473">
+<link rel="stylesheet" href="coach.css?v=f21ef69-1793066473">
 <style>
 .wrap{max-width:680px}
 .three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
@@ -67,7 +67,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
 #signin{text-align:center;padding:30px 16px}
 @media (max-width:480px){.three{grid-template-columns:1fr 1fr 1fr}.mini .v{font-size:18px}}
 </style>
-<script src="config.js?v=582c35a-1793065902"></script>
+<script src="config.js?v=f21ef69-1793066473"></script>
 </head>
 <body>
 <div class="wrap">
@@ -204,6 +204,15 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     <div style="overflow-x:auto"><table class="tt"><thead><tr><th>Document</th><th>Type</th><th>Status</th><th>Size</th><th></th></tr></thead><tbody id="libRows"></tbody></table></div>
     <p class="note" id="libMsg" aria-live="polite"></p>
     <pre id="libPreview" class="preview" hidden></pre>
+    <p class="label" style="margin-top:22px"><span>Add a document</span></p>
+    <p class="note" style="margin:0 0 8px">HR handbook, company rules, program guides, scripts. PDF, Word (.docx), or text. The file is read on this device; check the text below, then save it as a draft. It goes live once a manager approves it above.</p>
+    <div class="row" style="margin-bottom:8px">
+      <label>Title<input class="f" id="addTitle" maxlength="120" placeholder="CFN Employee Handbook"></label>
+      <label>Type<select class="f" id="addKind"><option value="rules">Company rules / HR</option><option value="program">Program guide</option><option value="script">Script</option><option value="other">Other</option></select></label>
+    </div>
+    <div class="actions"><button class="go" type="button" id="addPick">Choose a file</button><input type="file" id="addFile" accept=".pdf,.docx,.txt,.md,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain" tabindex="-1" aria-hidden="true" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none"><span class="note" id="addFileMsg">or paste the text below</span></div>
+    <textarea class="f" id="addBody" rows="10" placeholder="The document's text shows here after you choose a file. You can fix it before saving." style="width:100%;box-sizing:border-box;font:13px/1.5 Inter,system-ui,sans-serif"></textarea>
+    <div class="actions"><button class="go" type="button" id="addSave">Save as draft</button><span class="note" id="addMsg" aria-live="polite"></span></div>
     <p class="label" style="margin-top:22px"><span>Questions the library could not answer (last 30 days)</span></p>
     <p class="note" style="margin:0 0 10px">Fill these gaps by adding a document.</p>
     <ul class="list" id="libGaps"></ul>
@@ -635,6 +644,29 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     $("coachUse").innerHTML = c.usage.length ? c.usage.map((u) => `<tr><td>${esc(u.who)}</td><td>${u.questions}</td><td>${day(String(u.last_at).slice(0, 10))}</td></tr>`).join("")
       : '<tr><td colspan="3" class="empty" style="text-align:left">Nobody yet.</td></tr>';
   }
+  // Add a document: read on this device (web/doc-reader.js), checked by the manager, saved as a draft.
+  $("addPick").onclick = () => $("addFile").click();
+  $("addFile").onchange = async () => {
+    const f = $("addFile").files?.[0]; if (!f) return;
+    $("addFileMsg").textContent = `Reading ${f.name}...`; $("addMsg").textContent = "";
+    try {
+      const { textFromFile } = await import("./doc-reader.js");
+      $("addBody").value = await textFromFile(f);
+      if (!$("addTitle").value.trim()) $("addTitle").value = f.name.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " ").trim();
+      $("addFileMsg").textContent = `${f.name}: ${$("addBody").value.length.toLocaleString("en-US")} characters read. Check the text, then save.`;
+      $("addFile").dataset.source = f.name;
+    } catch (err) { $("addFileMsg").textContent = err.message || "Couldn't read that file."; }
+    finally { $("addFile").value = ""; }
+  };
+  $("addSave").onclick = async () => {
+    $("addMsg").textContent = "Saving...";
+    try {
+      const d = await api("/me/coach-doc/add", { title: $("addTitle").value, kind: $("addKind").value, body: $("addBody").value, source: $("addFile").dataset.source || "" });
+      render(d);
+      $("addMsg").textContent = `Saved as a draft (v${d.added.version}). Read it in the list above and tap Approve when it's right.`;
+      $("addTitle").value = ""; $("addBody").value = ""; $("addFileMsg").textContent = "or paste the text below"; delete $("addFile").dataset.source;
+    } catch (err) { $("addMsg").textContent = err.message; }
+  };
   $("libRows").onclick = async (e) => {
     const view = e.target.closest("[data-view]"), act = e.target.closest("[data-to]");
     $("libMsg").textContent = "";
@@ -991,6 +1023,6 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
   else if (session) load(); else showSignIn();
 })();
 </script>
-<script src="coach.js?v=582c35a-1793065902"></script>
+<script src="coach.js?v=f21ef69-1793066473"></script>
 </body>
 </html>
