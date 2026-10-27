@@ -9,8 +9,8 @@
 <title>My CFN Page</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Quicksand:wght@500;700&display=swap">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
-<link rel="stylesheet" href="board.css?v=bb0e957-1793049298">
-<link rel="stylesheet" href="coach.css?v=bb0e957-1793049298">
+<link rel="stylesheet" href="board.css?v=cdfa610-1793065716">
+<link rel="stylesheet" href="coach.css?v=cdfa610-1793065716">
 <style>
 .wrap{max-width:680px}
 .three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
@@ -67,7 +67,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
 #signin{text-align:center;padding:30px 16px}
 @media (max-width:480px){.three{grid-template-columns:1fr 1fr 1fr}.mini .v{font-size:18px}}
 </style>
-<script src="config.js?v=bb0e957-1793049298"></script>
+<script src="config.js?v=cdfa610-1793065716"></script>
 </head>
 <body>
 <div class="wrap">
@@ -118,7 +118,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     <p style="margin:0 0 12px;display:flex;gap:8px"><a class="pill" id="callsTabList" href="/me#calls">Calls</a><a class="pill" id="callsTabScore" href="/me#calls?view=scorecard">Scorecard</a></p>
     <div id="scoreView" hidden>
       <p class="label"><span>Best practices scorecard</span><span><button class="link" id="scPrev">&larr;</button> <b id="scMonth"></b> <button class="link" id="scNext">&rarr;</button></span></p>
-      <p class="note" style="margin:0 0 10px">Layer 1: rules and compliance (pass = no flags on the call). Layer 2: the 4 areas, 1 to 5 from scored calls. Top closer = most net debt this month. Conversion = net deals per 100 Vici calls. Gaps are against the top closer.</p>
+      <p class="note" style="margin:0 0 10px">Layer 1: the 4 rules (no outcome promises, longest program only and remove a card to lower the price, ask for the close, credit dip told up front) and compliance. Pass = no rule broken and no flags on the call. Layer 2: the 4 areas, 1 to 5 from scored calls. Top closer = most net debt this month. Conversion = net deals per 100 Vici calls. Gaps are against the top closer.</p>
       <div id="scTop"></div>
       <div id="scCards"></div>
       <p class="label" style="margin-top:22px"><span>Closers who say X get Y</span><span class="when">last 3 months</span></p>
@@ -396,7 +396,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     const mgr = !!d.manager;
     try { localStorage.setItem("cfn_manager", mgr ? "1" : "0"); } catch {}
     $("pageTitle").textContent = mgr ? "CFN Staff" : "My CFN Page"; document.title = mgr ? "CFN Staff" : "My CFN Page";
-    if (!$("nav").querySelector('a[href="/coach"]')) $("nav").querySelector("[data-v='']").insertAdjacentHTML("afterend", '<a href="/coach">Coach</a>');
+    if (!$("nav").querySelector('a[href="/coach"]')) $("nav").querySelector("[data-v='']").insertAdjacentHTML("afterend", '<a href="/coach">Coach</a><a href="/underwriting">Underwriting</a>');
     try { if (mgr) localStorage.setItem("cfn_owner", d.owner ? "1" : (d.owner === false ? "0" : localStorage.getItem("cfn_owner") || "0")); } catch {}
     let isOwner = false; try { isOwner = mgr && localStorage.getItem("cfn_owner") === "1"; } catch {}
     if (isOwner && !$("nav").querySelector("[data-v=finance]")) $("nav").insertAdjacentHTML("beforeend", '<a href="/me#finance" data-v="finance">Finance</a>');
@@ -745,9 +745,10 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     const short = (iso) => iso ? new Date(iso).toLocaleString("en-US", { timeZone: "America/Los_Angeles", month: "short", day: "numeric" }) + ", " + new Date(iso).toLocaleTimeString("en-US", { timeZone: "America/Los_Angeles", hour: "numeric", minute: "2-digit" }) : "";
     const result = (r) => {
       if (r.status !== "scored") return status(r);
+      const broke = (r.broken || []).length ? `<br><b class="neg">Rule broken: ${(r.broken || []).map(esc).join("; ")}</b>` : "";
       const flags = r.compliance_flags ? `<br><b class="neg">${r.compliance_flags} compliance flag${r.compliance_flags === 1 ? "" : "s"}</b>` : "";
       const ls = r.losses || [], loss = ls.length ? `<br><span class="when">${ls.slice(0, 3).map(esc).join("; ")}${ls.length > 3 ? `; +${ls.length - 3} more` : ""}</span>` : "";
-      return `<b>${r.closed === true ? "Closed" : r.closed === false ? "Not closed" : "Scored"}</b>${flags}${loss}`;
+      return `<b>${r.closed === true ? "Closed" : r.closed === false ? "Not closed" : "Scored"}</b>${broke}${flags}${loss}`;
     };
     $("callRows").innerHTML = d.calls.length ? d.calls.map((r) => `<tr data-call="${esc(r.call_id)}" style="cursor:pointer"><td>${esc(short(r.started_at))}${r.minutes ? `<br><span class="when">${mins(r.minutes)} min</span>` : ""}</td><td><b>${esc(r.closer)}</b><br><span class="when">${esc(r.call_sign || "")}${r.contact_id ? "<br>Forth " + esc(r.contact_id) : ""}</span></td><td>${result(r)}</td></tr>`).join("")
       : '<tr><td colspan="3" class="empty" style="text-align:left">No calls yet. The first pull runs after 6 PM Pacific on a floor day.</td></tr>';
@@ -762,7 +763,8 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     $("cdAudio").innerHTML = det.has_audio ? '<button class="go small" id="cdPlay">Play recording</button>' : '<span class="when">Recording not kept.</span>';
     const list = (title, items) => items.length ? `<p class="label" style="margin-top:14px"><span>${title}</span></p><ul style="margin:0;padding-left:20px">${items.join("")}</ul>` : "";
     $("cdBody").innerHTML =
-      (det.compliance.length ? list("Compliance flags", det.compliance.map((x) => typeof x === "string" ? `<li class="neg">${esc(x)}</li>` : `<li><span class="neg"><b>${x.minute ? esc(x.minute) + " " : ""}&ldquo;${esc(x.quote || "")}&rdquo;</b></span><br>${esc(x.issue || "")}</li>`)) : "")
+      ((det.rules || []).length ? `<p class="label" style="margin-top:14px"><span>The ${det.rules.length} rules</span><span>${det.broken.length ? `<b class="neg">${det.broken.length} broken</b>` : '<b class="ok">all kept</b>'}</span></p><table class="tt calls checks"><tbody>${det.rules.map((r) => `<tr><td><b>${esc(r.label)}</b>${r.result === "fail" && (r.quote || r.minute) ? `<br><span class="neg">${r.minute ? esc(r.minute) + " " : ""}${r.quote ? "&ldquo;" + esc(r.quote) + "&rdquo;" : ""}</span>` : ""}</td><td>${r.result === "fail" ? '<b class="neg">Broken</b>' : r.result === "pass" ? '<span class="ok">Kept</span>' : '<span class="when">Not reached</span>'}</td></tr>`).join("")}</tbody></table>` : "")
+      + (det.compliance.length ? list("Compliance flags", det.compliance.map((x) => typeof x === "string" ? `<li class="neg">${esc(x)}</li>` : `<li><span class="neg"><b>${x.minute ? esc(x.minute) + " " : ""}&ldquo;${esc(x.quote || "")}&rdquo;</b></span><br>${esc(x.issue || "")}</li>`)) : "")
       + list("Coaching", det.coaching.map((x) => `<li>${esc(typeof x === "string" ? x : x.point || x.text || JSON.stringify(x))}</li>`))
       + (det.best_line ? `<p class="label" style="margin-top:14px"><span>Best line</span></p><p style="margin:0">&ldquo;${esc(typeof det.best_line === "string" ? det.best_line : det.best_line.quote || "")}&rdquo;</p>` : "")
       + list("Where it lost momentum", det.loss_codes.map((l) => `<li><b>${esc(l.code)}</b> ${esc(l.label)}${l.minute !== undefined && l.minute !== null ? ` <span class="when">min ${esc(l.minute)}</span>` : ""}${l.evidence ? `<br><span class="when">${esc(l.evidence)}</span>` : ""}</li>`))
@@ -770,7 +772,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
       ;
     $("cdTranscript").textContent = det.transcript || "No transcript.";
     const areas = det.areas || [];
-    $("cdScore").innerHTML = areas.some((a) => a.score !== null) || det.status === "scored" ? `<p class="label" style="margin-top:6px"><span>Scorecard</span><span>${det.compliance_pass ? '<b class="ok">Compliance: pass</b>' : '<b class="neg">Compliance: ' + det.compliance.length + ' flag' + (det.compliance.length === 1 ? "" : "s") + '</b>'}</span></p>`
+    $("cdScore").innerHTML = areas.some((a) => a.score !== null) || det.status === "scored" ? `<p class="label" style="margin-top:6px"><span>Scorecard</span><span>${det.rules_pass === false ? `<b class="neg">Rules: ${det.broken.length} broken</b> · ` : (det.rules || []).length ? '<b class="ok">Rules: pass</b> · ' : ""}${det.compliance_pass ? '<b class="ok">Compliance: pass</b>' : '<b class="neg">Compliance: ' + det.compliance.length + ' flag' + (det.compliance.length === 1 ? "" : "s") + '</b>'}</span></p>`
       + areas.map((a) => `<div style="padding:8px 0;border-bottom:1px solid var(--tint)"><div style="display:flex;justify-content:space-between;gap:8px"><b>${esc(a.label)}</b><span class="dots" style="white-space:nowrap">${a.score === null ? '<span class="when">not scored</span>' : dots(a.score) + (a.score ? ` <b style="letter-spacing:0;color:inherit">${a.score}/5</b>` : "")}</span></div>
           ${a.feedback ? `<div style="font-size:14px;margin-top:4px">${esc(a.feedback)}</div>` : ""}${a.quote ? `<div class="when" style="margin-top:4px">Their line${a.minute ? " at " + esc(a.minute) : ""}: &ldquo;${esc(a.quote)}&rdquo;</div>` : ""}</div>`).join("")
       + (areas.length ? `<details style="margin-top:10px"${areas.some((a) => a.my_score !== null) ? " open" : ""}><summary><span>Your scores (calibration)</span></summary><form id="calForm" style="margin-top:8px">
@@ -799,7 +801,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     const pct = (v) => v === null || v === undefined ? "-" : v + "%";
     $("scCards").innerHTML = s.closers.length ? s.closers.map((c) => `<div class="sc-card${c.is_top ? " top" : ""}">
         <div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline"><b>${esc(c.closer)}${c.is_top ? " &#9733;" : ""}</b><span class="when">${esc(c.call_sign || "")}</span></div>
-        <div class="when" style="margin:4px 0 8px">${c.net_deals} net of ${c.submitted} · ${money(c.net_debt)} · ${c.conversion === null ? "no Vici calls" : c.conversion + " per 100 calls"} · ${c.calls_scored ? `compliance pass ${pct(c.compliance_pass_pct)} of ${c.calls_scored} scored call${c.calls_scored === 1 ? "" : "s"}` : "no calls scored yet"}</div>
+        <div class="when" style="margin:4px 0 8px">${c.net_deals} net of ${c.submitted} · ${money(c.net_debt)} · ${c.conversion === null ? "no Vici calls" : c.conversion + " per 100 calls"} · ${c.calls_scored ? `${c.rule_breaks ? `<b class="neg">${c.rule_breaks} rule break${c.rule_breaks === 1 ? "" : "s"}</b> · ` : ""}rules and compliance pass ${pct(c.compliance_pass_pct)} of ${c.calls_scored} scored call${c.calls_scored === 1 ? "" : "s"}` : "no calls scored yet"}</div>
         ${AREA.map((a) => { const v = c.areas[a.key], g = c.gaps[a.key];
           return `<div class="sc-row"><span>${esc(a.label)}</span><span class="sc-bar"><i style="width:${v.avg ? (v.avg / 5) * 100 : 0}%"></i></span><span style="min-width:74px;text-align:right">${v.avg === null ? '<span class="when">-</span>' : "<b>" + v.avg + "</b>"}${g === null || c.is_top ? "" : ` <span class="${g < 0 ? "gap-neg" : "gap-pos"}">${g > 0 ? "+" : ""}${g}</span>`}</span></div>`; }).join("")}
       </div>`).join("") : '<p class="empty">No closers with deals or calls this month yet.</p>';
@@ -989,6 +991,6 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
   else if (session) load(); else showSignIn();
 })();
 </script>
-<script src="coach.js?v=bb0e957-1793049298"></script>
+<script src="coach.js?v=cdfa610-1793065716"></script>
 </body>
 </html>

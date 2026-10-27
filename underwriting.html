@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<!-- connect-src 'self' only: the page reads its rules from this site and can never send a credit pull anywhere. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; worker-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+<title>CFN Underwriting</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Quicksand:wght@500;700&display=swap">
+<link rel="icon" href="logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="board.css?v=cdfa610-1793065716">
+<style>
+.wrap{max-width:860px}
+[hidden]{display:none !important}
+button.go{background:var(--blue);color:#fff;border:0;border-radius:8px;padding:8px 14px;font:inherit;cursor:pointer}
+button.go.ghost{background:#fff;color:var(--blue);border:1px solid var(--blue)}
+button.go.small{padding:5px 10px;font-size:12.5px}
+button.link{background:none;border:0;color:var(--muted);font:inherit;font-size:13px;cursor:pointer;text-decoration:underline;padding:0}
+.f{padding:7px 9px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:14px;width:100%;box-sizing:border-box;background:#fff}
+textarea.f{min-height:90px;resize:vertical}
+.priv{background:var(--tint);border-radius:10px;padding:9px 12px;font-size:13px;margin:0 0 12px}
+.actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:10px 0 0}
+.acct{display:grid;grid-template-columns:minmax(0,2.2fr) minmax(0,1.1fr) minmax(0,1.6fr) auto;gap:6px 8px;align-items:center;padding:10px 0;border-bottom:1px solid var(--tint)}
+.acct .flags{display:flex;gap:10px;flex-wrap:wrap;font-size:13px;color:var(--muted);grid-column:1 / -1}
+.acct .flags label{display:flex;gap:4px;align-items:center;cursor:pointer}
+.acct .verdict{grid-column:1 / -1;font-size:13px}
+.acct.out .f,.acct.aside .f{color:var(--muted)}
+.acct [data-del]{justify-self:end}
+.pill{display:inline-block;border-radius:999px;padding:1px 9px;font-size:12px;font-weight:700;margin-right:6px}
+.pill.in{background:#E7F6EC;color:#16794A} .pill.out{background:#FDECEC;color:#B42318} .pill.aside{background:#EEF1F6;color:#5B6478} .pill.check{background:#FFF4E5;color:#B45309}
+.big{font-family:Quicksand,Inter,sans-serif;font-size:44px;font-weight:700;color:var(--blue);line-height:1.1}
+.res{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:8px 0}
+.mini{background:var(--tint);border-radius:10px;padding:10px} .mini .k{font-size:12px;color:var(--muted)} .mini .v{font-size:22px;font-weight:700;color:var(--blue);font-family:Quicksand,Inter,sans-serif}
+.warn{color:#B42318;font-size:14px;margin:4px 0}
+.rules{margin:6px 0 0;padding-left:18px;font-size:14px;line-height:1.5} .rules li{margin:3px 0}
+table.bands{width:100%;border-collapse:collapse;font-size:14px} table.bands td,table.bands th{padding:5px 4px;border-bottom:1px solid var(--tint);text-align:left} table.bands th{color:var(--muted);font-weight:500;font-size:12px}
+table.bands tr.on td{background:var(--tint);font-weight:700}
+.dq{font-size:28px;color:#B42318;font-weight:700;font-family:Quicksand,Inter,sans-serif}
+@media (max-width:640px){.acct{grid-template-columns:1fr 1fr}.acct .cr{grid-column:1 / -1}.res{grid-template-columns:1fr 1fr}.big{font-size:36px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header><div class="brand"><div class="mark" aria-label="ChangeFN">c</div><div><h1>Underwriting</h1><div class="date">Which debts go in, and the program to quote</div></div></div></header>
+  <nav class="nav"><a href="/">Board</a><a href="/me">My page</a><a href="/coach">Coach</a><a href="/underwriting" aria-current="page">Underwriting</a></nav>
+
+  <section class="card" id="gate" hidden>
+    <p style="margin:0 0 6px;font-size:17px">Sign in first.</p>
+    <p class="note" style="margin:0">Open <a href="/me">My page</a>, sign in with your @changefn.com Google account, then come back here.</p>
+  </section>
+
+  <div id="app" hidden>
+    <section class="card" style="margin-bottom:14px">
+      <p class="label"><span>1. The credit pull</span></p>
+      <p class="priv"><b>Private:</b> the PDF and the text are read on this device only. Nothing is uploaded, sent, or saved, not even to CFN. Tap Clear when you're done.</p>
+      <div class="actions" style="margin-top:0">
+        <label class="go" style="display:inline-block;cursor:pointer" for="pdf">Upload credit pull PDF</label>
+        <input type="file" id="pdf" accept="application/pdf,.pdf" hidden>
+        <span id="pdfMsg" class="note"></span>
+      </div>
+      <p class="note" style="margin:12px 0 4px">Or paste the pull's text (copy the accounts part of the report):</p>
+      <textarea id="paste" class="f" placeholder="CAPITAL ONE  Balance $4,512  Payment $135&#10;DISCOVER BANK  $2,300"></textarea>
+      <div class="actions"><button class="go small" id="readPaste">Read pasted text</button><button class="go ghost small" id="addRow">Add an account by hand</button><button class="link" id="clear">Clear everything</button></div>
+    </section>
+
+    <section class="card" style="margin-bottom:14px" id="acctCard" hidden>
+      <p class="label"><span>2. Check each account</span><span id="acctN"></span></p>
+      <p class="note" style="margin:0 0 4px">Fix anything the reader got wrong. The type decides if it can go in.</p>
+      <div id="accts"></div>
+    </section>
+
+    <section class="card" style="margin-bottom:14px" id="resCard" hidden>
+      <p class="label"><span>3. The quote</span></p>
+      <div id="result"></div>
+    </section>
+
+    <section class="card" style="margin-bottom:14px">
+      <p class="label"><span>The 3 rules</span><span>every call</span></p>
+      <ol class="rules">
+        <li><b>No guaranteed results or outcome promises.</b> Never "guaranteed," a set savings, a settlement amount or date, or a credit score date.</li>
+        <li><b>Longest program only.</b> Quote the program shown above. If they can't afford it, remove a credit card (smallest first, two at most). Never requote a shorter length.</li>
+        <li><b>Ask for the close, and tell them up front their credit will dip</b> while the accounts are being settled.</li>
+      </ol>
+    </section>
+
+    <section class="card">
+      <p class="label"><span>Program length by enrolled debt</span><span id="listDate"></span></p>
+      <table class="bands"><thead><tr><th>Enrolled debt</th><th>Program to quote</th></tr></thead><tbody id="bands"></tbody></table>
+      <p class="note" style="margin:8px 0 0" id="ruleNote"></p>
+    </section>
+  </div>
+</div>
+<script type="module" src="underwriting-page.js?v=cdfa610-1793065716"></script>
+</body>
+</html>

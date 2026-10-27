@@ -1,0 +1,36 @@
+{
+  "comment": "Underwriting rules for the Underwriting page (web/underwriting.html, web/underwriting.js). Owner, 2026-10-26: quote the longest program for the enrolled debt, always; to lower the price, remove a credit card (smallest first, two at most), never a shorter length. Minimum enrolled debt $7,500 (the table's $7,000 band is not used). Rules from config/playbook/Knowledge_Card.md section 4. The page runs only in the rep's browser: nothing about the client is sent or saved.",
+  "min_enrolled": 7500,
+  "bands": [
+    { "from": 7500, "to": 7999.99, "min_months": 12, "max_months": 24 },
+    { "from": 8000, "to": 9999.99, "min_months": 12, "max_months": 28 },
+    { "from": 10000, "to": 14999.99, "min_months": 12, "max_months": 38 },
+    { "from": 15000, "to": 19999.99, "min_months": 12, "max_months": 42 },
+    { "from": 20000, "to": 29999.99, "min_months": 12, "max_months": 50 },
+    { "from": 30000, "to": null, "min_months": 12, "max_months": 60 }
+  ],
+  "repo_max_share": 0.5,
+  "max_set_aside": 2,
+  "types": {
+    "credit_card": { "label": "Credit card", "ok": true },
+    "personal_loan": { "label": "Personal loan (unsecured)", "ok": true },
+    "collection": { "label": "Collection", "ok": true },
+    "medical": { "label": "Medical", "ok": true },
+    "repo": { "label": "Repo balance", "ok": true, "note": "In only while all repo balances are half or less of the enrolled debt." },
+    "other": { "label": "Other unsecured", "ok": true },
+    "secured": { "label": "Secured loan", "ok": false, "reason": "Secured debt does not qualify: the creditor can take the collateral." },
+    "auto": { "label": "Auto loan", "ok": false, "reason": "Auto loans do not qualify." },
+    "mortgage": { "label": "Mortgage or home equity", "ok": false, "reason": "Mortgages do not qualify." },
+    "student": { "label": "Student loan", "ok": false, "reason": "Student loans do not qualify." },
+    "military": { "label": "Military debt (AAFES, Navy Federal military loan)", "ok": false, "reason": "Military debt is excluded." }
+  },
+  "excluded_creditors": [
+    { "match": "PINNACLE", "reason": "Cordoba excludes Pinnacle Financial Group." },
+    { "match": "REGIONAL FINANCE", "reason": "Regional Finance is secured by household goods: does not qualify." }
+  ],
+  "creditor_list": {
+    "comment": "Cordoba's acceptable creditors list goes here when the owner sends it: names as they appear on the pull (upper case, any of them matches). While empty, the page does not check creditors against a list and says so.",
+    "date": null,
+    "accepted": []
+  }
+}

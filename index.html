@@ -10,10 +10,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Quicksand:wght@500;700&display=swap">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
-<link rel="stylesheet" href="board.css?v=bb0e957-1793049298">
-<link rel="stylesheet" href="coach.css?v=bb0e957-1793049298">
-<script src="config.js?v=bb0e957-1793049298"></script>
-<script src="confetti.browser.js?v=bb0e957-1793049298"></script>
+<link rel="stylesheet" href="board.css?v=cdfa610-1793065716">
+<link rel="stylesheet" href="coach.css?v=cdfa610-1793065716">
+<script src="config.js?v=cdfa610-1793065716"></script>
+<script src="confetti.browser.js?v=cdfa610-1793065716"></script>
 </head>
 <body>
 <div class="wrap">
@@ -115,7 +115,7 @@
     location.replace("/");
   };
   if (manager) $("nav").querySelector('a[href="/me"]').textContent = "Staff";
-  if (session) $("nav").querySelector('a[href="/me"]').insertAdjacentHTML("afterend", '<a href="/coach">Coach</a>');
+  if (session) $("nav").querySelector('a[href="/me"]').insertAdjacentHTML("afterend", '<a href="/coach">Coach</a><a href="/underwriting">Underwriting</a>');
   if (manager) $("nav").insertAdjacentHTML("beforeend", '<a href="/me#payroll">Payroll</a><a href="/me#team">Team pay</a><a href="/me#onboarding">Onboarding</a><a href="/me#report">Reports</a><a href="/me#deals">Deals</a><a href="/me#saves">Saves</a><a href="/me#coach">Coach library</a>');
   if (!key && !session) { $("error").hidden = false; $("error").innerHTML = 'This board needs the team link, or <a href="/me">sign in with your CFN Google account</a>.'; return; }
 
@@ -298,6 +298,6 @@
   load(); setInterval(load, 15000);
 })();
 </script>
-<script src="coach.js?v=bb0e957-1793049298"></script>
+<script src="coach.js?v=cdfa610-1793065716"></script>
 </body>
 </html>
