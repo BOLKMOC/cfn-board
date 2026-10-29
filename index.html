@@ -10,10 +10,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Quicksand:wght@500;700&display=swap">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
-<link rel="stylesheet" href="board.css?v=a908131-1793235618">
-<link rel="stylesheet" href="coach.css?v=a908131-1793235618">
-<script src="config.js?v=a908131-1793235618"></script>
-<script src="confetti.browser.js?v=a908131-1793235618"></script>
+<link rel="stylesheet" href="board.css?v=e1f44d6-1793246330">
+<link rel="stylesheet" href="coach.css?v=e1f44d6-1793246330">
+<script src="config.js?v=e1f44d6-1793246330"></script>
+<script src="confetti.browser.js?v=e1f44d6-1793246330"></script>
 <style>
 /* Sales contest card: standings by call sign, a cut line, who is out greyed. */
 .contest{margin-bottom:14px;border:2px solid var(--blue)}
@@ -233,8 +233,11 @@ body.tv .contest ol.leaders li{font-size:24px} body.tv .ctteams .v{font-size:34p
     $("ctTeams").hidden = !c.teams;
     $("ctTeams").innerHTML = (c.teams || []).map((t) => `<div class="${t.won ? "won" : ""}"><div class="k">${esc(t.team)}</div><div class="v">${pts(t.points)}</div></div>`).join("");
     const rows = c.rows, lastSafe = c.cut_need !== null ? rows.reduce((n, r, i) => r.safe ? i : n, -1) : -1;
-    $("ctRows").innerHTML = rows.map((r, i) => `<li class="${r.out_day ? "out" : ""}${r.won ? " won" : ""}"><span><span class="rank">${r.rank ?? "-"}.</span>${r.won ? '<span class="crown" aria-label="winner">&#9819;</span> ' : ""}${label(r.name)}${r.team ? ` <span class="when">${esc(r.team)}</span>` : ""}${r.out_day ? ` <span class="when">out day ${r.out_day}</span>` : ""}</span><b class="size">${pts(r.points)}</b></li>`
-      + (i === lastSafe && i < rows.length - 1 ? `<li class="cutline"><span>Cut line: ${pts(c.cut_need)}</span></li>` : "")).join("");
+    // At most 8 rows (TV never scrolls, and the rest of the board stays in view); the rest is one "and N more" line.
+    const cap = 8, shown = rows.length > cap + 1 ? rows.slice(0, cap) : rows;
+    $("ctRows").innerHTML = shown.map((r, i) => `<li class="${r.out_day ? "out" : ""}${r.won ? " won" : ""}"><span><span class="rank">${r.rank ?? "-"}.</span>${r.won ? '<span class="crown" aria-label="winner">&#9819;</span> ' : ""}${label(r.name)}${r.team ? ` <span class="when">${esc(r.team)}</span>` : ""}${r.out_day ? ` <span class="when">out day ${r.out_day}</span>` : ""}</span><b class="size">${pts(r.points)}</b></li>`
+      + (i === lastSafe && i < rows.length - 1 ? `<li class="cutline"><span>Cut line: ${pts(c.cut_need)}</span></li>` : "")).join("")
+      + (shown.length < rows.length ? `<li class="more"><span class="when">and ${rows.length - shown.length} more${lastSafe >= shown.length ? ` (cut line: ${pts(c.cut_need)})` : ""}</span></li>` : "");
     $("ctFoot").textContent = c.cuts.length ? c.cuts.map((x) => `Day ${x.day} out: ${x.out.length ? names(x.out) : "nobody"}`).join(" · ") : "";
     // Cuts and the winner get the full-screen moment once per event (per device), only while it is fresh.
     const fresh = (iso) => iso && Date.now() - Date.parse(iso) < 2 * 3600000;
@@ -353,6 +356,6 @@ body.tv .contest ol.leaders li{font-size:24px} body.tv .ctteams .v{font-size:34p
   load(); setInterval(load, 15000);
 })();
 </script>
-<script src="coach.js?v=a908131-1793235618"></script>
+<script src="coach.js?v=e1f44d6-1793246330"></script>
 </body>
 </html>
