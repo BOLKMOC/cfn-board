@@ -10,10 +10,23 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Quicksand:wght@500;700&display=swap">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
-<link rel="stylesheet" href="board.css?v=ad9f2ad-1793121267">
-<link rel="stylesheet" href="coach.css?v=ad9f2ad-1793121267">
-<script src="config.js?v=ad9f2ad-1793121267"></script>
-<script src="confetti.browser.js?v=ad9f2ad-1793121267"></script>
+<link rel="stylesheet" href="board.css?v=a908131-1793235618">
+<link rel="stylesheet" href="coach.css?v=a908131-1793235618">
+<script src="config.js?v=a908131-1793235618"></script>
+<script src="confetti.browser.js?v=a908131-1793235618"></script>
+<style>
+/* Sales contest card: standings by call sign, a cut line, who is out greyed. */
+.contest{margin-bottom:14px;border:2px solid var(--blue)}
+.contest ol.leaders li.out{opacity:.45}
+.contest ol.leaders li.won b{color:#16A34A}
+.contest ol.leaders li.cutline{justify-content:center;border-bottom:2px dashed #B91C1C;color:#B91C1C;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:2px 0}
+.contest .win{font-size:18px;font-weight:700;color:#16A34A;margin:6px 0}
+.ctteams{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0}
+.ctteams div{flex:1;min-width:120px;background:var(--tint);border-radius:10px;padding:8px 10px}
+.ctteams div.won{outline:2px solid #16A34A}
+.ctteams .v{font-size:22px;font-weight:700;color:var(--blue);font-family:Quicksand,Inter,sans-serif}
+body.tv .contest ol.leaders li{font-size:24px} body.tv .ctteams .v{font-size:34px} body.tv .contest .win{font-size:28px}
+</style>
 </head>
 <body>
 <div class="wrap">
@@ -25,6 +38,15 @@
   <nav class="nav" id="nav"><a href="/" aria-current="page">Board</a><a href="/me">My page</a></nav>
   <div id="error" class="err" hidden></div>
   <div class="banner idle" id="banner" aria-live="polite"><span id="bannerText">Let's go, team.</span></div>
+
+  <section class="card contest" id="contest" hidden aria-labelledby="ctTitle">
+    <p class="label"><span id="ctTitle"></span><span id="ctLeft"></span></p>
+    <div class="note" id="ctRule"></div>
+    <div class="win" id="ctWin" hidden></div>
+    <div class="ctteams" id="ctTeams" hidden></div>
+    <ol class="leaders" id="ctRows"></ol>
+    <div class="note" id="ctFoot"></div>
+  </section>
 
   <div class="pswitch tabs" role="group" aria-label="Show the board for"><button data-p="day" aria-pressed="true">Today</button><button data-p="week" aria-pressed="false">This week</button><button data-p="month" aria-pressed="false">This month</button></div>
 
@@ -116,7 +138,7 @@
   };
   if (manager) $("nav").querySelector('a[href="/me"]').textContent = "Staff";
   if (session) $("nav").querySelector('a[href="/me"]').insertAdjacentHTML("afterend", '<a href="/coach">Coach</a><a href="/underwriting">Underwriting</a>');
-  if (manager) $("nav").insertAdjacentHTML("beforeend", '<a href="/me#payroll">Payroll</a><a href="/me#team">Team pay</a><a href="/me#onboarding">Onboarding</a><a href="/me#report">Reports</a><a href="/me#deals">Deals</a><a href="/me#saves">Saves</a><a href="/me#coach">Coach library</a>');
+  if (manager) $("nav").insertAdjacentHTML("beforeend", '<a href="/me#payroll">Payroll</a><a href="/me#team">Team pay</a><a href="/me#onboarding">Onboarding</a><a href="/me#report">Reports</a><a href="/me#deals">Deals</a><a href="/me#saves">Saves</a><a href="/me#contests">Contests</a><a href="/me#coach">Coach library</a>');
   if (!key && !session) { $("error").hidden = false; $("error").innerHTML = 'This board needs the team link, or <a href="/me">sign in with your CFN Google account</a>.'; return; }
 
   function bar(fillId, paceId, pct, pacePct, hit) {
@@ -130,8 +152,8 @@
     window.confetti({ particleCount: big ? 220 : 90, spread: big ? 120 : 70, origin: { y: 0.3 }, colors });
     if (big) setTimeout(() => window.confetti({ particleCount: 160, spread: 140, origin: { y: 0.4 }, colors }), 600);
   }
-  function celebrate(kind, text) {
-    $("ovTitle").textContent = kind === "week" ? "WEEKLY GOAL HIT!" : "DAILY GOAL HIT!";
+  function celebrate(kind, text, title) {
+    $("ovTitle").textContent = title || (kind === "week" ? "WEEKLY GOAL HIT!" : "DAILY GOAL HIT!");
     $("ovText").textContent = text;
     $("overlay").classList.add("show"); confetti(true);
     setTimeout(() => $("overlay").classList.remove("show"), 8000);
@@ -195,6 +217,38 @@
   if (tv) setInterval(() => { period = PERIODS[(PERIODS.indexOf(period) + 1) % 3]; renderPeriod(); }, 15000);
   renderPeriod();
 
+  // Sales contest: standings by call sign, time to the next cut or the end, a cut line, who is out greyed.
+  const names = (a) => a.length <= 1 ? a.join("") : a.slice(0, -1).join(", ") + " and " + a[a.length - 1];
+  const left = (iso) => { const m = Math.max(0, Math.round((Date.parse(iso) - Date.now()) / 60000)); return m >= 1440 ? Math.floor(m / 1440) + "d " + Math.floor((m % 1440) / 60) + "h" : m >= 60 ? Math.floor(m / 60) + "h " + (m % 60) + "m" : m + "m"; };
+  function renderContest(c) {
+    $("contest").hidden = !c;
+    if (!c) return;
+    const pts = (n) => c.metric === "debt" ? money(n) : n + " deal" + (n === 1 ? "" : "s");
+    $("ctTitle").innerHTML = "&#127942; " + esc(c.name);
+    $("ctLeft").textContent = c.status === "ended" ? "Final" : c.next_at ? (Date.parse(c.next_at) > Date.now() ? c.next_label + " in " + left(c.next_at) : "Final count in a few minutes") : "Live";
+    $("ctRule").textContent = [c.kind_label + (c.day ? `, day ${c.day} of ${c.days}` : ""), c.kind === "rumble" && c.status !== "ended" ? (c.last_day ? "Last day: most wins" : "Bottom half out at close") : "",
+      c.kind === "first_to" ? "First to " + pts(c.target) : "", c.prize ? "Prize: " + c.prize : ""].filter(Boolean).join(" · ");
+    $("ctWin").hidden = c.status !== "ended";
+    $("ctWin").textContent = c.winners.length ? (c.winners.length > 1 ? "Co-winners: " : "Winner: ") + names(c.winners) : "Ended with no winner.";
+    $("ctTeams").hidden = !c.teams;
+    $("ctTeams").innerHTML = (c.teams || []).map((t) => `<div class="${t.won ? "won" : ""}"><div class="k">${esc(t.team)}</div><div class="v">${pts(t.points)}</div></div>`).join("");
+    const rows = c.rows, lastSafe = c.cut_need !== null ? rows.reduce((n, r, i) => r.safe ? i : n, -1) : -1;
+    $("ctRows").innerHTML = rows.map((r, i) => `<li class="${r.out_day ? "out" : ""}${r.won ? " won" : ""}"><span><span class="rank">${r.rank ?? "-"}.</span>${r.won ? '<span class="crown" aria-label="winner">&#9819;</span> ' : ""}${label(r.name)}${r.team ? ` <span class="when">${esc(r.team)}</span>` : ""}${r.out_day ? ` <span class="when">out day ${r.out_day}</span>` : ""}</span><b class="size">${pts(r.points)}</b></li>`
+      + (i === lastSafe && i < rows.length - 1 ? `<li class="cutline"><span>Cut line: ${pts(c.cut_need)}</span></li>` : "")).join("");
+    $("ctFoot").textContent = c.cuts.length ? c.cuts.map((x) => `Day ${x.day} out: ${x.out.length ? names(x.out) : "nobody"}`).join(" · ") : "";
+    // Cuts and the winner get the full-screen moment once per event (per device), only while it is fresh.
+    const fresh = (iso) => iso && Date.now() - Date.parse(iso) < 2 * 3600000;
+    const events = c.cuts.filter((x) => fresh(x.made_at) && x.out.length).map((x) => ["cut" + x.day, `DAY ${x.day} CUT!`, "Out today: " + names(x.out)]);
+    if (c.status === "ended" && c.winners.length && fresh(c.ended_at)) events.push(["win", c.winners.length > 1 ? "CO-WINNERS!" : "WINNER!", names(c.winners) + (c.prize ? " · " + c.prize : "")]);
+    for (const [ev, title, text] of events.reverse()) {
+      const store = "cfnContest_" + c.contest_id + "_" + ev;
+      let seen = celebrated[store] === "1"; try { seen = seen || localStorage.getItem(store) === "1"; } catch {}
+      if (seen) continue;
+      for (const [e2] of events) { celebrated["cfnContest_" + c.contest_id + "_" + e2] = "1"; try { localStorage.setItem("cfnContest_" + c.contest_id + "_" + e2, "1"); } catch {} }
+      celebrate("contest", text, title); break; // the newest moment only
+    }
+  }
+
   function render(d) {
     data = d;
     const g = d.goals || {};
@@ -224,6 +278,7 @@
     $("fpDayAvg").innerHTML = days(fd); $("fpDayN").textContent = within(fd);
     $("fpAvg").innerHTML = days(fp); $("fpN").textContent = within(fp);
     renderPeriod();
+    renderContest(d.contest);
     // New win since last look: banner + confetti. First load just shows the latest.
     const top = d.feed.find((f) => f.kind === "deal");
     const k = top ? top.name + top.at : null;
@@ -298,6 +353,6 @@
   load(); setInterval(load, 15000);
 })();
 </script>
-<script src="coach.js?v=ad9f2ad-1793121267"></script>
+<script src="coach.js?v=a908131-1793235618"></script>
 </body>
 </html>

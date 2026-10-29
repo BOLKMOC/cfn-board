@@ -9,8 +9,8 @@
 <title>My CFN Page</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Quicksand:wght@500;700&display=swap">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
-<link rel="stylesheet" href="board.css?v=ad9f2ad-1793121267">
-<link rel="stylesheet" href="coach.css?v=ad9f2ad-1793121267">
+<link rel="stylesheet" href="board.css?v=a908131-1793235618">
+<link rel="stylesheet" href="coach.css?v=a908131-1793235618">
 <style>
 .wrap{max-width:680px}
 .three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
@@ -28,6 +28,9 @@ details td,details th{text-align:left;padding:4px 2px;border-bottom:1px solid va
 .neg{color:#B91C1C}
 select.f{background:#fff}
 [hidden]{display:none !important}
+.ctwholist{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:6px}
+.ctwho{display:flex;justify-content:space-between;align-items:center;gap:8px;background:var(--tint);border-radius:8px;padding:6px 10px;font-size:14px;color:inherit}
+.ctwho select.f{width:auto;padding:4px 6px}
 /* First visit: a rep picks a call sign before anything else. */
 #app.gate > :not(#csCard){display:none !important}
 #app.gate #csCard{border:2px solid var(--blue)}
@@ -67,7 +70,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
 #signin{text-align:center;padding:30px 16px}
 @media (max-width:480px){.three{grid-template-columns:1fr 1fr 1fr}.mini .v{font-size:18px}}
 </style>
-<script src="config.js?v=ad9f2ad-1793121267"></script>
+<script src="config.js?v=a908131-1793235618"></script>
 </head>
 <body>
 <div class="wrap">
@@ -225,6 +228,37 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     <div style="overflow-x:auto"><table class="tt"><thead><tr><th>Person</th><th>Questions</th><th>Last</th></tr></thead><tbody id="coachUse"></tbody></table></div>
   </section>
 
+  <section class="card" id="contestsTab" style="margin-bottom:14px" hidden>
+    <p class="label"><span>Launch a sales contest</span><span>the floor sees it on the board</span></p>
+    <form id="ctForm">
+      <div class="row">
+        <label>Type<select id="ctKind" class="f"><option value="rumble">Royal Rumble (bottom half out each day)</option><option value="race">Straight race (most at the end)</option><option value="first_to">First to N</option><option value="teams">Team vs team</option></select></label>
+        <label>Points<select id="ctMetric" class="f"><option value="deals">Deals</option><option value="debt">Enrolled debt</option></select></label>
+      </div>
+      <div class="row" style="margin-top:8px"><label>Name<input id="ctName" class="f" maxlength="40" placeholder="Royal Rumble"></label></div>
+      <div class="row" style="margin-top:8px">
+        <label>Starts<select id="ctStartPick" class="f"><option value="now">Now</option><option value="later">Pick a time</option></select></label>
+        <label id="ctStartL" hidden>Start (your time)<input id="ctStart" class="f" type="datetime-local"></label>
+      </div>
+      <div class="row" style="margin-top:8px" id="ctDaysRow"><label>Days (Monday to Saturday, Sunday skipped)<select id="ctDays" class="f"><option>2</option><option selected>3</option><option>4</option><option>5</option></select></label></div>
+      <div class="row" style="margin-top:8px" id="ctEndRow">
+        <label>Ends<select id="ctEndPick" class="f"><option value="today">Today at close</option><option value="week">End of the week (Friday close)</option><option value="hour">Power hour (1 hour)</option><option value="custom">Pick a time</option><option value="none" id="ctNone">No end time (runs until someone hits the target)</option></select></label>
+        <label id="ctEndL" hidden>End (your time)<input id="ctEnd" class="f" type="datetime-local"></label>
+      </div>
+      <div class="row" style="margin-top:8px" id="ctTargetRow"><label><span id="ctTargetL">Target (deals)</span><input id="ctTarget" class="f" type="number" min="1" step="any"></label></div>
+      <div class="row" style="margin-top:8px" id="ctTeamsRow"><label>Team 1 name<input id="ctTeamA" class="f" maxlength="24" placeholder="Team A"></label><label>Team 2 name<input id="ctTeamB" class="f" maxlength="24" placeholder="Team B"></label></div>
+      <div class="row" style="margin-top:8px"><label>Prize (optional)<input id="ctPrize" class="f" maxlength="80" placeholder="Lunch on management"></label></div>
+      <p class="label" style="margin-top:14px"><span>Who's in</span><span id="ctWhoN"></span></p>
+      <div id="ctWho" class="ctwholist"></div>
+      <label class="note" style="display:flex;gap:8px;align-items:center;margin:12px 0"><input type="checkbox" id="ctTest"> Test contest: shows on the board, never posts to the floor chat</label>
+      <button class="go" type="submit">Launch contest</button>
+      <p class="note" id="ctMsg" aria-live="polite"></p>
+    </form>
+    <p class="label" style="margin-top:18px"><span>Live and past contests</span></p>
+    <ul class="feed" id="ctList"></ul>
+    <p class="note" id="ctMsg2" aria-live="polite"></p>
+  </section>
+
   <section id="pay" style="margin-bottom:14px" hidden>
     <div class="card" style="margin-bottom:14px">
       <p class="label"><span>Payroll review</span><span id="payStatus"></span></p>
@@ -288,6 +322,13 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
       <div class="card"><p class="label">This week</p><div class="big num" id="week">-</div><div class="note">deals</div></div>
       <div class="card"><p class="label">This month</p><div class="big num" id="month">-</div><div class="note">deals</div></div>
     </div>
+
+    <section class="card" style="margin-bottom:14px;border:2px solid var(--blue)" id="ctCard" hidden>
+      <p class="label"><span id="ctCardName"></span><span id="ctCardLeft"></span></p>
+      <div style="font-size:20px;font-weight:700" id="ctCardMsg"></div>
+      <p class="note" style="margin:6px 0 0" id="ctCardPrize"></p>
+      <p class="note" style="margin:6px 0 0"><a href="/" style="color:var(--blue);font-weight:600">See the standings on the board</a></p>
+    </section>
 
     <section class="card" style="margin-bottom:14px" id="ciCard" hidden>
       <p class="label"><span>Check in before the first deposit</span><span id="ciN"></span></p>
@@ -368,7 +409,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
   function showSignIn(msg) {
     $("app").hidden = true; $("logout").hidden = true; $("signin").hidden = false; showErr(msg || "");
     // Opened a link to a tab (for example the weekly report from Telegram) while signed out: come back to it after sign-in.
-    if (/^#(report|deals|saves|calls|coach|payroll|team|onboarding|finance)/.test(location.hash)) { try { localStorage.setItem("cfn_after", location.hash); } catch {} }
+    if (/^#(report|deals|saves|calls|coach|payroll|team|onboarding|finance|contests)/.test(location.hash)) { try { localStorage.setItem("cfn_after", location.hash); } catch {} }
     const start = () => {
       if (!window.google?.accounts?.id) return setTimeout(start, 200);
       // Full-page sign-in (no pop-up): pop-ups come up blank in phone browsers opened from Telegram, Gmail, or Messages.
@@ -412,14 +453,14 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     if (isOwner && !$("nav").querySelector("[data-v=finance]")) $("nav").insertAdjacentHTML("beforeend", '<a href="/me#finance" data-v="finance">Finance</a>');
     if (mgr && !$("nav").querySelector("[data-v=payroll]")) {
       $("nav").querySelector("[data-v='']").textContent = "Reps";
-      $("nav").insertAdjacentHTML("beforeend", '<a href="/me#payroll" data-v="payroll">Payroll</a><a href="/me#team" data-v="team">Team pay</a><a href="/me#onboarding" data-v="onboarding">Onboarding</a><a href="/me#report" data-v="report">Reports</a><a href="/me#deals" data-v="deals">Deals</a><a href="/me#saves" data-v="saves">Saves</a><a href="/me#calls" data-v="calls">Calls</a><a href="/me#coach" data-v="coach">Coach library</a>');
+      $("nav").insertAdjacentHTML("beforeend", '<a href="/me#payroll" data-v="payroll">Payroll</a><a href="/me#team" data-v="team">Team pay</a><a href="/me#onboarding" data-v="onboarding">Onboarding</a><a href="/me#report" data-v="report">Reports</a><a href="/me#deals" data-v="deals">Deals</a><a href="/me#saves" data-v="saves">Saves</a><a href="/me#calls" data-v="calls">Calls</a><a href="/me#contests" data-v="contests">Contests</a><a href="/me#coach" data-v="coach">Coach library</a>');
     }
-    $("nav").querySelectorAll("a").forEach((a) => a.toggleAttribute("aria-current", a.dataset.v !== undefined && a.dataset.v === (mgr ? (["payroll", "team", "onboarding", "saves", "coach", "deals", "report", "calls", "finance"].includes(d.viewing) ? d.viewing : "") : "")));
+    $("nav").querySelectorAll("a").forEach((a) => a.toggleAttribute("aria-current", a.dataset.v !== undefined && a.dataset.v === (mgr ? (["payroll", "team", "onboarding", "saves", "coach", "deals", "report", "calls", "finance", "contests"].includes(d.viewing) ? d.viewing : "") : "")));
     $("nav").querySelectorAll("a[aria-current]").forEach((a) => a.setAttribute("aria-current", "page"));
     $("mgr").hidden = !mgr;
     if (mgr) {
       const cur = d.viewing || "";
-      $("pick").innerHTML = '<option value="">Pick a closer...</option><option value="payroll"' + (cur === "payroll" ? " selected" : "") + '>Payroll review: next pay date</option><option value="team"' + (cur === "team" ? " selected" : "") + '>Team: everyone\'s next paycheck</option>' + d.reps.map((r) => `<option value="${esc(r.rep_id)}"${r.rep_id === cur ? " selected" : ""}>${esc(r.name)} (${esc(r.shown_as)})</option>`).join("");
+      $("pick").innerHTML = '<option value="">Pick a closer...</option><option value="payroll"' + (cur === "payroll" ? " selected" : "") + '>Payroll review: next pay date</option><option value="team"' + (cur === "team" ? " selected" : "") + '>Team: everyone\'s next paycheck</option><option value="contests"' + (cur === "contests" ? " selected" : "") + '>Contests: launch and manage</option>' + d.reps.map((r) => `<option value="${esc(r.rep_id)}"${r.rep_id === cur ? " selected" : ""}>${esc(r.name)} (${esc(r.shown_as)})</option>`).join("");
       $("team").hidden = d.viewing !== "team";
       $("pay").hidden = d.viewing !== "payroll";
       $("onb").hidden = d.viewing !== "onboarding";
@@ -429,6 +470,8 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
       $("coachTab").hidden = d.viewing !== "coach";
       $("dealsTab").hidden = d.viewing !== "deals";
       $("reportTab").hidden = d.viewing !== "report";
+      $("contestsTab").hidden = d.viewing !== "contests";
+      if (d.viewing === "contests") { renderContests(d.contests); return; }
       if (d.viewing === "report") { renderReport(d.report); renderCards(d.cards); return; }
       if (d.viewing === "deals") { openDealsPage(d.reps); return; }
       if (d.viewing === "coach") { renderCoach(d.coach); return; }
@@ -450,6 +493,14 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
       if (!d.viewing) { $("app").hidden = true; $("hello").textContent = "Manager view"; return; }
     }
     $("app").hidden = false;
+    // Sales contest: the closer's own rank ("You're #4 of 9. 2 more deals to clear today's cut line.").
+    const ct = d.contest;
+    $("ctCard").hidden = !ct;
+    if (ct) {
+      $("ctCardName").textContent = ct.name + " · " + ct.kind_label;
+      $("ctCardLeft").textContent = ct.status === "ended" ? "Final" : ct.next_at ? ct.next_label + " " + ptTime(ct.next_at) : "";
+      $("ctCardMsg").textContent = ct.message || ""; $("ctCardPrize").textContent = ct.prize ? "Prize: " + ct.prize : "";
+    }
     $("csForm").hidden = mgr; $("goalForm").hidden = mgr; $("csAsk").hidden = true;
     $("hello").textContent = (mgr ? "Viewing " + (d.me.first_name || "") : "Hi " + (d.me.first_name || "")) + " · on the board: " + d.me.shown_as;
     $("csNow").textContent = d.me.call_sign ? "Now: " + d.me.call_sign : "Not picked yet";
@@ -936,7 +987,79 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
       ? `<p style="margin:0"><b>Approved</b> by ${esc(p.approved_by || "")} on ${esc(new Date(p.approved_at).toLocaleString("en-US", { timeZone: "America/Los_Angeles", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }))}. Locked.</p>`
       : `<p class="label">To approve</p><p style="margin:0">${p.reviews.length ? "Clear the review items first. Then r" : "R"}eply on Telegram: <b>${esc(p.approve_with)}</b></p><p class="note" style="margin:6px 0 0">Approval locks this payroll. A person still clicks Submit in Gusto.</p>`;
   }
-  const fromHash = () => (/^#deals(\?|$)/.test(location.hash) ? "deals" : /^#report(\?|$)/.test(location.hash) ? "report" : /^#calls(\?|$)/.test(location.hash) ? "calls" : /^#finance(\?|$)/.test(location.hash) ? "finance" : ["#payroll", "#team", "#onboarding", "#saves", "#coach"].includes(location.hash) ? location.hash.slice(1) : "");
+  // Contests tab: launch form (type, name, points, start, the type's own fields, prize, who's in) and the live and past list.
+  const ptTime = (iso) => new Date(iso).toLocaleString("en-US", { timeZone: "America/Los_Angeles", weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) + " PT";
+  let ctData = null, ctWho = {};
+  function ctShow() {
+    const k = $("ctKind").value;
+    $("ctDaysRow").hidden = k !== "rumble"; $("ctEndRow").hidden = k === "rumble";
+    $("ctTargetRow").hidden = k !== "first_to"; $("ctTeamsRow").hidden = k !== "teams";
+    $("ctNone").hidden = $("ctNone").disabled = k !== "first_to";
+    if (k !== "first_to" && $("ctEndPick").value === "none") $("ctEndPick").value = "today";
+    $("ctEndL").hidden = $("ctEndPick").value !== "custom"; $("ctStartL").hidden = $("ctStartPick").value !== "later";
+    $("ctTargetL").textContent = $("ctMetric").value === "debt" ? "Target (enrolled debt, $)" : "Target (deals)";
+    $("ctName").placeholder = { rumble: "Royal Rumble", race: "Straight race", first_to: "First to N", teams: "Team vs team" }[k] || "Sales contest";
+    if (ctData) {
+      $("ctEndPick").options[0].textContent = "Today at close" + (ctData.quick.today ? " (" + ptTime(ctData.quick.today) + ")" : " (passed)");
+      $("ctEndPick").options[1].textContent = "End of the week" + (ctData.quick.week ? " (" + ptTime(ctData.quick.week) + ")" : " (passed)");
+    }
+    renderWho();
+  }
+  function renderWho() {
+    if (!ctData) return;
+    const teams = $("ctKind").value === "teams", A = $("ctTeamA").value.trim() || "Team A", B = $("ctTeamB").value.trim() || "Team B";
+    $("ctWho").innerHTML = ctData.closers.map((r) => { const w = ctWho[r.rep_id]; return `<label class="ctwho"><span>${esc(r.name)} <span class="when">${esc(r.shown_as)}</span></span>${teams
+      ? `<select class="f" data-rep="${esc(r.rep_id)}"><option value="A"${w.team === "A" ? " selected" : ""}>${esc(A)}</option><option value="B"${w.team === "B" ? " selected" : ""}>${esc(B)}</option><option value=""${w.team === "" ? " selected" : ""}>Not in</option></select>`
+      : `<input type="checkbox" data-rep="${esc(r.rep_id)}"${w.in ? " checked" : ""}>`}</label>`; }).join("");
+    const n = Object.values(ctWho).filter((w) => teams ? w.team : w.in).length;
+    $("ctWhoN").textContent = n + " closer" + (n === 1 ? "" : "s") + " in";
+  }
+  function renderContests(t) {
+    $("app").hidden = true; $("hello").textContent = "Manager view · contests";
+    ctData = t;
+    t.closers.forEach((r, i) => { if (!ctWho[r.rep_id]) ctWho[r.rep_id] = { in: true, team: i % 2 ? "B" : "A" }; });
+    ctShow();
+    const pts = (c, n) => c.metric === "debt" ? money(n) : n + " deal" + (n === 1 ? "" : "s");
+    const state = (c) => c.status === "live" ? "Live" + (c.day ? ` · day ${c.day} of ${c.days}` : "") + (c.rows[0] ? ` · leading: ${c.rows[0].name} (${pts(c, c.rows[0].points)})` : "")
+      : c.status === "scheduled" ? "Starts " + ptTime(c.starts_at) : c.status === "ended" ? "Ended · " + (c.winners.length ? (c.winners.length > 1 ? "co-winners: " : "winner: ") + c.winners.join(", ") : "no winner") : "Cancelled";
+    $("ctList").innerHTML = t.contests.length ? t.contests.map((c) => `<li><span><b>${esc(c.name)}</b>${c.test ? ' <span class="when">test</span>' : ""}<br><span class="note">${esc(c.kind_label)} · ${c.metric === "debt" ? "enrolled debt" : "deals"} · ${c.entrants} closers · ${ptTime(c.starts_at)}${c.ends_at ? " to " + ptTime(c.ends_at) : ""}</span><br><span class="note">${esc(state(c))}${c.prize ? " · Prize: " + esc(c.prize) : ""}</span></span>${["live", "scheduled"].includes(c.status) ? `<button class="link" data-cancel="${esc(c.contest_id)}" data-name="${esc(c.name)}">Cancel</button>` : ""}</li>`).join("")
+      : '<li class="empty">No contests yet. Launch the first one above.</li>';
+  }
+  ["ctKind", "ctMetric", "ctEndPick", "ctStartPick"].forEach((id) => $(id).onchange = ctShow);
+  $("ctTeamA").oninput = renderWho; $("ctTeamB").oninput = renderWho;
+  $("ctWho").onchange = (e) => {
+    const el = e.target.closest("[data-rep]"); if (!el || !ctWho[el.dataset.rep]) return;
+    if (el.type === "checkbox") ctWho[el.dataset.rep].in = el.checked; else ctWho[el.dataset.rep].team = el.value;
+    renderWho();
+  };
+  $("ctForm").onsubmit = async (e) => {
+    e.preventDefault(); $("ctMsg").textContent = "";
+    if (!ctData) return;
+    const k = $("ctKind").value, pick = $("ctEndPick").value, iso = (v) => v ? new Date(v).toISOString() : "";
+    const body = { kind: k, name: $("ctName").value.trim() || $("ctName").placeholder, metric: $("ctMetric").value, prize: $("ctPrize").value, test: $("ctTest").checked,
+      starts_at: $("ctStartPick").value === "later" ? iso($("ctStart").value) : "now" };
+    if ($("ctStartPick").value === "later" && !body.starts_at) { $("ctMsg").textContent = "Pick the start time."; return; }
+    if (k === "rumble") body.days = Number($("ctDays").value);
+    else {
+      const start = body.starts_at === "now" ? Date.now() : Date.parse(body.starts_at);
+      body.ends_at = pick === "none" ? "" : pick === "hour" ? new Date(start + 3600000).toISOString() : pick === "custom" ? iso($("ctEnd").value) : ctData.quick[pick] || "";
+      if (pick !== "none" && !body.ends_at) { $("ctMsg").textContent = pick === "custom" ? "Pick the end time." : "That end time has passed. Pick another."; return; }
+    }
+    if (k === "first_to") body.target = Number($("ctTarget").value);
+    if (k === "teams") body.teams = [["A", $("ctTeamA").value.trim() || "Team A"], ["B", $("ctTeamB").value.trim() || "Team B"]]
+      .map(([t, name]) => ({ name, rep_ids: Object.entries(ctWho).filter(([, w]) => w.team === t).map(([id]) => id) }));
+    else body.rep_ids = Object.entries(ctWho).filter(([, w]) => w.in).map(([id]) => id);
+    if (!confirm(`Launch "${body.name}"? ${body.test ? "Test contest: it shows on the board but never posts to the floor chat." : "The floor sees it on the board and in the floor chat."}`)) return;
+    try { const j = await api("/me/contest", body); $("ctForm").reset(); ctWho = {}; render(j); $("ctMsg").textContent = "Launched. It shows on the board now."; }
+    catch (err) { $("ctMsg").textContent = err.message; }
+  };
+  $("ctList").onclick = async (e) => {
+    const b = e.target.closest("[data-cancel]"); if (!b) return;
+    if (!confirm(`Cancel "${b.dataset.name}"? It comes off the board right away.`)) return;
+    try { render(await api("/me/contest/cancel", { contest_id: b.dataset.cancel })); $("ctMsg2").textContent = `"${b.dataset.name}" cancelled.`; }
+    catch (err) { $("ctMsg2").textContent = err.message; }
+  };
+  const fromHash = () => (/^#deals(\?|$)/.test(location.hash) ? "deals" : /^#report(\?|$)/.test(location.hash) ? "report" : /^#calls(\?|$)/.test(location.hash) ? "calls" : /^#finance(\?|$)/.test(location.hash) ? "finance" : ["#payroll", "#team", "#onboarding", "#saves", "#coach", "#contests"].includes(location.hash) ? location.hash.slice(1) : "");
   let viewing = fromHash();
   addEventListener("hashchange", () => {
     if (/^#signin/.test(location.hash)) { const m = takeSignIn(); if (m) showSignIn(m); else if (session) load(); return; }
@@ -950,7 +1073,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
   }
   $("pick").onchange = () => {
     const v = $("pick").value;
-    if (["payroll", "team", "onboarding", "saves", "calls", "coach", "deals", "report", "finance"].includes(v)) { location.hash = v; return; } // hashchange loads it
+    if (["payroll", "team", "onboarding", "saves", "calls", "coach", "deals", "report", "finance", "contests"].includes(v)) { location.hash = v; return; } // hashchange loads it
     viewing = v; if (location.hash) history.replaceState(null, "", "/me"); load();
   };
   $("onbRows").onclick = async (e) => {
@@ -1011,7 +1134,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     if (!mine || p.get("n") !== mine) return "That sign-in was started somewhere else. Tap Sign in with Google again.";
     session = p.get("signin"); store.set(session);
     let after = ""; try { after = localStorage.getItem("cfn_after") || ""; localStorage.removeItem("cfn_after"); } catch {}
-    if (/^#(report|deals|saves|calls|coach|payroll|team|onboarding|finance)/.test(after)) { history.replaceState(null, "", "/me" + after); viewing = fromHash(); }
+    if (/^#(report|deals|saves|calls|coach|payroll|team|onboarding|finance|contests)/.test(after)) { history.replaceState(null, "", "/me" + after); viewing = fromHash(); }
     try { localStorage.setItem("cfn_manager", p.get("m") === "1" ? "1" : "0"); } catch {}
     return "";
   }
@@ -1024,6 +1147,6 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
   else if (session) load(); else showSignIn();
 })();
 </script>
-<script src="coach.js?v=ad9f2ad-1793121267"></script>
+<script src="coach.js?v=a908131-1793235618"></script>
 </body>
 </html>
