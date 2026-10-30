@@ -9,8 +9,8 @@
 <title>My CFN Page</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Quicksand:wght@500;700&display=swap">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
-<link rel="stylesheet" href="board.css?v=e1f44d6-1793246330">
-<link rel="stylesheet" href="coach.css?v=e1f44d6-1793246330">
+<link rel="stylesheet" href="board.css?v=9c8bbb6-1793339848">
+<link rel="stylesheet" href="coach.css?v=9c8bbb6-1793339848">
 <style>
 .wrap{max-width:680px}
 .three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
@@ -68,9 +68,28 @@ a.pill{display:inline-block;padding:6px 14px;border:1px solid var(--line);border
 table.calls{width:100%;table-layout:fixed} table.calls th,table.calls td{text-align:left;white-space:normal;vertical-align:top;overflow-wrap:anywhere} table.calls th:nth-child(1){width:24%} table.calls th:nth-child(2){width:34%} table.checks th:nth-child(1){width:74%} table.checks th:nth-child(2){width:26%} table.calls tbody tr:hover{background:var(--tint)}
 table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{background:var(--tint)}
 #signin{text-align:center;padding:30px 16px}
+/* HR tab (managers only for now) and the closer's HR card (only once HR is open to closers). */
+.hr-banner{background:#FFF7E6;border:1px solid #F5C26B;border-radius:10px;padding:10px 12px;font-size:14px;margin:0 0 12px}
+.hr-jump{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 6px} .hr-jump a{display:inline-block;padding:5px 12px;border:1px solid var(--line);border-radius:999px;text-decoration:none;color:inherit;font-size:13px}
+.hr-part{margin-top:22px;scroll-margin-top:12px} .hr-part > .label:first-child{font-size:15px;color:var(--ink)}
+.hr-sub{margin:14px 0 6px}
+.hb{font-size:14px;line-height:1.55;overflow-wrap:anywhere} .hb section{border-top:1px solid var(--tint);padding-top:4px;scroll-margin-top:12px}
+.hb h2{font-size:19px;margin:10px 0 6px} .hb h3{font-size:16px;margin:10px 0 4px} .hb h4,.hb h5,.hb h6{font-size:14px;margin:8px 0 4px}
+.hb p{margin:6px 0} .hb ul,.hb ol{margin:6px 0;padding-left:20px} .hb li.sub{margin-left:18px;list-style:circle}
+.hb blockquote{margin:8px 0;padding:4px 12px;border-left:3px solid #F5C26B;background:var(--tint);border-radius:6px}
+.hb .hb-table{overflow-x:auto;max-width:100%} .hb table{border-collapse:collapse;width:100%;font-size:13px} .hb th,.hb td{border-bottom:1px solid var(--tint);padding:4px;text-align:left;vertical-align:top} .hb th{color:var(--muted);font-weight:500}
+.hb a{color:var(--blue)} mark{background:#FFE58A;padding:0 1px;border-radius:2px}
+.hr-toc{border:0;padding:4px 0} .hr-toc ol{margin:6px 0;padding-left:20px;font-size:14px;line-height:1.6} .hr-toc li.l3{margin-left:14px;font-size:13px;list-style:circle} .hr-toc a{color:inherit}
+table.hr-grid{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed} table.hr-grid th,table.hr-grid td{text-align:left;padding:6px 3px;border-bottom:1px solid var(--tint);vertical-align:top;overflow-wrap:anywhere}
+table.hr-grid th{color:var(--muted);font-weight:500;font-size:12px} table.hr-grid th:first-child{width:30%}
+.hr-miss{color:#B45309;font-weight:600}
+#hrTab ul.feed li > span:first-child,#hrMine ul.feed li > span:first-child{min-width:0;overflow-wrap:anywhere}
+#hrTab ul.feed li > span:last-child,#hrMine ul.feed li > span:last-child{flex-shrink:0;text-align:right}
+textarea.f{padding:8px 10px;border:1px solid var(--line);border-radius:8px;font:inherit;width:100%;box-sizing:border-box;min-height:90px;resize:vertical}
+.hr-text{white-space:pre-wrap}
 @media (max-width:480px){.three{grid-template-columns:1fr 1fr 1fr}.mini .v{font-size:18px}}
 </style>
-<script src="config.js?v=e1f44d6-1793246330"></script>
+<script src="config.js?v=9c8bbb6-1793339848"></script>
 </head>
 <body>
 <div class="wrap">
@@ -259,6 +278,72 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     <p class="note" id="ctMsg2" aria-live="polite"></p>
   </section>
 
+  <section class="card" id="hrTab" style="margin-bottom:14px" hidden>
+    <p class="hr-banner" id="hrBanner">Review mode: only managers can see HR. Closers will see the handbook, their documents, and time off once the owner turns it on.</p>
+    <nav class="hr-jump" aria-label="HR sections"><a href="#" data-jump="hrHb">Handbook</a><a href="#" data-jump="hrAck">Acknowledgments</a><a href="#" data-jump="hrTo">Time off</a><a href="#" data-jump="hrNotes">Write-ups and coaching</a></nav>
+
+    <div class="hr-part" id="hrHb">
+      <p class="label"><span>Employee handbook</span><span class="when" id="hrHbState"></span></p>
+      <p class="empty" id="hrHbMissing" hidden></p>
+      <div id="hrHbBody">
+        <input id="hrSearch" class="f" type="search" placeholder="Search the handbook (for example: time off)" autocomplete="off" aria-label="Search the handbook">
+        <p class="note" id="hrSearchN" aria-live="polite" style="margin:6px 0"></p>
+        <details class="hr-toc" open><summary>Contents</summary><ol id="hrToc"></ol></details>
+        <div class="hb" id="hrSections"></div>
+      </div>
+    </div>
+
+    <div class="hr-part" id="hrAck">
+      <p class="label"><span>Acknowledgments</span><span class="when">date signed, or missing</span></p>
+      <table class="hr-grid"><thead id="hrAckHead"></thead><tbody id="hrAckRows"></tbody></table>
+      <form id="hrAckForm" style="margin-top:12px">
+        <p class="label hr-sub"><span>Record acknowledgment</span><span class="when">for example, signed in DocuSign</span></p>
+        <div class="row"><label>Closer<select id="hrAckRep" class="f"></select></label><label>Document<select id="hrAckDoc" class="f"></select></label></div>
+        <div class="row" style="margin-top:8px"><label>Version signed (empty = current)<input id="hrAckVer" class="f" maxlength="40"></label><label>Signed on (empty = today)<input id="hrAckOn" class="f" type="date"></label></div>
+        <button class="go" type="submit" style="margin-top:10px">Record acknowledgment</button>
+        <p class="note" id="hrAckMsg" aria-live="polite"></p>
+      </form>
+    </div>
+
+    <div class="hr-part" id="hrTo">
+      <p class="label"><span>Time off</span><span class="when" id="hrToRules"></span></p>
+      <p class="note" id="hrToText" style="margin:0 0 6px"></p>
+      <p class="label hr-sub"><span>Waiting for a decision</span><span id="hrToPendingN"></span></p>
+      <ul class="feed" id="hrToPending"></ul>
+      <p class="label hr-sub"><span>Coming up (approved)</span></p>
+      <ul class="feed" id="hrToUpcoming"></ul>
+      <p class="label hr-sub"><span>By week</span><span class="when">next 12 weeks</span></p>
+      <div id="hrToWeeks"></div>
+      <p class="label hr-sub"><span>Days used this year</span><span class="when">approved only</span></p>
+      <table class="hr-grid"><thead><tr><th>Closer</th><th>PTO used</th><th>PTO left</th><th>Sick</th><th>Unpaid</th></tr></thead><tbody id="hrToUsed"></tbody></table>
+      <p class="label hr-sub"><span>Last 30 days</span></p>
+      <ul class="feed" id="hrToRecent"></ul>
+      <form id="hrToForm" style="margin-top:12px">
+        <p class="label hr-sub"><span>Add for a closer</span></p>
+        <div class="row"><label>Closer<select id="hrToRep" class="f"></select></label><label>Kind<select id="hrToKind" class="f"><option value="pto">PTO</option><option value="sick">Sick</option><option value="unpaid">Unpaid</option></select></label></div>
+        <div class="row" style="margin-top:8px"><label>First day<input id="hrToStart" class="f" type="date"></label><label>Last day (empty = one day)<input id="hrToEnd" class="f" type="date"></label></div>
+        <div class="row" style="margin-top:8px"><label>Days (empty = weekdays; 0.5 for a half day)<input id="hrToDays" class="f" inputmode="decimal"></label><label>Note (optional)<input id="hrToNote" class="f" maxlength="200"></label></div>
+        <label class="note" style="display:flex;gap:8px;align-items:center;margin:10px 0"><input type="checkbox" id="hrToApprove"> Approve now</label>
+        <button class="go" type="submit">Add time off</button>
+        <p class="note" id="hrToMsg" aria-live="polite"></p>
+      </form>
+    </div>
+
+    <div class="hr-part" id="hrNotes">
+      <p class="label"><span>Write-ups and coaching</span><span class="when">managers only</span></p>
+      <p class="note" style="margin:0 0 8px">Never shown to closers. Deleting takes a note off the log; a record of it is kept.</p>
+      <form id="hrNoteForm">
+        <div class="row"><label>Closer<select id="hrNoteRep" class="f"></select></label><label>Kind<select id="hrNoteKind" class="f"></select></label></div>
+        <div class="row" style="margin-top:8px"><label>Date it happened<input id="hrNoteOn" class="f" type="date"></label><label>Follow up on (optional)<input id="hrNoteFollow" class="f" type="date"></label></div>
+        <label class="note" style="display:block;margin-top:8px">What happened (up to 2,000 characters)<textarea id="hrNoteText" class="f" maxlength="2000"></textarea></label>
+        <button class="go" type="submit" style="margin-top:10px">Add to the log</button>
+        <p class="note" id="hrNoteMsg" aria-live="polite"></p>
+      </form>
+      <div class="row" style="margin-top:12px"><label>Show<select id="hrNoteFilter" class="f"></select></label></div>
+      <ul class="feed" id="hrNoteList" style="margin-top:6px"></ul>
+    </div>
+  </section>
+
   <section id="pay" style="margin-bottom:14px" hidden>
     <div class="card" style="margin-bottom:14px">
       <p class="label"><span>Payroll review</span><span id="payStatus"></span></p>
@@ -380,6 +465,21 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
       <div id="history"></div>
     </section>
 
+    <section class="card" style="margin-bottom:14px" id="hrMine" hidden>
+      <p class="label"><span>HR</span><span id="hrMineDays"></span></p>
+      <p class="label hr-sub"><span>My documents</span></p>
+      <ul class="feed" id="hrMineDocs"></ul>
+      <p class="label hr-sub"><span>My time off</span></p>
+      <p class="note" id="hrMineRules" style="margin:0 0 6px"></p>
+      <ul class="feed" id="hrMineTo"></ul>
+      <form id="hrMineForm" style="margin-top:10px">
+        <div class="row"><label>Kind<select id="hrMineKind" class="f"><option value="pto">PTO</option><option value="sick">Sick</option><option value="unpaid">Unpaid</option></select></label><label>First day<input id="hrMineStart" class="f" type="date"></label><label>Last day (empty = one day)<input id="hrMineEnd" class="f" type="date"></label></div>
+        <div class="row" style="margin-top:8px"><label>Note (optional)<input id="hrMineNote" class="f" maxlength="200"></label><button class="go" type="submit">Ask for time off</button></div>
+        <p class="note" id="hrMineMsg" aria-live="polite"></p>
+      </form>
+      <details style="margin-top:8px"><summary>Employee handbook</summary><div class="hb" id="hrMineHb"></div></details>
+    </section>
+
     <section class="card"><p class="label">My recent deals</p><ul class="feed" id="recent"></ul></section>
   </div>
 </div>
@@ -409,7 +509,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
   function showSignIn(msg) {
     $("app").hidden = true; $("logout").hidden = true; $("signin").hidden = false; showErr(msg || "");
     // Opened a link to a tab (for example the weekly report from Telegram) while signed out: come back to it after sign-in.
-    if (/^#(report|deals|saves|calls|coach|payroll|team|onboarding|finance|contests)/.test(location.hash)) { try { localStorage.setItem("cfn_after", location.hash); } catch {} }
+    if (/^#(report|deals|saves|calls|coach|payroll|team|onboarding|finance|contests|hr)/.test(location.hash)) { try { localStorage.setItem("cfn_after", location.hash); } catch {} }
     const start = () => {
       if (!window.google?.accounts?.id) return setTimeout(start, 200);
       // Full-page sign-in (no pop-up): pop-ups come up blank in phone browsers opened from Telegram, Gmail, or Messages.
@@ -453,14 +553,14 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     if (isOwner && !$("nav").querySelector("[data-v=finance]")) $("nav").insertAdjacentHTML("beforeend", '<a href="/me#finance" data-v="finance">Finance</a>');
     if (mgr && !$("nav").querySelector("[data-v=payroll]")) {
       $("nav").querySelector("[data-v='']").textContent = "Reps";
-      $("nav").insertAdjacentHTML("beforeend", '<a href="/me#payroll" data-v="payroll">Payroll</a><a href="/me#team" data-v="team">Team pay</a><a href="/me#onboarding" data-v="onboarding">Onboarding</a><a href="/me#report" data-v="report">Reports</a><a href="/me#deals" data-v="deals">Deals</a><a href="/me#saves" data-v="saves">Saves</a><a href="/me#calls" data-v="calls">Calls</a><a href="/me#contests" data-v="contests">Contests</a><a href="/me#coach" data-v="coach">Coach library</a>');
+      $("nav").insertAdjacentHTML("beforeend", '<a href="/me#payroll" data-v="payroll">Payroll</a><a href="/me#team" data-v="team">Team pay</a><a href="/me#onboarding" data-v="onboarding">Onboarding</a><a href="/me#report" data-v="report">Reports</a><a href="/me#deals" data-v="deals">Deals</a><a href="/me#saves" data-v="saves">Saves</a><a href="/me#calls" data-v="calls">Calls</a><a href="/me#contests" data-v="contests">Contests</a><a href="/me#hr" data-v="hr">HR</a><a href="/me#coach" data-v="coach">Coach library</a>');
     }
-    $("nav").querySelectorAll("a").forEach((a) => a.toggleAttribute("aria-current", a.dataset.v !== undefined && a.dataset.v === (mgr ? (["payroll", "team", "onboarding", "saves", "coach", "deals", "report", "calls", "finance", "contests"].includes(d.viewing) ? d.viewing : "") : "")));
+    $("nav").querySelectorAll("a").forEach((a) => a.toggleAttribute("aria-current", a.dataset.v !== undefined && a.dataset.v === (mgr ? (["payroll", "team", "onboarding", "saves", "coach", "deals", "report", "calls", "finance", "contests", "hr"].includes(d.viewing) ? d.viewing : "") : "")));
     $("nav").querySelectorAll("a[aria-current]").forEach((a) => a.setAttribute("aria-current", "page"));
     $("mgr").hidden = !mgr;
     if (mgr) {
       const cur = d.viewing || "";
-      $("pick").innerHTML = '<option value="">Pick a closer...</option><option value="payroll"' + (cur === "payroll" ? " selected" : "") + '>Payroll review: next pay date</option><option value="team"' + (cur === "team" ? " selected" : "") + '>Team: everyone\'s next paycheck</option><option value="contests"' + (cur === "contests" ? " selected" : "") + '>Contests: launch and manage</option>' + d.reps.map((r) => `<option value="${esc(r.rep_id)}"${r.rep_id === cur ? " selected" : ""}>${esc(r.name)} (${esc(r.shown_as)})</option>`).join("");
+      $("pick").innerHTML = '<option value="">Pick a closer...</option><option value="payroll"' + (cur === "payroll" ? " selected" : "") + '>Payroll review: next pay date</option><option value="team"' + (cur === "team" ? " selected" : "") + '>Team: everyone\'s next paycheck</option><option value="contests"' + (cur === "contests" ? " selected" : "") + '>Contests: launch and manage</option><option value="hr"' + (cur === "hr" ? " selected" : "") + '>HR: handbook, time off, write-ups</option>' + d.reps.map((r) => `<option value="${esc(r.rep_id)}"${r.rep_id === cur ? " selected" : ""}>${esc(r.name)} (${esc(r.shown_as)})</option>`).join("");
       $("team").hidden = d.viewing !== "team";
       $("pay").hidden = d.viewing !== "payroll";
       $("onb").hidden = d.viewing !== "onboarding";
@@ -471,7 +571,9 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
       $("dealsTab").hidden = d.viewing !== "deals";
       $("reportTab").hidden = d.viewing !== "report";
       $("contestsTab").hidden = d.viewing !== "contests";
+      $("hrTab").hidden = d.viewing !== "hr";
       if (d.viewing === "contests") { renderContests(d.contests); return; }
+      if (d.viewing === "hr") { renderHr(d.hr, d.reps); return; }
       if (d.viewing === "report") { renderReport(d.report); renderCards(d.cards); return; }
       if (d.viewing === "deals") { openDealsPage(d.reps); return; }
       if (d.viewing === "coach") { renderCoach(d.coach); return; }
@@ -512,6 +614,8 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     $("today").textContent = d.today; $("week").textContent = d.week; $("month").textContent = d.month;
 
     renderCheckins(d.checkins);
+    $("hrMine").hidden = mgr || !d.hr; // the server sends hr to a closer only once HR is open to closers
+    if (!mgr && d.hr) renderMyHr(d.hr);
     const pc = d.pending_cancels || [];
     saveCallsReady = !!d.save_calls_ready;
     const saveLink = (c) => "/coach?ask=" + encodeURIComponent(c.status === "Returned"
@@ -1059,7 +1163,155 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     try { render(await api("/me/contest/cancel", { contest_id: b.dataset.cancel })); $("ctMsg2").textContent = `"${b.dataset.name}" cancelled.`; }
     catch (err) { $("ctMsg2").textContent = err.message; }
   };
-  const fromHash = () => (/^#deals(\?|$)/.test(location.hash) ? "deals" : /^#report(\?|$)/.test(location.hash) ? "report" : /^#calls(\?|$)/.test(location.hash) ? "calls" : /^#finance(\?|$)/.test(location.hash) ? "finance" : ["#payroll", "#team", "#onboarding", "#saves", "#coach", "#contests"].includes(location.hash) ? location.hash.slice(1) : "");
+  // HR tab (managers only for now): handbook with contents and search, acknowledgments, time off, write-ups and coaching.
+  // The handbook HTML comes from the server already escaped (src/hr-handbook.ts); everything else here goes through esc().
+  const HR_KIND = { pto: "PTO", sick: "Sick", unpaid: "Unpaid" };
+  const dayN = (n) => (Math.round(n * 10) / 10) + " day" + (n === 1 ? "" : "s");
+  const span = (t) => t.start_date === t.end_date ? day(t.start_date) : day(t.start_date) + " to " + day(t.end_date);
+  const todayPT = () => new Date().toLocaleDateString("en-CA", { timeZone: "America/Los_Angeles" });
+  let hrData = null;
+  function hrMark(root, q) {
+    const nodes = [];
+    (function walk(n) { for (const c of n.childNodes) { if (c.nodeType === 3) nodes.push(c); else walk(c); } })(root);
+    for (const n of nodes) {
+      const t = n.nodeValue, low = t.toLowerCase();
+      let i = low.indexOf(q), last = 0;
+      if (i < 0) continue;
+      const frag = document.createDocumentFragment();
+      while (i >= 0) { frag.append(t.slice(last, i)); const m = document.createElement("mark"); m.textContent = t.slice(i, i + q.length); frag.append(m); last = i + q.length; i = low.indexOf(q, last); }
+      frag.append(t.slice(last)); n.replaceWith(frag);
+    }
+  }
+  function hrSearch() {
+    const h = hrData && hrData.handbook; if (!h || !h.sections.length) return;
+    const q = $("hrSearch").value.trim().toLowerCase();
+    let n = 0;
+    h.sections.forEach((s, i) => {
+      const el = $("hrSections").children[i], hit = !q || (s.title + " " + s.text).toLowerCase().includes(q);
+      el.hidden = !hit; $("hrToc").children[i].hidden = !hit; if (hit) n++;
+      el.innerHTML = s.html; if (q && hit) hrMark(el, q);
+    });
+    $("hrSearchN").textContent = q ? (n ? n + " section" + (n === 1 ? "" : "s") + " match." : "No section matches.") : "";
+  }
+  function renderHr(h, reps) {
+    $("app").hidden = true; $("hello").textContent = "Manager view · HR";
+    hrData = h;
+    $("hrBanner").textContent = h.review_mode ? "Review mode: only managers can see HR. Closers will see the handbook, their documents, and time off once the owner turns it on." : "HR is open to closers: they see the handbook, their documents, and their time off. Never the write-ups and coaching log.";
+    // Handbook
+    const hb = h.handbook;
+    $("hrHbMissing").hidden = !!hb.sections.length; $("hrHbMissing").textContent = hb.message || "";
+    $("hrHbBody").hidden = !hb.sections.length;
+    $("hrHbState").textContent = hb.version ? hb.status + " · version " + hb.version : "";
+    $("hrToc").innerHTML = hb.sections.map((s) => `<li class="l${Math.min(s.level, 3)}"><a href="#" data-jump="${esc(s.id)}">${esc(s.title)}</a></li>`).join("");
+    $("hrSections").innerHTML = hb.sections.map((s) => `<section id="${esc(s.id)}"></section>`).join("");
+    hrSearch();
+    // Acknowledgments
+    const docs = h.acknowledgments.documents;
+    $("hrAckHead").innerHTML = `<tr><th>Closer</th>${docs.map((d) => `<th>${esc(d.title)}</th>`).join("")}</tr>`;
+    $("hrAckRows").innerHTML = h.acknowledgments.rows.length ? h.acknowledgments.rows.map((r) => `<tr><td>${esc(r.name)}</td>${docs.map((d) => { const c = r.docs[d.key];
+      return `<td>${c ? esc(day(c.at)) + (c.current ? "" : '<br><span class="wait">older version</span>') : '<span class="hr-miss">missing</span>'}${c && c.current ? "" : `<br><button class="link" data-ack="${esc(r.rep_id)}" data-doc="${esc(d.key)}">Record</button>`}</td>`; }).join("")}</tr>`).join("")
+      : `<tr><td colspan="${docs.length + 1}" class="empty">No active closers.</td></tr>`;
+    const repOpts = reps.map((r) => `<option value="${esc(r.rep_id)}">${esc(r.name)}</option>`).join("");
+    const keep = (id, html) => { const v = $(id).value; $(id).innerHTML = html; if (v && [...$(id).options].some((o) => o.value === v)) $(id).value = v; };
+    keep("hrAckRep", repOpts); keep("hrAckDoc", docs.map((d) => `<option value="${esc(d.key)}">${esc(d.title)}</option>`).join(""));
+    // Time off
+    const to = h.time_off, r0 = to.rules;
+    $("hrToRules").textContent = r0.pto_days_per_year + " PTO days a year" + (r0.notice_days ? " · " + r0.notice_days + " days' notice" : "");
+    $("hrToText").textContent = r0.rules_text || "";
+    const item = (t, extra) => `<li><span><b>${esc(t.name)}</b> · ${esc(HR_KIND[t.kind] || t.kind)} · ${esc(span(t))} · ${esc(dayN(t.days))}${t.note ? `<br><span class="note">${esc(t.note)}</span>` : ""}${extra || ""}</span>`;
+    $("hrToPendingN").textContent = to.pending.length ? to.pending.length + " waiting" : "";
+    $("hrToPending").innerHTML = to.pending.length ? to.pending.map((t) => item(t, t.pto_after !== null && t.pto_after > r0.pto_days_per_year ? `<br><span class="wait">Approving puts them at ${esc(t.pto_after)} of ${esc(r0.pto_days_per_year)} PTO days</span>` : "")
+      + `<span><button class="go small" data-decide="approved" data-id="${esc(t.request_id)}" data-name="${esc(t.name)}">Approve</button> <button class="link" data-decide="denied" data-id="${esc(t.request_id)}" data-name="${esc(t.name)}">Deny</button></span></li>`).join("")
+      : '<li class="empty">Nothing waiting.</li>';
+    $("hrToUpcoming").innerHTML = to.upcoming.length ? to.upcoming.map((t) => item(t) + "<span></span></li>").join("") : '<li class="empty">No approved time off coming up.</li>';
+    $("hrToWeeks").innerHTML = to.by_week.length ? to.by_week.map((w) => `<p class="note" style="margin:8px 0 2px"><b>Week of ${esc(day(w.week_of))}</b></p><ul class="feed">${w.items.map((t) =>
+      `<li><span>${esc(t.name)} · ${esc(HR_KIND[t.kind] || t.kind)} · ${esc(span(t))}</span><span class="when">${t.status === "pending" ? "pending" : "approved"}</span></li>`).join("")}</ul>`).join("")
+      : '<p class="empty">Nobody is off in the next 12 weeks.</p>';
+    $("hrToUsed").innerHTML = to.used.map((u) => `<tr><td>${esc(u.name)}</td><td>${esc(u.pto_used)} of ${esc(u.pto_allowance)}${u.pto_pending ? `<br><span class="when">${esc(u.pto_pending)} pending</span>` : ""}</td><td class="${u.pto_left < 0 ? "neg" : ""}">${esc(u.pto_left)}</td><td>${esc(u.sick_used)}</td><td>${esc(u.unpaid_used)}</td></tr>`).join("")
+      || '<tr><td colspan="5" class="empty">No active closers.</td></tr>';
+    $("hrToRecent").innerHTML = to.recent.length ? to.recent.map((t) => item(t, t.decision_note ? `<br><span class="note">Manager note: ${esc(t.decision_note)}</span>` : "") + `<span class="when">${esc(t.status)}</span></li>`).join("") : '<li class="empty">Nothing in the last 30 days.</li>';
+    keep("hrToRep", repOpts);
+    // Write-ups and coaching log
+    keep("hrNoteRep", repOpts); keep("hrNoteKind", h.note_kinds.map((k) => `<option value="${esc(k.key)}">${esc(k.label)}</option>`).join(""));
+    keep("hrNoteFilter", '<option value="">All closers</option>' + repOpts);
+    if (!$("hrNoteOn").value) $("hrNoteOn").value = todayPT();
+    renderNotes();
+  }
+  function renderNotes() {
+    if (!hrData) return;
+    const f = $("hrNoteFilter").value, list = hrData.notes.notes.filter((n) => !f || n.rep_id === f);
+    $("hrNoteList").innerHTML = list.length ? list.map((n) => `<li><span><b>${esc(n.name)}</b> · ${esc(n.kind_label)} · ${esc(day(n.occurred_on))}<br><span class="hr-text">${esc(n.summary)}</span><br><span class="note">Added by ${esc(n.created_by)}${n.follow_up_on ? " · follow up " + esc(day(n.follow_up_on)) : ""}</span></span><span><button class="link" data-del="${esc(n.note_id)}" data-name="${esc(n.name)}" data-kind="${esc(n.kind_label)}">Delete</button></span></li>`).join("")
+      : '<li class="empty">Nothing logged yet.</li>';
+  }
+  $("hrTab").addEventListener("click", (e) => {
+    const j = e.target.closest("[data-jump]"); if (!j) return;
+    e.preventDefault();
+    const el = $(j.dataset.jump); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+  $("hrSearch").addEventListener("input", hrSearch);
+  $("hrNoteFilter").onchange = renderNotes;
+  $("hrAckRows").onclick = (e) => {
+    const b = e.target.closest("[data-ack]"); if (!b) return;
+    $("hrAckRep").value = b.dataset.ack; $("hrAckDoc").value = b.dataset.doc; $("hrAckVer").value = ""; $("hrAckMsg").textContent = "";
+    $("hrAckForm").scrollIntoView({ behavior: "smooth", block: "center" });
+  };
+  $("hrAckForm").onsubmit = async (e) => {
+    e.preventDefault(); $("hrAckMsg").textContent = "";
+    const who = $("hrAckRep").selectedOptions[0]?.textContent || "", doc = $("hrAckDoc").selectedOptions[0]?.textContent || "";
+    if (!confirm(`Record that ${who} signed the ${doc}?`)) return;
+    try { render(await api("/me/hr/ack", { rep_id: $("hrAckRep").value, doc_key: $("hrAckDoc").value, doc_version: $("hrAckVer").value.trim(), signed_on: $("hrAckOn").value }));
+      $("hrAckVer").value = ""; $("hrAckOn").value = ""; $("hrAckMsg").textContent = `Recorded: ${who}, ${doc}.`; }
+    catch (err) { $("hrAckMsg").textContent = err.message; }
+  };
+  $("hrToPending").onclick = async (e) => {
+    const b = e.target.closest("[data-decide]"); if (!b) return;
+    let note = "";
+    if (b.dataset.decide === "approved") { if (!confirm(`Approve time off for ${b.dataset.name}?`)) return; }
+    else { const v = prompt(`Deny time off for ${b.dataset.name}? Add a short reason (optional, up to 200 characters).`, ""); if (v === null) return; note = v.trim(); }
+    try { render(await api("/me/hr/time-off/decide", { request_id: b.dataset.id, decision: b.dataset.decide, note })); }
+    catch (err) { alert(err.message); }
+  };
+  $("hrToForm").onsubmit = async (e) => {
+    e.preventDefault(); $("hrToMsg").textContent = "";
+    const body = { rep_id: $("hrToRep").value, kind: $("hrToKind").value, start_date: $("hrToStart").value, end_date: $("hrToEnd").value || $("hrToStart").value,
+      days: $("hrToDays").value.trim(), note: $("hrToNote").value, approve: $("hrToApprove").checked };
+    try { render(await api("/me/hr/time-off", body)); $("hrToForm").reset(); $("hrToRep").value = body.rep_id; $("hrToMsg").textContent = body.approve ? "Added and approved." : "Added. It is waiting for a decision above."; }
+    catch (err) { $("hrToMsg").textContent = err.message; }
+  };
+  $("hrNoteForm").onsubmit = async (e) => {
+    e.preventDefault(); $("hrNoteMsg").textContent = "";
+    const body = { rep_id: $("hrNoteRep").value, kind: $("hrNoteKind").value, occurred_on: $("hrNoteOn").value, follow_up_on: $("hrNoteFollow").value, summary: $("hrNoteText").value };
+    try { render(await api("/me/hr/note", body)); $("hrNoteText").value = ""; $("hrNoteFollow").value = ""; $("hrNoteMsg").textContent = "Added to the log."; }
+    catch (err) { $("hrNoteMsg").textContent = err.message; }
+  };
+  $("hrNoteList").onclick = async (e) => {
+    const b = e.target.closest("[data-del]"); if (!b) return;
+    if (!confirm(`Delete this ${b.dataset.kind.toLowerCase()} for ${b.dataset.name}? It leaves the log. A record of the deletion is kept.`)) return;
+    try { render(await api("/me/hr/note/delete", { note_id: b.dataset.del })); $("hrNoteMsg").textContent = "Deleted."; }
+    catch (err) { alert(err.message); }
+  };
+  // The closer's own HR card: only drawn when the server sends it (HR open to closers). Never the write-ups and coaching log.
+  function renderMyHr(h) {
+    $("hrMineDays").textContent = `PTO: ${h.days.pto_used} of ${h.days.pto_allowance} days used this year`;
+    $("hrMineDocs").innerHTML = h.documents.map((d) => `<li><span>${esc(d.title)}</span><span>${d.acknowledged && d.acknowledged.current ? '<span class="ok">Done</span> <span class="when">' + esc(day(d.acknowledged.at)) + "</span>"
+      : d.version ? `<button class="go small" data-myack="${esc(d.key)}" data-title="${esc(d.title)}">I have read it</button>` : '<span class="when">not ready yet</span>'}</span></li>`).join("");
+    $("hrMineRules").textContent = [h.rules.rules_text, h.rules.notice_days ? `PTO needs ${h.rules.notice_days} days' notice.` : ""].filter(Boolean).join(" ");
+    $("hrMineTo").innerHTML = h.time_off.length ? h.time_off.map((t) => `<li><span>${esc(HR_KIND[t.kind] || t.kind)} · ${esc(span(t))} · ${esc(dayN(t.days))}${t.decision_note ? `<br><span class="note">Manager note: ${esc(t.decision_note)}</span>` : ""}</span><span class="when">${esc(t.status)}</span></li>`).join("")
+      : '<li class="empty">No time off yet.</li>';
+    $("hrMineHb").innerHTML = h.handbook.sections.length ? h.handbook.sections.map((s) => s.html).join("") : `<p class="empty">${esc(h.handbook.message || "")}</p>`;
+  }
+  $("hrMineDocs").onclick = async (e) => {
+    const b = e.target.closest("[data-myack]"); if (!b) return;
+    if (!confirm(`Confirm you have read the ${b.dataset.title}? This records the date.`)) return;
+    try { renderMyHr((await api("/me/hr/acknowledge", { doc_key: b.dataset.myack })).hr); } catch (err) { if (err.message) alert(err.message); }
+  };
+  $("hrMineForm").onsubmit = async (e) => {
+    e.preventDefault(); $("hrMineMsg").textContent = "";
+    const body = { kind: $("hrMineKind").value, start_date: $("hrMineStart").value, end_date: $("hrMineEnd").value || $("hrMineStart").value, note: $("hrMineNote").value };
+    try { renderMyHr((await api("/me/hr/request-time-off", body)).hr); $("hrMineForm").reset(); $("hrMineMsg").textContent = "Sent. A manager will approve or deny it."; }
+    catch (err) { $("hrMineMsg").textContent = err.message; }
+  };
+  const fromHash = () => (/^#deals(\?|$)/.test(location.hash) ? "deals" : /^#report(\?|$)/.test(location.hash) ? "report" : /^#calls(\?|$)/.test(location.hash) ? "calls" : /^#finance(\?|$)/.test(location.hash) ? "finance" : ["#payroll", "#team", "#onboarding", "#saves", "#coach", "#contests", "#hr"].includes(location.hash) ? location.hash.slice(1) : "");
   let viewing = fromHash();
   addEventListener("hashchange", () => {
     if (/^#signin/.test(location.hash)) { const m = takeSignIn(); if (m) showSignIn(m); else if (session) load(); return; }
@@ -1073,7 +1325,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
   }
   $("pick").onchange = () => {
     const v = $("pick").value;
-    if (["payroll", "team", "onboarding", "saves", "calls", "coach", "deals", "report", "finance", "contests"].includes(v)) { location.hash = v; return; } // hashchange loads it
+    if (["payroll", "team", "onboarding", "saves", "calls", "coach", "deals", "report", "finance", "contests", "hr"].includes(v)) { location.hash = v; return; } // hashchange loads it
     viewing = v; if (location.hash) history.replaceState(null, "", "/me"); load();
   };
   $("onbRows").onclick = async (e) => {
@@ -1134,7 +1386,7 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
     if (!mine || p.get("n") !== mine) return "That sign-in was started somewhere else. Tap Sign in with Google again.";
     session = p.get("signin"); store.set(session);
     let after = ""; try { after = localStorage.getItem("cfn_after") || ""; localStorage.removeItem("cfn_after"); } catch {}
-    if (/^#(report|deals|saves|calls|coach|payroll|team|onboarding|finance|contests)/.test(after)) { history.replaceState(null, "", "/me" + after); viewing = fromHash(); }
+    if (/^#(report|deals|saves|calls|coach|payroll|team|onboarding|finance|contests|hr)/.test(after)) { history.replaceState(null, "", "/me" + after); viewing = fromHash(); }
     try { localStorage.setItem("cfn_manager", p.get("m") === "1" ? "1" : "0"); } catch {}
     return "";
   }
@@ -1147,6 +1399,6 @@ table.tt tbody tr[data-rep]{cursor:pointer} table.tt tbody tr[data-rep]:hover{ba
   else if (session) load(); else showSignIn();
 })();
 </script>
-<script src="coach.js?v=e1f44d6-1793246330"></script>
+<script src="coach.js?v=9c8bbb6-1793339848"></script>
 </body>
 </html>
