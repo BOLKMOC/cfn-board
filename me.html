@@ -9,8 +9,8 @@
 <title>My CFN Page</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Quicksand:wght@500;700&display=swap">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
-<link rel="stylesheet" href="board.css?v=9c8bbb6-1793339848">
-<link rel="stylesheet" href="coach.css?v=9c8bbb6-1793339848">
+<link rel="stylesheet" href="board.css?v=4f564d7-1793372573">
+<link rel="stylesheet" href="coach.css?v=4f564d7-1793372573">
 <style>
 .wrap{max-width:680px}
 .three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
@@ -89,7 +89,7 @@ textarea.f{padding:8px 10px;border:1px solid var(--line);border-radius:8px;font:
 .hr-text{white-space:pre-wrap}
 @media (max-width:480px){.three{grid-template-columns:1fr 1fr 1fr}.mini .v{font-size:18px}}
 </style>
-<script src="config.js?v=9c8bbb6-1793339848"></script>
+<script src="config.js?v=4f564d7-1793372573"></script>
 </head>
 <body>
 <div class="wrap">
@@ -119,7 +119,8 @@ textarea.f{padding:8px 10px;border:1px solid var(--line);border-radius:8px;font:
   <section class="card" id="onb" style="margin-bottom:14px" hidden>
     <p class="label"><span>Onboarding</span><span id="onbN"></span></p>
     <p class="note" style="margin:0 0 10px">New closers and anyone still setting up. Steps: in Forth, signed in, call sign, pay set up (Gusto or overseas), first deal, Vici ID. Copy the welcome text into a text or email to the new rep.</p>
-    <div style="overflow-x:auto"><table class="tt onb"><thead><tr><th>Closer</th><th>Added</th><th>Signed in</th><th>Call sign</th><th>Pay</th><th>First deal</th><th>Vici ID</th><th>Transfer line</th><th></th></tr></thead><tbody id="onbRows"></tbody></table></div>
+    <div style="overflow-x:auto"><table class="tt onb"><thead><tr><th>Closer</th><th>Added</th><th>Signed in</th><th>Call sign</th><th>Pay</th><th>First deal</th><th>Vici ID</th><th>Transfer line</th><th>Chat</th><th></th></tr></thead><tbody id="onbRows"></tbody></table></div>
+    <p class="note" id="onbChat"></p>
     <p class="note" id="onbMsg" aria-live="polite"></p>
   </section>
 
@@ -580,7 +581,7 @@ textarea.f{padding:8px 10px;border:1px solid var(--line);border-radius:8px;font:
       if (d.viewing === "saves") { saveCallsReady = !!d.save_calls_ready; renderSaves(d.saves, d.reasons); renderTeamCheckins(d.checkins); return; }
       if (d.viewing === "calls") { renderCalls(d); return; }
       if (d.viewing === "finance") { renderFinance(d.finance); return; }
-      if (d.viewing === "onboarding") { renderOnboarding(d.onboarding); return; }
+      if (d.viewing === "onboarding") { renderOnboarding(d.onboarding, d.chat); return; }
       if (d.viewing === "payroll") { renderPayroll(d.payroll); return; }
       if (d.viewing === "team") {
         const t = d.team, range = (lo, hi) => lo === hi ? money(lo) : money(lo) + " to " + money(hi);
@@ -1051,8 +1052,14 @@ textarea.f{padding:8px 10px;border:1px solid var(--line);border-radius:8px;font:
     }
   };
   let onbRows = [];
-  function renderOnboarding(rows) {
+  function renderOnboarding(rows, chat = []) {
     onbRows = rows;
+    // Google Chat: is each closer connected to the CFN Coach (their private alerts), and today's private messages.
+    const chatBy = Object.fromEntries(chat.map((c) => [c.rep_id, c]));
+    const chatCell = (c) => !c ? "" : (c.connected ? `<span class="ok">&#10003;</span>${c.connected_at ? ` <span class="when">${day(c.connected_at.slice(0, 10))}</span>` : ""}` : '<span class="wait">not yet</span>')
+      + (c.today.sent + c.today.queued + c.today.waiting ? `<br><span class="when">today ${c.today.sent} sent${c.today.queued ? `, ${c.today.queued} queued` : ""}${c.today.waiting ? `, ${c.today.waiting} waiting` : ""}</span>` : "");
+    const off = chat.filter((c) => !c.connected), sum = (k) => chat.reduce((t, c) => t + c.today[k], 0);
+    $("onbChat").textContent = chat.length ? `Google Chat (private alerts from the CFN Coach): ${chat.length - off.length} of ${chat.length} closers connected.${off.length ? " Not yet: " + off.map((c) => c.name).join(", ") + "." : ""} Today: ${sum("sent")} sent, ${sum("queued")} queued, ${sum("waiting")} waiting for the closer to connect.` : "";
     $("app").hidden = true; $("hello").textContent = "Manager view · onboarding";
     const open = rows.filter((r) => r.open.length).length;
     $("onbN").textContent = rows.length ? `${rows.length} closer${rows.length === 1 ? "" : "s"} · ${open} still setting up` : "everyone is set up";
@@ -1066,8 +1073,9 @@ textarea.f{padding:8px 10px;border:1px solid var(--line);border-radius:8px;font:
       <td>${step(r.steps.first_deal)}</td>
       <td>${r.steps.vici?.id ? esc(r.steps.vici.id) : '<span class="wait">not set</span>'}<br><button class="link" data-vici="${esc(r.rep_id)}">${r.steps.vici?.id ? "Change" : "Set"}</button></td>
       <td>${r.transfer_to ? esc(r.transfer_to) : '<span class="wait">not set</span>'}<br><button class="link" data-transfer="${esc(r.rep_id)}">${r.transfer_to ? "Change" : "Set"}</button></td>
+      <td>${chatCell(chatBy[r.rep_id])}</td>
       <td><button class="go small" data-copy="${i}">Copy welcome text</button></td></tr>`).join("")
-      : '<tr><td colspan="9" class="empty" style="text-align:left">No one is in onboarding right now.</td></tr>';
+      : '<tr><td colspan="10" class="empty" style="text-align:left">No one is in onboarding right now.</td></tr>';
   }
   function renderPayroll(p) {
     $("app").hidden = true; $("hello").textContent = "Manager view · payroll";
@@ -1399,6 +1407,6 @@ textarea.f{padding:8px 10px;border:1px solid var(--line);border-radius:8px;font:
   else if (session) load(); else showSignIn();
 })();
 </script>
-<script src="coach.js?v=9c8bbb6-1793339848"></script>
+<script src="coach.js?v=4f564d7-1793372573"></script>
 </body>
 </html>
