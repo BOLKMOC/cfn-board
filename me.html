@@ -9,8 +9,8 @@
 <title>My CFN Page</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Quicksand:wght@500;700&display=swap">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
-<link rel="stylesheet" href="board.css?v=79f6b76-1793380105">
-<link rel="stylesheet" href="coach.css?v=79f6b76-1793380105">
+<link rel="stylesheet" href="board.css?v=4478bdb-1793391081">
+<link rel="stylesheet" href="coach.css?v=4478bdb-1793391081">
 <style>
 .wrap{max-width:680px}
 .three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
@@ -88,8 +88,39 @@ table.hr-grid th{color:var(--muted);font-weight:500;font-size:12px} table.hr-gri
 textarea.f{padding:8px 10px;border:1px solid var(--line);border-radius:8px;font:inherit;width:100%;box-sizing:border-box;min-height:90px;resize:vertical}
 .hr-text{white-space:pre-wrap}
 @media (max-width:480px){.three{grid-template-columns:1fr 1fr 1fr}.mini .v{font-size:18px}}
+/* Owners' business review (Finance tab): wider page, deck colors, and a landscape print layout for the PDF. */
+body.fin-wide .wrap{max-width:1180px}
+.br-bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin:0 0 6px}
+.br-pills{display:flex;flex-wrap:wrap;gap:6px}
+.br-custom{display:flex;flex-wrap:wrap;gap:8px;align-items:end;margin:6px 0} .br-custom label{font-size:12px;color:var(--muted);display:flex;flex-direction:column;gap:3px}
+.br-sec{margin-top:20px;scroll-margin-top:12px} .br-sec > .label:first-child{font-size:15px;color:var(--ink)}
+.br-scroll{overflow-x:auto;max-width:100%}
+table.br-t td.l{text-align:left;white-space:normal} table.br-t tr.grp td{color:var(--muted);font-size:12px;background:var(--tint);text-align:left}
+table.br-small{font-size:12.5px} table.br-small th,table.br-small td{padding:5px 3px}
+.br-idx{display:inline-block;min-width:44px;text-align:center;border-radius:6px;padding:1px 6px;font-weight:700;font-size:12.5px}
+.br-idx.good{background:#E3F4EA;color:#067647} .br-idx.bad{background:#FDEBD8;color:#B45309}
+.br-nt{color:var(--muted);font-size:12px;font-style:italic}
+.br-two{display:grid;grid-template-columns:3fr 2fr;gap:16px;align-items:start} @media (max-width:800px){.br-two{grid-template-columns:1fr}}
+.br-bars .row2{display:grid;grid-template-columns:110px 1fr;gap:6px;align-items:center;font-size:12px;margin:6px 0}
+.br-bars .b{height:9px;border-radius:5px;margin:2px 0} .br-bars .b.a{background:var(--blue)} .br-bars .b.t{background:#C7D2EE}
+.br-bars .b.over{background:#B45309}
+ol.br-down{margin:0;padding-left:20px} ol.br-down li{padding:5px 0;font-size:14px} ol.br-down a{color:inherit}
+.tag{display:inline-block;border-radius:999px;padding:1px 9px;font-size:12px;font-weight:600}
+.tag.profitable{background:#E3F4EA;color:#067647} .tag.break_even{background:#EEF1F7;color:#5B6475} .tag.losing{background:#FDE8E8;color:#B42318} .tag.ramping{background:#EAF0FF;color:#1F4FD8}
+input.br-num{width:70px;padding:4px 6px;display:inline-block}
+.br-print-head{display:none}
+@media print{
+  @page{size:landscape;margin:10mm}
+  body{background:#fff} body.fin-wide .wrap{max-width:none}
+  header,nav,#mgr,#error,.br-noprint,#finMsg,#qboArea,#app,section.card:not(#finTab){display:none !important}
+  #finTab{border:0;padding:0}
+  .br-print-head{display:flex;gap:12px;align-items:center;margin:0 0 8px;font-size:16px} .br-print-head img{height:34px}
+  .br-page{break-before:page} #br-down,#br-lead{break-inside:avoid-page}
+  .br-scroll{overflow:visible} table.br-t{font-size:11px} table.br-small{font-size:9.5px}
+  .br-idx,.tag,.br-bars .b{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
 </style>
-<script src="config.js?v=79f6b76-1793380105"></script>
+<script src="config.js?v=4478bdb-1793391081"></script>
 </head>
 <body>
 <div class="wrap">
@@ -129,13 +160,35 @@ textarea.f{padding:8px 10px;border:1px solid var(--line);border-radius:8px;font:
     <div id="qboArea" hidden><p class="label"><span>QuickBooks</span><span id="qboState" class="when"></span></p>
     <div id="qboBox" style="margin:0 0 6px"></div></div>
     <p class="note" id="finMsg" aria-live="polite"></p>
-    <p class="label" style="margin-top:18px"><span>Profit per rep</span><span><button class="link" id="finPrev">&larr;</button> <b id="finMonth"></b> <button class="link" id="finNext">&rarr;</button></span></p>
+    <!-- Owners' business review (the stakeholders deck, live). Prints as a landscape PDF from the browser. -->
+    <div class="br-print-head"><img src="logo.svg" alt=""><div><b>ChangeFN business review</b><br><span id="brPrintPeriod"></span></div></div>
+    <div class="br-bar br-noprint">
+      <span class="br-pills" id="brPeriods"><a class="pill" data-p="month" href="/me#finance?period=month">Month</a><a class="pill" data-p="quarter" href="/me#finance?period=quarter">Quarter</a><a class="pill" data-p="ytd" href="/me#finance?period=ytd">Year to date</a><a class="pill" data-p="custom" href="/me#finance?period=custom">Custom</a></span>
+      <span><button class="link" id="finPrev" aria-label="Earlier">&larr;</button> <b id="brPeriod"></b> <button class="link" id="finNext" aria-label="Later">&rarr;</button></span>
+      <button class="go small" id="brPdf">Download PDF</button>
+    </div>
+    <form class="br-custom br-noprint" id="brCustom" hidden><label>From <input class="f" type="date" name="from" required></label><label>To <input class="f" type="date" name="to" required></label><button class="go small">Show</button></form>
+    <p class="note" id="brAsOf" style="margin:6px 0 0"></p>
+    <div class="br-sec" id="br-down"><p class="label"><span>What's taking us down</span><span class="when">profit in dollars, each gap alone with the rest at target</span></p><div id="brDown"></div></div>
+    <div class="br-sec br-page" id="br-ops"><p class="label"><span>1. Performance vs budget</span><span class="when" id="brOpsNote"></span></p><div class="br-scroll"><table class="tt br-t" id="brOps"></table></div></div>
+    <div class="br-sec br-page" id="br-fin"><p class="label"><span>2. Financials vs budget</span><span class="when" id="brFinSrc"></span></p>
+      <div class="br-two"><div class="br-scroll"><table class="tt br-t" id="brFin"></table></div><div id="brBars" class="br-bars"></div></div>
+      <p class="note" id="brFinNote"></p>
+      <p class="label" style="margin-top:16px"><span>Next month: <b id="brNextMonth"></b></span><span class="br-noprint"><label class="when">Closers planned <input class="f br-num" type="number" min="1" max="200" id="brClosers"></label> <button class="link" id="brClosersGo">Update</button></span></p>
+      <div class="br-scroll"><table class="tt br-t" id="brNext"></table></div><p class="note" id="brNextNote"></p></div>
+    <div class="br-sec br-page" id="br-closers"><p class="label"><span>3. Closers</span><span class="when">active closers; calls from Vici, credit pulls from Forth</span></p><div class="br-scroll"><table class="tt br-t br-small" id="brClosersT"></table></div>
+      <p class="label" id="br-profit" style="margin-top:16px"><span>Who makes money</span><span class="when" id="brProfitNote"></span></p><div class="br-scroll"><table class="tt br-t" id="brProfit"></table></div><div id="brRamp"></div></div>
+    <div class="br-sec" id="br-lead"><p class="label"><span>4. Lead sources</span></p><p class="note" id="brLead"></p></div>
+    <div class="br-sec br-page" id="br-qbo"><p class="label"><span>QuickBooks P&amp;L</span><span class="when" id="brQboWhen"></span></p><div class="br-scroll" id="brQbo"></div></div>
+    <div class="br-noprint">
+    <p class="label" style="margin-top:22px"><span>Profit per rep</span><b id="finMonth"></b></p>
     <p class="note" id="finRepNote" style="margin:0 0 10px"></p>
     <div id="finRepTotals"></div>
     <div id="finReps"></div>
     <p class="label" style="margin-top:22px"><span>Actual vs pro forma</span><span class="when">by month</span></p>
     <p class="note" style="margin:0 0 10px">Each month is the deals sold that month, like the pro forma. Revenue is 8% of debt: earned when the 1st deposit clears (Cordoba payout files), expected at the pro forma clear rate while waiting. Costs use the pro forma's figures for now and are marked as estimates. The pro forma assumed 9%.</p>
     <div id="finMonths"></div>
+    </div>
   </section>
 
   <section class="card" id="callsTab" style="margin-bottom:14px" hidden>
@@ -568,6 +621,7 @@ textarea.f{padding:8px 10px;border:1px solid var(--line);border-radius:8px;font:
       $("saves").hidden = d.viewing !== "saves";
       $("callsTab").hidden = d.viewing !== "calls";
       $("finTab").hidden = d.viewing !== "finance";
+      document.body.classList.toggle("fin-wide", d.viewing === "finance");
       $("coachTab").hidden = d.viewing !== "coach";
       $("dealsTab").hidden = d.viewing !== "deals";
       $("reportTab").hidden = d.viewing !== "report";
@@ -1017,6 +1071,67 @@ textarea.f{padding:8px 10px;border:1px solid var(--line);border-radius:8px;font:
   });
   const usd = (n) => n === null || n === undefined ? "-" : (n < 0 ? "-$" : "$") + Math.abs(Math.round(n)).toLocaleString("en-US");
   const vsPlan = (a, p) => p ? ` <span class="${a >= p ? "gap-pos" : "gap-neg"}">${Math.round((a / p) * 100)}%</span>` : "";
+  // Owners' business review: the deck's pages, live, for any period.
+  let brLast = null;
+  const brNum = (v, unit) => v === null || v === undefined ? "-" : unit === "money" ? usd(v) : unit === "pct" ? Number(v).toFixed(1) + "%" : Math.round(v).toLocaleString("en-US");
+  const brIdx = (m) => m.target_pct === null || m.target_pct === undefined ? '<span class="when">no target</span>'
+    : `<span class="br-idx ${(m.lower_better ? m.target_pct <= 100 : m.target_pct >= 100) ? "good" : "bad"}">${m.target_pct}%</span>`;
+  const brCell = (v, unit, tracked, note) => tracked === false ? `<span class="br-nt" title="${esc(note || "")}">not tracked</span>` : brNum(v, unit);
+  const brTag = { profitable: "Profitable", break_even: "Break even", losing: "Losing money", ramping: "Ramping" };
+  function renderReview(rv) {
+    brLast = rv;
+    const p = rv.period, prog = p.in_progress;
+    $("brPeriods").querySelectorAll("[data-p]").forEach((a) => a.toggleAttribute("aria-current", a.dataset.p === p.kind));
+    $("brCustom").hidden = p.kind !== "custom";
+    if (p.kind === "custom") { $("brCustom").from.value = p.from; $("brCustom").to.value = p.to; }
+    $("brPeriod").textContent = p.label; $("brPrintPeriod").textContent = p.label;
+    $("finPrev").hidden = $("finNext").hidden = p.kind === "custom";
+    $("brAsOf").textContent = `${p.from} to ${p.to} · ${prog ? p.share_done_pct + "% of floor days done" + (p.workdays_left !== null ? ", " + p.workdays_left + " workdays left" : "") : p.started ? "complete" : "not started"} · as of ${new Date(rv.as_of).toLocaleString("en-US", { timeZone: "America/Los_Angeles", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })} Pacific`;
+    $("brDown").innerHTML = rv.down.length
+      ? `<ol class="br-down">${rv.down.map((d) => `<li><a href="${esc(d.link)}" data-jump="${esc(d.link)}">${esc(d.text)}</a>: <b class="neg">about ${usd(d.impact)} profit</b></li>`).join("")}</ol>`
+      : '<p class="empty">Nothing below budget in dollars for this period.</p>';
+    const head = `<thead><tr><th>Metric</th><th>At</th>${prog ? "<th>Trending</th>" : ""}<th>Target</th><th>Target %</th><th>${esc(p.prev.label)}</th></tr></thead>`;
+    const row = (m) => `<tr><td class="l">${esc(m.label)}${m.note && m.tracked !== false ? `<br><span class="when">${esc(m.note)}</span>` : ""}</td><td>${brCell(m.at, m.unit, m.tracked, m.note)}</td>${prog ? `<td>${m.tracked === false ? "" : brNum(m.trending, m.unit)}</td>` : ""}<td>${m.target === null ? '<span class="when">no target</span>' : brNum(m.target, m.unit)}</td><td>${m.tracked === false ? "" : brIdx(m)}</td><td>${m.tracked === false ? "" : brNum(m.prev, m.unit)}</td></tr>`;
+    $("brOps").innerHTML = head + "<tbody>" + rv.ops.map(row).join("") + "</tbody>";
+    $("brOpsNote").textContent = prog ? "Trending = at today's pace to the end of the period" : "";
+    const fm = rv.money.metrics;
+    $("brFin").innerHTML = head + "<tbody>" + fm.map(row).join("") + `<tr class="grp"><td colspan="${prog ? 6 : 5}">Share of debt enrolled: revenue ${rv.money.pct_of_debt.revenue ?? "-"}%, marketing ${rv.money.pct_of_debt.marketing ?? "-"}%, credit pulls ${rv.money.pct_of_debt.credit_pulls ?? "-"}%, workforce ${rv.money.pct_of_debt.workforce ?? "-"}%, overhead ${rv.money.pct_of_debt.overhead ?? "-"}%</td></tr></tbody>`;
+    $("brFinSrc").textContent = rv.money.estimate ? "costs estimated" : "costs from QuickBooks";
+    $("brFinNote").textContent = rv.money.note + " Revenue is 8% of debt: earned when the 1st deposit clears, expected at the plan clear rate while waiting." + (rv.money.workforce_estimate ? " Workforce estimate = base pay + commission." : "");
+    const max = Math.max(1, ...fm.map((m) => Math.max(Math.abs((prog ? m.trending : m.at) ?? 0), Math.abs(m.target ?? 0))));
+    $("brBars").innerHTML = fm.map((m) => { const v = (prog ? m.trending : m.at) ?? 0, t = m.target ?? 0, over = m.lower_better ? v > t && t : v < t;
+      return `<div class="row2"><span>${esc(m.label.replace(/ \(.*\)$/, ""))}</span><div><div class="b a${over ? " over" : ""}" style="width:${Math.max(1, Math.abs(v) / max * 100)}%" title="${prog ? "trending" : "actual"} ${usd(v)}"></div><div class="b t" style="width:${Math.max(1, Math.abs(t) / max * 100)}%" title="budget ${usd(t)}"></div></div></div>`; }).join("")
+      + `<p class="when">Dark: ${prog ? "trending" : "actual"} (orange = off budget). Light: budget.</p>`;
+    const n = rv.next;
+    $("brNextMonth").textContent = n.label;
+    $("brClosers").value = n.closers.planned;
+    const nk = [["Deals", "deals", "count"], ["Debt", "debt", "money"], ["Cleared share", "clear_pct", "pctint"], ["Revenue", "revenue", "money"], ["Marketing", "marketing", "money"], ["Credit pulls", "credit_pulls", "money"], ["Workforce", "workforce", "money"], ["Overhead", "overhead", "money"], ["Operating profit", "operating_profit", "money"]];
+    const nf = (v, u) => u === "pctint" ? v + "%" : brNum(v, u);
+    $("brNext").innerHTML = `<thead><tr><th>${esc(n.label)}</th><th>Low</th><th>Likely</th><th>High</th><th>Target</th><th>Gap (likely)</th></tr></thead><tbody>` + nk.map(([l, k, u]) => {
+      const t = n.target && n.target[k] !== undefined ? n.target[k] : null, g = n.gap && n.gap[k] !== undefined ? n.gap[k] : null;
+      return `<tr><td class="l">${l}</td><td>${nf(n.low[k], u)}</td><td><b>${nf(n.likely[k], u)}</b></td><td>${nf(n.high[k], u)}</td><td>${t === null ? "" : brNum(t, u)}</td><td>${g === null ? "" : `<span class="${g < 0 ? "gap-neg" : "gap-pos"}">${brNum(g, u)}</span>`}</td></tr>`; }).join("") + "</tbody>";
+    $("brNextNote").textContent = n.method + (n.closers.from_plan ? " Closers from the pro forma." : " Closers set by you.");
+    const ct = rv.closers, pct = (v) => v === null || v === undefined ? "-" : v + "%", nt = '<span class="br-nt">n/t</span>';
+    $("brClosersT").innerHTML = `<thead><tr><th>Closer</th><th>Calls</th><th>Over 2 min</th><th>Call %</th><th>Credit pulls</th><th>CP %</th><th>CP debt</th><th>CP ABI</th><th>Clients</th>${prog ? "<th>Trending</th>" : ""}<th>CLG debt</th>${prog ? "<th>Trending</th>" : ""}<th>CLG ABI</th><th>CP to client</th><th>Call to client</th><th>NQ %</th><th>NSF</th><th>Cancels</th><th>Cancel %</th></tr></thead><tbody>`
+      + (ct.length ? ct.map((r) => `<tr><td class="l">${esc(r.closer)}</td><td>${r.calls === null ? "-" : r.calls.toLocaleString("en-US")}</td><td>${r.calls_120 === null ? nt : r.calls_120}</td><td>${r.call_pct === null ? nt : pct(r.call_pct)}</td><td>${r.credit_pulls}</td><td>${r.cp_pct === null ? nt : pct(r.cp_pct)}</td><td>${usd(r.cp_debt)}</td><td>${usd(r.cp_abi)}</td><td>${r.clients}</td>${prog ? `<td>${r.clients_trending ?? "-"}</td>` : ""}<td>${usd(r.clg_debt)}</td>${prog ? `<td>${usd(r.clg_debt_trending)}</td>` : ""}<td>${usd(r.clg_abi)}</td><td>${pct(r.cp_to_client)}</td><td>${pct(r.call_to_client)}</td><td>${pct(r.nq_pct)}</td><td>${r.nsf}</td><td>${r.cancels}</td><td>${pct(r.cancel_pct)}</td></tr>`).join("")
+        : `<tr><td class="l" colspan="19"><span class="empty">No closer activity in this period.</span></td></tr>`) + "</tbody>";
+    const pr = rv.profit;
+    $("brProfitNote").textContent = `Profit after base pay, commission, a share of leads, credit pulls and overhead${pr.rows.some((r) => r.estimate) ? " (costs estimated)" : ""}. Break even = within ${usd(pr.band)}.${pr.by_whole_month ? " Whole months in the range." : ""}`;
+    $("brProfit").innerHTML = `<thead><tr><th>Closer</th><th></th><th>Profit</th><th>Per call</th><th>Deals</th><th>Why</th></tr></thead><tbody>`
+      + (pr.rows.length ? pr.rows.map((r) => `<tr><td class="l">${esc(r.closer)}</td><td><span class="tag ${esc(r.tag)}">${brTag[r.tag] || esc(r.tag)}</span></td><td class="${r.profit < 0 ? "neg" : ""}">${usd(r.profit)}</td><td>${r.profit_per_call === null ? "-" : usd(r.profit_per_call)}</td><td>${r.deals}</td><td class="l">${r.why ? esc(r.why) : ""}</td></tr>`).join("")
+        : `<tr><td class="l" colspan="6"><span class="empty">No closer profit for this period yet.</span></td></tr>`) + "</tbody>";
+    $("brRamp").innerHTML = pr.ramping.length ? `<p class="note" style="margin-top:8px"><span class="tag ramping">Ramping</span> under 30 days, not judged yet: ${pr.ramping.map((r) => `${esc(r.closer)} (${r.deals} deal${r.deals === 1 ? "" : "s"}, ${usd(r.profit)})`).join(", ")}</p>` : "";
+    $("brLead").textContent = rv.lead_sources.note;
+    const q = rv.qbo;
+    if (q.waiting) { $("brQboWhen").textContent = ""; $("brQbo").innerHTML = `<p class="empty">${esc(q.message)}</p>`; }
+    else {
+      $("brQboWhen").textContent = `${q.source === "email" ? "Board P&L email" : "QuickBooks"}${q.last_report_at ? ", " + new Date(q.last_report_at).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "America/Los_Angeles" }) : ""}${q.missing.length ? " · not in yet: " + q.missing.join(", ") : ""}`;
+      const ms = q.months;
+      $("brQbo").innerHTML = ms.length ? `<table class="tt br-t br-small"><thead><tr><th>Account</th><th>Bucket</th>${ms.map((m) => `<th>${esc(m)}</th>`).join("")}<th>Total</th></tr></thead><tbody>${q.accounts.map((a) => `<tr><td class="l">${esc(a.account)}<br><span class="when">${esc(a.section)}</span></td><td>${esc(a.bucket.replace("_", " "))}</td>${ms.map((m) => `<td>${a.months[m] === undefined ? "" : usd(a.months[m])}</td>`).join("")}<td><b>${usd(a.total)}</b></td></tr>`).join("")}</tbody></table>`
+        : '<p class="empty">No QuickBooks lines for these months yet.</p>';
+    }
+  }
+  $("brDown").onclick = (e) => { const a = e.target.closest("[data-jump]"); if (!a) return; e.preventDefault(); const t = document.querySelector(a.dataset.jump); if (t) t.scrollIntoView({ behavior: "smooth" }); };
   function renderFinance(f) {
     $("app").hidden = true; $("hello").textContent = "Owners · finance";
     const hp = new URLSearchParams(location.hash.replace(/^#finance\??/, ""));
@@ -1026,6 +1141,7 @@ textarea.f{padding:8px 10px;border:1px solid var(--line);border-radius:8px;font:
     $("qboBox").innerHTML = q
       ? `<div style="font-size:14px"><b>${esc(q.company_name || "CFN")}</b> · connected by ${esc(q.connected_by)}<br><span class="when">${q.last_sync_at ? "Last refreshed " + new Date(q.last_sync_at).toLocaleString("en-US", { timeZone: "America/Los_Angeles", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "First refresh tonight about 4 AM Pacific"}</span>${q.last_error ? `<br><span class="neg">Last refresh failed: ${esc(q.last_error)}</span>` : ""}<br><button class="link" id="qboOff">Disconnect QuickBooks</button></div>`
       : `<p style="margin:0 0 6px;font-size:14px">Link CFN's QuickBooks so real income and costs show here. You sign in to Intuit yourself and pick the CFN company. Read only.</p><button class="go small" id="qboOn">Connect QuickBooks</button>`;
+    if (f.review) renderReview(f.review);
     const r = f.reps;
     $("finMonth").textContent = new Date(r.month + "-15T12:00:00Z").toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" });
     $("finRepNote").innerHTML = `Deals sold this month. Revenue = ${f.rate_pct}% of debt: earned once the 1st deposit clears, expected at a ${r.clear_rate_pct}% clear rate while still waiting, nothing for cancels and returns. Costs from <b>${esc(r.cost_source)}</b>${r.estimate ? " (estimates)" : ""}. Leads and credit pulls are split by ${esc(r.split_by)}${r.no_calls ? " (no Vici call counts for this month yet)" : ""}; overhead is split evenly. Verixa takes 20% of what is left.`;
@@ -1040,8 +1156,27 @@ textarea.f{padding:8px 10px;border:1px solid var(--line);border-radius:8px;font:
           .map(([k, v, pl, money]) => `<div class="sc-row"><span>${esc(k)}</span><span class="when">${pl === null || pl === undefined ? "" : "plan " + (money ? usd(pl) : Math.round(pl))}</span><span>${v === null ? '<span class="when">QuickBooks</span>' : (money ? usd(v) : v)}${v === null || pl === null || pl === undefined || m.current ? "" : vsPlan(v, pl)}</span></div>`).join("")}
         ${qb ? `<div class="when" style="margin-top:4px">QuickBooks: income ${usd(qb.income)} · marketing ${usd(qb.marketing)} · credit pulls ${usd(qb.credit_pulls)} · payroll ${usd(qb.payroll)} · other ${usd(qb.overhead)}</div>` : ""}</div>`; }).join("");
   }
-  const finShift = (k) => { const p = new URLSearchParams(location.hash.replace(/^#finance\??/, "")); const d = new Date((p.get("month") || new Date().toISOString().slice(0, 7)) + "-15T12:00:00Z"); d.setUTCMonth(d.getUTCMonth() + k); location.hash = "finance?month=" + d.toISOString().slice(0, 7); };
+  // Earlier / later: a month, a quarter, or a year at a time, keeping the period type and the planned closers.
+  const finParams = () => new URLSearchParams(location.hash.replace(/^#finance\??/, ""));
+  const finGo = (p) => { for (const [k, v] of [...p.entries()]) if (!v) p.delete(k); location.hash = "finance" + (p.toString() ? "?" + p.toString() : ""); };
+  const finShift = (k) => {
+    const p = finParams(), kind = p.get("period") || "month";
+    if (kind === "custom") return;
+    const d = new Date((p.get("month") || (brLast && brLast.period.from.slice(0, 7)) || new Date().toISOString().slice(0, 7)) + "-15T12:00:00Z");
+    d.setUTCMonth(d.getUTCMonth() + k * (kind === "quarter" ? 3 : kind === "ytd" ? 12 : 1));
+    p.set("month", d.toISOString().slice(0, 7)); finGo(p);
+  };
   $("finPrev").onclick = () => finShift(-1); $("finNext").onclick = () => finShift(1);
+  $("brPdf").onclick = () => window.print();
+  $("brPeriods").onclick = (e) => {
+    const a = e.target.closest("[data-p]"); if (!a) return;
+    e.preventDefault();
+    const p = finParams(); p.set("period", a.dataset.p);
+    if (a.dataset.p === "custom") { $("brCustom").hidden = false; if (brLast) { $("brCustom").from.value = brLast.period.from; $("brCustom").to.value = brLast.period.to; } return; }
+    p.delete("from"); p.delete("to"); finGo(p);
+  };
+  $("brCustom").onsubmit = (e) => { e.preventDefault(); const p = finParams(); p.set("period", "custom"); p.set("from", e.target.from.value); p.set("to", e.target.to.value); p.delete("month"); finGo(p); };
+  $("brClosersGo").onclick = () => { const p = finParams(), n = Number($("brClosers").value); if (n >= 1 && n <= 200) p.set("closers", String(Math.round(n))); else p.delete("closers"); finGo(p); };
   $("qboBox").onclick = async (e) => {
     if (e.target.closest("#qboOn")) {
       $("finMsg").textContent = "Opening Intuit...";
@@ -1328,7 +1463,7 @@ textarea.f{padding:8px 10px;border:1px solid var(--line);border-radius:8px;font:
   async function load() {
     const week = viewing === "report" ? new URLSearchParams(location.hash.replace(/^#report\??/, "")).get("week") : null;
     const cp = viewing === "calls" ? new URLSearchParams(location.hash.replace(/^#calls\??/, "")) : viewing === "finance" ? new URLSearchParams(location.hash.replace(/^#finance\??/, "")) : new URLSearchParams();
-    const extra = ["id", "view", "month"].map((k) => cp.get(k) ? "&" + k + "=" + encodeURIComponent(cp.get(k)) : "").join("");
+    const extra = ["id", "view", "month", "period", "from", "to", "closers"].map((k) => cp.get(k) ? "&" + k + "=" + encodeURIComponent(cp.get(k)) : "").join("");
     try { render(await api("/me" + (viewing ? "?rep=" + encodeURIComponent(viewing) + (week ? "&week=" + encodeURIComponent(week) : "") + extra : ""))); } catch (e) { if (e.message) showErr(e.message); }
   }
   $("pick").onchange = () => {
@@ -1407,6 +1542,6 @@ textarea.f{padding:8px 10px;border:1px solid var(--line);border-radius:8px;font:
   else if (session) load(); else showSignIn();
 })();
 </script>
-<script src="coach.js?v=79f6b76-1793380105"></script>
+<script src="coach.js?v=4478bdb-1793391081"></script>
 </body>
 </html>
