@@ -9,8 +9,8 @@
 <title>My CFN Page</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Quicksand:wght@500;700&display=swap">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
-<link rel="stylesheet" href="board.css?v=6db2dc2-1793395452">
-<link rel="stylesheet" href="coach.css?v=6db2dc2-1793395452">
+<link rel="stylesheet" href="board.css?v=773b23f-1793396632">
+<link rel="stylesheet" href="coach.css?v=773b23f-1793396632">
 <style>
 .wrap{max-width:680px}
 .three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
@@ -114,22 +114,34 @@ body.fin-wide .wrap{max-width:1180px}
 .fchip.g{background:#E3F4EA;color:#067647} .fchip.a{background:#FEF3E2;color:#B45309} .fchip.r{background:#FDE8E8;color:#B42318}
 .fbar{height:4px;border-radius:2px;background:#EEF1F7;margin-top:12px;overflow:hidden} .fbar i{display:block;height:100%;border-radius:2px;background:#9AA3B2}
 .fbar i.g{background:#16A34A} .fbar i.a{background:#D97706} .fbar i.r{background:#DC2626}
+.fkpis > .fc{display:flex;flex-direction:column;align-items:flex-start} .fkpis > .fc > div{align-self:stretch}
+.fk-f{padding-top:10px}
+.fk-f div{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:12px;color:var(--muted);padding:2px 0} .fk-f div b{color:var(--ink);font-weight:600;white-space:nowrap;font-variant-numeric:tabular-nums} .fk-f div b.neg{color:#B42318}
+.fk-f div.qb{border-top:1px dashed var(--line);margin-top:3px;padding-top:5px}
+.fnote{margin:0;background:#F4F7FE;border:1px solid #D6E0FA;border-radius:10px;padding:10px 14px;font-size:13px;line-height:1.5;color:var(--ink)} .fnote b.neg{color:#B42318}
+.fs-f{font-size:11.5px;color:var(--muted);margin-top:6px;line-height:1.35}
 .fstrip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));padding:0}
 .fstrip > div{padding:14px 16px;border-left:1px solid var(--line);min-width:0} .fstrip > div:first-child{border-left:0}
 .fstrip .fs-v{font-size:18px;font-weight:700;margin:4px 0 6px;white-space:nowrap}
 .fstrip .fchip{font-size:11.5px;padding:1px 8px}
 .fg2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:stretch} .fg2.fnext{grid-template-columns:minmax(0,2fr) minmax(0,3fr);align-items:start}
-.fdown a{display:grid;grid-template-columns:96px 1fr;gap:10px;align-items:baseline;padding:10px 0;border-bottom:1px solid var(--tint);color:inherit;text-decoration:none;font-size:14px;line-height:1.4} .fdown a:last-child{border-bottom:0}
+.fdown a{display:grid;grid-template-columns:72px 1fr;gap:10px;align-items:baseline;padding:10px 0;border-bottom:1px solid var(--tint);color:inherit;text-decoration:none;font-size:14px;line-height:1.4} .fdown a:last-child{border-bottom:0}
 .fdown a:hover span{text-decoration:underline} .fdown b{color:#B42318;font-variant-numeric:tabular-nums}
 .fdown .fok{color:#067647;font-weight:600;font-size:14px;padding:10px 0;margin:0}
-.fmoney .fm-r{display:grid;grid-template-columns:120px minmax(0,1fr) 120px;gap:12px;align-items:center;padding:8px 0;font-size:13.5px}
+.fmoney .fm-r{display:grid;grid-template-columns:132px minmax(0,1fr) 132px;gap:12px;align-items:center;padding:7px 0;font-size:13.5px}
+.fmoney .fm-r small{display:block;font-size:11px;color:var(--muted);line-height:1.2}
 .fm-track{position:relative;height:10px;border-radius:5px;background:#F1F3F8}
 .fm-track i{position:absolute;left:0;top:0;bottom:0;border-radius:5px}
-.fm-track i.rev{background:var(--blue)} .fm-track i.cost{background:#9AA3B2} .fm-track i.prof{background:#16A34A} .fm-track i.off{background:#D97706}
+.fm-track i{background:#9AA3B2} .fm-track i.g{background:#16A34A} .fm-track i.a{background:#D97706} .fm-track i.r{background:#DC2626}
+.fm-key{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted);white-space:nowrap} .fm-key i{display:inline-block;width:14px;height:6px;border-radius:3px;background:#9AA3B2;margin-right:4px;vertical-align:1px} .fm-key b{display:inline-block;width:2px;height:11px;background:var(--ink);margin-right:5px;vertical-align:-1px}
+.fbook{margin-top:8px;background:var(--tint);border-radius:10px;padding:10px 12px;font-size:12.5px}
+.fbook .fb-h{color:var(--muted);margin:0 0 6px;display:flex;justify-content:space-between;gap:8px}
+.fbook .fb-g{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px} .fbook .fb-g span{display:block;color:var(--muted);font-size:11.5px} .fbook .fb-g b{font-size:15px;font-variant-numeric:tabular-nums} .fbook .fb-g b.neg{color:#B42318}
 .fm-track b{position:absolute;top:-3px;bottom:-3px;width:2px;margin-left:-1px;background:var(--ink);border-radius:1px}
 .fm-v{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums} .fm-v span{color:var(--muted)}
-.fnx .fn-r{padding:9px 0;border-bottom:1px solid var(--tint)} .fnx .fn-r:last-of-type{border-bottom:0}
-.fnx .fn-l{font-size:12px;color:var(--muted)} .fnx .fn-v{font-size:14px;margin-top:2px;font-variant-numeric:tabular-nums} .fnx .fn-v b{font-size:16px}
+.fnx .fn-r{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:baseline;gap:2px 10px;padding:10px 0;border-bottom:1px solid var(--tint)} .fnx .fn-r:last-of-type{border-bottom:0}
+.fnx .fn-l{font-size:13.5px} .fnx .fn-v{font-size:20px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.fnx .fn-s{grid-column:1/-1;display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
 .fnx .fn-edit{margin-top:8px;font-size:12px;color:var(--muted)} .fnx .fn-edit button.link{font-size:12px}
 input.br-num{width:70px;padding:4px 6px;display:inline-block}
 table.fcl{width:100%;border-collapse:collapse;font-size:13.5px;font-variant-numeric:tabular-nums}
@@ -152,7 +164,7 @@ table.fcl tr:last-child td{border-bottom:0}
 .fx .fx-sub{font-size:13px;color:var(--muted);margin:14px 0 6px;display:flex;align-items:center;gap:6px}
 .br-scroll{overflow-x:auto;max-width:100%}
 table.br-t td.l{text-align:left;white-space:normal} table.br-t tr.grp td{color:var(--muted);font-size:12px;background:var(--tint);text-align:left}
-table.br-small{font-size:12.5px} table.br-small th,table.br-small td{padding:5px 3px}
+table.br-small{font-size:12.5px} table.br-small th,table.br-small td{padding:5px 3px} table.br-small th{white-space:normal;vertical-align:bottom;min-width:44px} table.br-small td.l{white-space:nowrap}
 .br-idx{display:inline-block;min-width:44px;text-align:center;border-radius:6px;padding:1px 6px;font-weight:700;font-size:12.5px}
 .br-idx.good{background:#E3F4EA;color:#067647} .br-idx.bad{background:#FDEBD8;color:#B45309}
 .br-nt{color:var(--muted);font-size:12px;font-style:italic}
@@ -164,8 +176,12 @@ table.br-small{font-size:12.5px} table.br-small th,table.br-small td{padding:5px
   .fstrip > div:nth-child(3){border-left:0} .fstrip > div:nth-child(n+3){border-top:1px solid var(--line)}
   .fg2,.fg2.fnext{grid-template-columns:1fr}
   .fh-div{display:none}
-  .fmoney .fm-r{grid-template-columns:86px minmax(0,1fr);gap:4px 10px} .fmoney .fm-v{grid-column:2;text-align:left;font-size:12.5px}
-  .fdown a{grid-template-columns:78px 1fr}
+  .fhead .fh-main{display:contents} .fhead{gap:10px} .br-pills{flex-basis:100%;flex-wrap:nowrap} .br-pills a.pill{padding:4px 10px;font-size:12.5px}
+  .fh-per{flex:1} .br-custom{flex-basis:100%}
+  .fnote{font-size:12.5px;padding:10px 12px}
+  .fbook .fb-g b{font-size:14px}
+  .fmoney .fm-r{grid-template-columns:104px minmax(0,1fr);gap:4px 10px} .fmoney .fm-v{grid-column:2;text-align:left;font-size:12.5px}
+  .fdown a{grid-template-columns:62px 1fr}
   table.fcl{font-size:12.5px} table.fcl th,table.fcl td{padding-left:6px}
   .fx > details > summary .fmuted{display:none} .fx > details > summary .fchev{margin-left:auto}
 }
@@ -181,10 +197,10 @@ table.br-small{font-size:12.5px} table.br-small th,table.br-small td{padding:5px
   .fx > details > summary .fchev{display:none}
   .fx > details{break-inside:auto} .fx > details + details{break-before:page}
   .br-scroll{overflow:visible} table.br-t{font-size:11px} table.br-small{font-size:9.5px}
-  .fchip,.fbar,.fbar i,.fm-track,.fm-track i,.fm-track b,.fdot,.br-idx,.br-pills a.pill{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .fchip,.fbar,.fbar i,.fm-track,.fm-track i,.fm-track b,.fm-key i,.fm-key b,.fnote,.fbook,.fdot,.br-idx,.br-pills a.pill{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
 </style>
-<script src="config.js?v=6db2dc2-1793395452"></script>
+<script src="config.js?v=773b23f-1793396632"></script>
 </head>
 <body>
 <div class="wrap">
@@ -234,21 +250,22 @@ table.br-small{font-size:12.5px} table.br-small th,table.br-small td{padding:5px
           <span class="fh-per"><button class="br-noprint" id="finPrev" aria-label="Earlier">&lsaquo;</button><span id="brPeriod"></span><button class="br-noprint" id="finNext" aria-label="Later">&rsaquo;</button></span>
           <form class="br-custom br-noprint" id="brCustom" hidden><label>From <input class="f" type="date" name="from" required></label><label>To <input class="f" type="date" name="to" required></label><button class="go small">Show</button></form>
         </div>
-        <button class="go small br-noprint" id="brPdf">Download PDF</button>
+        <button class="go small ghost br-noprint" id="brPdf">Download PDF</button>
         <p class="fh-status" id="brAsOf"></p>
       </div>
       <div class="fkpis" id="brKpis"></div>
+      <p class="fnote" id="brTruth"></p>
       <div class="fc fstrip" id="brStats"></div>
       <div class="fg2">
-        <div class="fc fdown" id="br-down"><div class="fc-h"><p class="fc-t">What's taking us down <span class="fi" title="Profit in dollars for each gap alone, with everything else at target." tabindex="0">i</span></p></div><div id="brDown"></div></div>
-        <div class="fc fmoney" id="br-fin"><div class="fc-h"><p class="fc-t">Money vs budget <span class="fi" id="brFinInfo" tabindex="0">i</span></p><span class="fmuted" id="brFinSrc"></span></div><div id="brBars"></div></div>
+        <div class="fc fdown" id="br-down"><div class="fc-h"><p class="fc-t">What's taking us down <span class="fi" title="How much profit each gap costs on its own, with everything else at plan. Biggest first. Click one to see the numbers behind it." tabindex="0">i</span></p><span class="fmuted">profit lost vs plan</span></div><div id="brDown"></div></div>
+        <div class="fc fmoney" id="br-fin"><div class="fc-h"><p class="fc-t">Money vs budget <span class="fi" id="brFinInfo" tabindex="0">i</span></p><span class="fm-key"><span><i></i><span id="brBarWord">Pace</span></span><span><b></b>Budget</span></span></div><div id="brBars"></div><div class="fbook" id="brBook"></div></div>
       </div>
       <div class="fg2 fnext br-page">
-        <div class="fc fnx" id="br-next"><div class="fc-h"><p class="fc-t"><span id="brNextMonth"></span> forecast <span class="fi" id="brNextInfo" tabindex="0">i</span></p><span class="fmuted">low · <b>likely</b> · high</span></div><div id="brNextRows"></div>
+        <div class="fc fnx" id="br-next"><div class="fc-h"><p class="fc-t"><span id="brNextMonth"></span> forecast <span class="fi" id="brNextInfo" tabindex="0">i</span></p><span class="fmuted">likely, with range</span></div><div id="brNextRows"></div>
           <div class="fn-edit br-noprint"><span id="brClosersNow"></span> <button class="link" id="brClosersEdit" type="button">Edit closers planned</button>
             <span id="brClosersBox" hidden><input class="f br-num" type="number" min="1" max="200" id="brClosers" aria-label="Closers planned"> <button class="go small" id="brClosersGo" type="button">Update</button></span></div></div>
         <div class="fc" id="br-closers"><div class="fc-h"><p class="fc-t">Closers <span class="fi" id="brProfitNote" tabindex="0">i</span></p><span class="fmuted">ranked by profit</span></div><div class="br-scroll" id="brCloserList"></div>
-          <div class="flegend"><span><i class="fdot profitable"></i>Profitable</span><span><i class="fdot break_even"></i>Break even</span><span><i class="fdot losing"></i>Losing money</span><span><i class="fdot ramping"></i>Ramping (under 30 days, not judged yet)</span></div></div>
+          <div class="flegend"><span><i class="fdot profitable"></i>Profitable</span><span><i class="fdot break_even"></i>Break even</span><span><i class="fdot losing"></i>Losing money</span><span><i class="fdot ramping"></i>New (under 30 days, not judged yet)</span></div></div>
       </div>
       <div class="fc fx br-page" id="br-more">
         <details id="br-ops"><summary><span>Full performance table</span><span class="fmuted" id="brOpsNote"></span><i class="fchev"></i></summary><div class="fx-b">
@@ -1153,15 +1170,17 @@ table.br-small{font-size:12.5px} table.br-small th,table.br-small td{padding:5px
   // Owners' business review: the deck's pages, live, for any period. One bordered card per section.
   let brLast = null;
   const brNum = (v, unit) => v === null || v === undefined ? "-" : unit === "money" ? usd(v) : unit === "pct" ? Number(v).toFixed(1) + "%" : Math.round(v).toLocaleString("en-US");
-  // Short money for tiles and chips: $6.44M, $401K, $28,817.
+  // One money style on every card (3 digits): $6.48M, $404K, $28.9K, $6.6K, $225. The collapsed tables keep exact dollars.
   const brShort = (v, unit) => {
     if (v === null || v === undefined) return "-";
     if (unit !== "money") return brNum(v, unit);
     const a = Math.abs(v), s = v < 0 ? "-$" : "$";
-    return a >= 1e6 ? s + (a / 1e6).toFixed(2) + "M" : a >= 1e5 ? s + Math.round(a / 1e3) + "K" : usd(v);
+    return a >= 1e6 ? s + (a / 1e6).toFixed(2) + "M" : a >= 1e5 ? s + Math.round(a / 1e3) + "K" : a >= 999.5 ? s + (a / 1e3).toFixed(1) + "K" : usd(v);
   };
-  // Even shorter, for the money bars: $401K, $51K, $5.8K.
-  const brK = (v) => { const a = Math.abs(v), s = v < 0 ? "-$" : "$"; return a >= 1e6 ? s + (a / 1e6).toFixed(2) + "M" : a >= 1e4 ? s + Math.round(a / 1e3) + "K" : a >= 1e3 ? s + (a / 1e3).toFixed(1) + "K" : usd(v); };
+  const brK = (v) => brShort(v, "money");
+  // Plain words for the server's short labels.
+  const brPlain = (t) => String(t || "").replace(/(-?)\$([\d,]+(?:\.\d+)?)/g, (_, m, n) => brK((m ? -1 : 1) * Number(n.replace(/,/g, "")))).replace(/ \(trending\)/g, " on pace for").replace(/^(\d+)% of decided deals cancelled before the 1st deposit/, "$1% of deals cancelled before the 1st deposit (counting only deals that cleared or cancelled)");
+  const brBucket = { income: "Income", marketing: "Marketing", payroll: "Workforce", workforce: "Workforce", overhead: "Software and overhead", credit_pulls: "Credit pulls" };
   const brIdx = (m) => m.target_pct === null || m.target_pct === undefined ? '<span class="when">no target</span>'
     : `<span class="br-idx ${(m.lower_better ? m.target_pct <= 100 : m.target_pct >= 100) ? "good" : "bad"}">${m.target_pct}%</span>`;
   const brCell = (v, unit, tracked, note) => tracked === false ? `<span class="br-nt" title="${esc(note || "")}">not tracked</span>` : brNum(v, unit);
@@ -1176,9 +1195,10 @@ table.br-small{font-size:12.5px} table.br-small th,table.br-small td{padding:5px
     if (!m || m.tracked === false) return '<span class="fchip">not tracked</span>';
     const st = brState(m);
     if (!st) return '<span class="fchip">no target</span>';
-    return `<span class="fchip ${st}">${m.unit === "pct" ? "plan " + brNum(m.target, m.unit) : m.target_pct + "% of " + brShort(m.target, m.unit)}</span>`;
+    return `<span class="fchip ${st}">${m.unit === "pct" ? "plan " + brNum(m.target, m.unit) : m.target_pct + "% of " + brShort(m.target, m.unit) + " plan"}</span>`;
   };
   const brVal = (m, prog) => !m || m.tracked === false ? null : prog ? m.trending : m.at;
+  const brDay = (iso, year) => new Date(iso + "T12:00:00Z").toLocaleDateString("en-US", { month: "short", day: "numeric", ...(year ? { year: "numeric" } : {}), timeZone: "UTC" });
   const brTag = { profitable: "Profitable", break_even: "Break even", losing: "Losing money", ramping: "Ramping" };
   function renderReview(rv) {
     brLast = rv;
@@ -1190,56 +1210,74 @@ table.br-small{font-size:12.5px} table.br-small th,table.br-small td{padding:5px
     $("finPrev").hidden = $("finNext").hidden = p.kind === "custom";
     // Header status: one quiet line.
     const q = rv.qbo;
-    const qDay = q && !q.waiting && q.last_report_at ? " " + new Date(q.last_report_at).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "America/Los_Angeles" }) : "";
-    const costs = rv.money.estimate ? "costs estimated" : "costs from QuickBooks" + qDay;
-    const left = p.workdays_left === null || p.workdays_left === undefined ? "" : p.workdays_left === 0 ? " · no workdays left" : ` · ${p.workdays_left} workday${p.workdays_left === 1 ? "" : "s"} left`;
+    const left = p.workdays_left === null || p.workdays_left === undefined ? "" : p.workdays_left === 0 ? ", no workdays left" : `, ${p.workdays_left} workday${p.workdays_left === 1 ? "" : "s"} left`;
     const asOf = new Date(rv.as_of).toLocaleString("en-US", { timeZone: "America/Los_Angeles", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
-    $("brAsOf").textContent = `${prog ? p.share_done_pct + "% of floor days done" + left : p.started ? "Complete" : "Not started"} · ${costs} · ${p.from} to ${p.to}, as of ${asOf} Pacific`;
+    const span = p.kind === "custom" ? "this range" : p.kind === "month" ? "the month" : p.kind === "quarter" ? "the quarter" : "the year";
+    $("brAsOf").textContent = `${brDay(p.from)} to ${brDay(p.to, true)} · ${prog ? p.share_done_pct + "% of floor days done" + left : p.started ? "Complete" : "Not started"} · ${prog ? `Big numbers show where ${span} ends at today's pace · ` : ""}Updated ${asOf} Pacific`;
     const om = Object.fromEntries(rv.ops.map((m) => [m.key, m])), mm = Object.fromEntries(rv.money.metrics.map((m) => [m.key, m]));
     // Headline tiles.
-    const tile = (label, m) => {
+    // Booked in QuickBooks, for the same days: income, the costs above, and what is left. Net only when every month is in QuickBooks.
+    const mo = rv.money, srcs = Object.values(mo.sources || {}), qbAll = srcs.length > 0 && !mo.estimate, qbSome = srcs.includes("QuickBooks");
+    const qbCosts = (mo.marketing || 0) + (mo.credit_pulls || 0) + (mo.workforce || 0) + (mo.overhead || 0), qbNet = (mo.qbo_income || 0) - qbCosts;
+    const tile = (label, m, info, extra) => {
       const v = brVal(m, prog), st = brState(m), w = st ? Math.max(2, Math.min(100, m.target_pct)) : 0;
-      return `<div class="fc"><div class="fk-l">${esc(label)}${prog && m && m.tracked !== false ? " (trending)" : ""}${brInfo(m && m.note)}</div>`
-        + `<div class="fk-v" title="${esc(brNum(v, m && m.unit))}${m && m.target !== null && m.target !== undefined ? " vs " + esc(brNum(m.target, m.unit)) + " target" : ""}">${brShort(v, m && m.unit)}</div>`
-        + `${brChip(m)}<div class="fbar"><i class="${st}" style="width:${w}%"></i></div></div>`;
+      const foot = (prog && m && m.tracked !== false ? `<div><span>So far</span><b>${brShort(m.at, m.unit)}</b></div>` : "") + (extra || "");
+      return `<div class="fc"><div class="fk-l">${esc(label)}${brInfo(info || (m && m.note))}</div>`
+        + `<div class="fk-v" title="${esc(brNum(v, m && m.unit))}${m && m.target !== null && m.target !== undefined ? " vs " + esc(brNum(m.target, m.unit)) + " plan" : ""}">${brShort(v, m && m.unit)}</div>`
+        + `${brChip(m)}<div class="fbar"><i class="${st}" style="width:${w}%"></i></div>${foot ? `<div class="fk-f">${foot}</div>` : ""}</div>`;
     };
-    $("brKpis").innerHTML = tile("Debt enrolled", om.debt) + tile("Deals", om.total_deals) + tile("Revenue", mm.revenue) + tile("Operating profit", mm.operating_profit);
+    const model = "Earned + expected: 8% of the debt sold, counted when the 1st deposit clears (earned) or at the plan clear rate while waiting (expected). This is not the money in the bank yet.";
+    const qbRow = (l, v) => `<div class="qb"><span>${l}</span><b class="${v < 0 ? "neg" : ""}">${brShort(v, "money")}</b></div>`;
+    $("brKpis").innerHTML = tile("Debt enrolled", om.debt) + tile("Deals", om.total_deals)
+      + tile("Revenue", mm.revenue, model, qbSome ? qbRow("In QuickBooks", mo.qbo_income) : "")
+      + tile("Operating profit", mm.operating_profit, "Earned + expected revenue minus the costs below (costs from QuickBooks when it has the month). " + model, qbAll ? qbRow("QuickBooks net", qbNet) : "");
+    // The honest line: the model counts money before it arrives; QuickBooks counts it when it lands.
+    $("brTruth").innerHTML = `<b>Revenue and profit above are earned + expected, not cash.</b> So far: ${esc(brK(mo.revenue_earned))} earned (1st deposit cleared) and ${esc(brK(mo.revenue_expected))} still expected. `
+      + (qbAll ? `QuickBooks has booked ${esc(brK(mo.qbo_income))} income and ${esc(brK(qbCosts))} costs, a net of <b class="${qbNet < 0 ? "neg" : ""}">${esc(brK(qbNet))}</b>.`
+        : qbSome ? `QuickBooks has booked ${esc(brK(mo.qbo_income))} income for the months it has so far.` : "QuickBooks has not reported this period yet, so costs are estimates.");
     // Small stats strip.
-    const stat = (label, m) => `<div><div class="fk-l">${esc(label)}${brInfo(m && m.note)}</div><div class="fs-v">${brNum(brVal(m, prog), m && m.unit)}</div>${brChip(m)}</div>`;
-    $("brStats").innerHTML = stat("Average balance", om.abi) + stat("Credit pulls", om.credit_pulls) + stat("Cost per deal", om.cost_per_deal) + stat("Cancels before 1st deposit", om.cancel_pct);
+    const stat = (label, m, info, foot) => `<div><div class="fk-l">${esc(label)}${brInfo(info || (m && m.note))}</div><div class="fs-v">${brShort(brVal(m, prog), m && m.unit)}</div>${brChip(m)}${foot ? `<div class="fs-f">${esc(foot)}</div>` : ""}</div>`;
+    $("brStats").innerHTML = stat("Average balance", om.abi, "Average debt per deal enrolled.") + stat("Credit pulls", om.credit_pulls) + stat("Cost per deal", om.cost_per_deal, "Leads plus credit pulls, divided by deals.")
+      + stat("Cancels before 1st deposit", om.cancel_pct, "Share of all deals sold in this period that cancelled before the 1st deposit. Most deals have not reached their 1st deposit yet, so this number rises over time. What's taking us down counts only deals that already cleared or cancelled.", "So far. Rises as 1st deposits come due.");
     // What's taking us down: up to 3 gaps, each opens its detail.
     $("brDown").innerHTML = rv.down.length
-      ? rv.down.slice(0, 3).map((d) => `<a href="${esc(d.link)}" data-jump="${esc(d.link)}" title="About ${esc(usd(Math.abs(d.impact)))} less profit than at target"><b>${usd(d.impact)}</b><span>${esc(d.text)}</span></a>`).join("")
+      ? rv.down.slice(0, 3).map((d) => `<a href="${esc(d.link)}" data-jump="${esc(d.link)}" title="About ${esc(usd(Math.abs(d.impact)))} less profit than at plan"><b>${esc(brK(d.impact))}</b><span>${esc(brPlain(d.text))}</span></a>`).join("")
       : '<p class="fok">On or above budget</p>';
     // Money vs budget: solid bar = trending (or actual), dark tick = budget.
     const fm = rv.money.metrics;
-    const bars = [["Revenue", mm.revenue, "rev"], ["Marketing", mm.marketing, "cost"], ["Workforce", mm.workforce, "cost"], ["Credit pulls", mm.credit_pulls_cost, "cost"], ["Operating profit", mm.operating_profit, "prof"]].filter(([, m]) => m);
+    const bars = [["Revenue", mm.revenue, "earned + expected"], ["Marketing", mm.marketing, "leads"], ["Workforce", mm.workforce, "payroll"], ["Credit pulls", mm.credit_pulls_cost, ""], ["Software and overhead", mm.overhead, ""], ["Operating profit", mm.operating_profit, "earned + expected"]].filter(([, m]) => m);
     const max = Math.max(1, ...bars.map(([, m]) => Math.max(Math.abs(brVal(m, prog) ?? 0), Math.abs(m.target ?? 0))));
-    $("brBars").innerHTML = bars.map(([l, m, kind]) => {
-      const v = brVal(m, prog) ?? 0, t = m.target, off = t !== null && t !== undefined && (m.lower_better ? v > t : v < t);
-      return `<div class="fm-r"><span>${esc(l)}</span><div class="fm-track" title="${prog ? "Trending" : "Actual"} ${esc(usd(v))}${t === null || t === undefined ? "" : ", budget " + esc(usd(t))}"><i class="${off ? "off" : kind}" style="width:${Math.max(1, Math.abs(v) / max * 100)}%"></i>${t === null || t === undefined ? "" : `<b style="left:${Math.abs(t) / max * 100}%"></b>`}</div>`
-        + `<span class="fm-v">${brK(v)} <span>/ ${t === null || t === undefined ? "no budget" : brK(t)}</span></span></div>`;
+    $("brBars").innerHTML = bars.map(([l, m, sub]) => {
+      const v = brVal(m, prog) ?? 0, t = m.target, has = t !== null && t !== undefined;
+      return `<div class="fm-r"><span>${esc(l)}${sub ? `<small>${esc(sub)}</small>` : ""}</span><div class="fm-track" title="${prog ? "At today's pace" : "Actual"} ${esc(usd(v))}${has ? ", budget " + esc(usd(t)) + " (" + m.target_pct + "%)" : ""}"><i class="${brState(m)}" style="width:${Math.max(1, Math.min(100, Math.abs(v) / max * 100))}%"></i>${has ? `<b style="left:${Math.abs(t) / max * 100}%"></b>` : ""}</div>`
+        + `<span class="fm-v">${esc(brK(v))} <span>of ${has ? esc(brK(t)) : "no budget"}</span></span></div>`;
     }).join("");
-    $("brFinSrc").textContent = costs.charAt(0).toUpperCase() + costs.slice(1);
+    $("brBarWord").textContent = prog ? "Pace" : "Actual";
+    const qDate = q && !q.waiting && q.last_report_at ? new Date(q.last_report_at).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "America/Los_Angeles" }) : "";
+    $("brBook").innerHTML = `<p class="fb-h"><span><b>Booked in QuickBooks</b>${prog ? " so far" : ""}</span><span>${qbSome ? (qDate ? "report of " + esc(qDate) : "") : "not in yet"}</span></p>`
+      + (qbSome ? `<div class="fb-g"><div><span>Income</span><b>${esc(brK(mo.qbo_income))}</b></div><div><span>Costs</span><b>${qbAll ? esc(brK(qbCosts)) : "-"}</b></div><div><span>Net</span><b class="${qbAll && qbNet < 0 ? "neg" : ""}">${qbAll ? esc(brK(qbNet)) : "-"}</b></div></div>`
+        : '<div class="fmuted">Costs above are estimates from the plan until the QuickBooks email arrives.</div>');
     const finNote = rv.money.note + " Revenue is 8% of debt: earned when the 1st deposit clears, expected at the plan clear rate while waiting." + (rv.money.workforce_estimate ? " Workforce estimate = base pay + commission." : "");
-    $("brFinInfo").title = `Solid bar: ${prog ? "trending to the end of the period" : "actual"}. Dark tick: budget. Amber: off budget. ` + finNote;
+    $("brFinInfo").title = `Bar: ${prog ? "where the period ends at today's pace" : "actual"}. Dark line: budget. Green: on or better than budget. Amber: close. Red: off. Booked in QuickBooks: the money QuickBooks has recorded for the same days. ` + finNote;
     // Full performance table (collapsed): every metric with its index chip.
-    const head = `<thead><tr><th>Metric</th><th>At</th>${prog ? "<th>Trending</th>" : ""}<th>Target</th><th>Target %</th><th>${esc(p.prev.label)}</th></tr></thead>`;
+    const head = `<thead><tr><th>Metric</th><th>So far</th>${prog ? "<th>At today's pace</th>" : ""}<th>Target</th><th>% of target</th><th>${esc(p.prev.label)}</th></tr></thead>`;
     const row = (m) => `<tr><td class="l">${esc(m.label)}${m.note && m.tracked !== false ? brInfo(m.note) : ""}</td><td>${brCell(m.at, m.unit, m.tracked, m.note)}</td>${prog ? `<td>${m.tracked === false ? "" : brNum(m.trending, m.unit)}</td>` : ""}<td>${m.target === null ? '<span class="when">no target</span>' : brNum(m.target, m.unit)}</td><td>${m.tracked === false ? "" : brIdx(m)}</td><td>${m.tracked === false ? "" : brNum(m.prev, m.unit)}</td></tr>`;
     $("brOps").innerHTML = head + "<tbody>" + rv.ops.map(row).join("") + "</tbody>";
-    $("brOpsNote").textContent = prog ? "trending = at today's pace to the end of the period" : "";
+    $("brOpsNote").textContent = "every number vs target and " + p.prev.label;
     $("brFin").innerHTML = head + "<tbody>" + fm.map(row).join("") + `<tr class="grp"><td colspan="${prog ? 6 : 5}">Share of debt enrolled: revenue ${rv.money.pct_of_debt.revenue ?? "-"}%, marketing ${rv.money.pct_of_debt.marketing ?? "-"}%, credit pulls ${rv.money.pct_of_debt.credit_pulls ?? "-"}%, workforce ${rv.money.pct_of_debt.workforce ?? "-"}%, overhead ${rv.money.pct_of_debt.overhead ?? "-"}%</td></tr></tbody>`;
     $("brFinNote").title = finNote;
     // Next month forecast.
     const n = rv.next;
     $("brNextMonth").textContent = n.label;
     $("brClosers").value = n.closers.planned;
-    $("brClosersNow").textContent = `${n.closers.planned} closers${n.closers.from_plan ? " (on the floor now" + (n.closers.plan ? ", pro forma plans " + n.closers.plan : "") + ")" : " (set by you)"}.`;
+    $("brClosersNow").textContent = `Based on ${n.closers.planned} closers${n.closers.from_plan ? ", the number on the floor now" + (n.closers.plan ? " (plan has " + n.closers.plan + ")" : "") : " (set by you)"}.`;
     const nInfo = n.method + (n.closers.from_plan ? " Closers = the number on the floor now." : " Closers set by you.");
     $("brNextInfo").title = nInfo; $("brNextNote").title = nInfo;
     const tgt = (k) => n.target && n.target[k] !== undefined && n.target[k] !== null ? n.target[k] : null;
-    $("brNextRows").innerHTML = [["Deals", "deals", "count"], ["Debt", "debt", "money"], ["Operating profit", "operating_profit", "money"]].map(([l, k, u]) =>
-      `<div class="fn-r"><div class="fn-l">${l}</div><div class="fn-v">${brShort(n.low[k], u)} · <b>${brShort(n.likely[k], u)}</b> · ${brShort(n.high[k], u)}${tgt(k) === null ? "" : ` <span class="fmuted">· plan ${brShort(tgt(k), u)}</span>`}</div></div>`).join("");
+    $("brNextRows").innerHTML = [["Deals", "deals", "count"], ["Debt enrolled", "debt", "money"], ["Operating profit", "operating_profit", "money"]].map(([l, k, u]) => {
+      const t = tgt(k), pc = t ? Math.round((n.likely[k] / t) * 100) : null;
+      return `<div class="fn-r"><div class="fn-l">${l}</div><div class="fn-v">${esc(brShort(n.likely[k], u))}</div>`
+        + `<div class="fn-s"><span>Range ${esc(brShort(n.low[k], u))} to ${esc(brShort(n.high[k], u))}</span>${pc === null ? "" : `<span class="fchip ${brState({ target_pct: pc })}">${pc}% of ${esc(brShort(t, u))} plan</span>`}</div></div>`; }).join("");
     const nk = [["Deals", "deals", "count"], ["Debt", "debt", "money"], ["Cleared share", "clear_pct", "pctint"], ["Revenue", "revenue", "money"], ["Marketing", "marketing", "money"], ["Credit pulls", "credit_pulls", "money"], ["Workforce", "workforce", "money"], ["Overhead", "overhead", "money"], ["Operating profit", "operating_profit", "money"]];
     const nf = (v, u) => u === "pctint" ? (v === null || v === undefined ? "-" : v + "%") : brNum(v, u);
     $("brNext").innerHTML = `<thead><tr><th>${esc(n.label)}</th><th>Low</th><th>Likely</th><th>High</th><th>Target</th><th>Gap (likely)</th></tr></thead><tbody>` + nk.map(([l, k, u]) => {
@@ -1252,14 +1290,14 @@ table.br-small{font-size:12.5px} table.br-small th,table.br-small td{padding:5px
     $("brProfitNote").title = `Profit after base pay, commission, a share of leads, credit pulls and overhead${ranked.some((r) => r.estimate) ? " (costs estimated)" : ""}. Break even = within ${usd(pr.band)}.${pr.by_whole_month ? " Whole months in the range." : ""}`;
     $("brCloserList").innerHTML = ranked.length
       ? `<table class="fcl"><thead><tr><th>Closer</th><th>Profit</th><th>Deals</th><th>Debt</th><th>Cancel %</th></tr></thead><tbody>` + ranked.map((r) => { const d = deck[r.rep_id];
-        return `<tr><td><i class="fdot ${esc(r.tag)}" title="${esc(brTag[r.tag] || r.tag)}"></i>${esc(r.closer)}${r.tag === "losing" && r.why ? `<span class="fwhy">${esc(r.why)}</span>` : ""}</td><td class="${r.profit < 0 ? "neg" : ""}">${usd(r.profit)}</td><td>${r.deals}</td><td>${d ? brShort(d.clg_debt, "money") : "-"}</td><td>${d ? pct(d.cancel_pct) : "-"}</td></tr>`; }).join("") + "</tbody></table>"
+        return `<tr><td><i class="fdot ${esc(r.tag)}" title="${esc(brTag[r.tag] || r.tag)}"></i>${esc(r.closer)}${r.tag === "losing" && r.why ? `<span class="fwhy">${esc(r.why)}</span>` : ""}</td><td class="${r.profit < 0 ? "neg" : ""}">${esc(brK(r.profit))}</td><td>${r.deals}</td><td>${d ? brShort(d.clg_debt, "money") : "-"}</td><td>${d ? pct(d.cancel_pct) : "-"}</td></tr>`; }).join("") + "</tbody></table>"
       : '<p class="empty">No closer profit for this period yet.</p>';
     // Full closer table (collapsed): columns nobody has data for are hidden until they are tracked.
-    const nt = '<span class="br-nt">n/t</span>', num = (v) => v === null || v === undefined ? "-" : Number(v).toLocaleString("en-US");
+    const nt = '<span class="br-nt" title="not tracked">-</span>', num = (v) => v === null || v === undefined ? "-" : Number(v).toLocaleString("en-US");
     const cols = [["Calls", (r) => r.calls, num], ["Over 2 min", (r) => r.calls_120, num], ["Call %", (r) => r.call_pct, pct], ["Credit pulls", (r) => r.credit_pulls, num], ["CP %", (r) => r.cp_pct, pct],
-      ["CP debt", (r) => r.cp_debt, usd], ["CP ABI", (r) => r.cp_abi, usd], ["Clients", (r) => r.clients, num], ...(prog ? [["Trending", (r) => r.clients_trending, num]] : []), ["CLG debt", (r) => r.clg_debt, usd],
-      ...(prog ? [["Trending", (r) => r.clg_debt_trending, usd]] : []), ["CLG ABI", (r) => r.clg_abi, usd], ["CP to client", (r) => r.cp_to_client, pct], ["Call to client", (r) => r.call_to_client, pct],
-      ["NQ %", (r) => r.nq_pct, pct], ["NSF", (r) => r.nsf, num], ["Cancels", (r) => r.cancels, num], ["Cancel %", (r) => r.cancel_pct, pct]];
+      ["Debt pulled", (r) => r.cp_debt, usd], ["Avg debt pulled", (r) => r.cp_abi, usd], ["Deals", (r) => r.clients, num], ...(prog ? [["Deals at pace", (r) => r.clients_trending, num]] : []), ["Debt enrolled", (r) => r.clg_debt, usd],
+      ...(prog ? [["Debt at pace", (r) => r.clg_debt_trending, usd]] : []), ["Avg balance", (r) => r.clg_abi, usd], ["Pull to deal", (r) => r.cp_to_client, pct], ["Call to deal", (r) => r.call_to_client, pct],
+      ["Not qualified %", (r) => r.nq_pct, pct], ["Bounced (NSF)", (r) => r.nsf, num], ["Cancels", (r) => r.cancels, num], ["Cancel %", (r) => r.cancel_pct, pct]];
     const shown = ct.length ? cols.filter(([, get]) => ct.some((r) => get(r) !== null && get(r) !== undefined)) : cols;
     $("brClosersT").innerHTML = `<thead><tr><th>Closer</th>${shown.map(([h]) => `<th>${h}</th>`).join("")}</tr></thead><tbody>`
       + (ct.length ? ct.map((r) => `<tr><td class="l">${esc(r.closer)}</td>${shown.map(([, get, f]) => `<td>${get(r) === null || get(r) === undefined ? nt : f(get(r))}</td>`).join("")}</tr>`).join("")
@@ -1272,7 +1310,7 @@ table.br-small{font-size:12.5px} table.br-small th,table.br-small td{padding:5px
     else {
       $("brQboWhen").textContent = `${q.source === "email" ? "Board P&L email" : "QuickBooks"}${q.last_report_at ? ", " + new Date(q.last_report_at).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "America/Los_Angeles" }) : ""}${q.missing.length ? " · not in yet: " + q.missing.join(", ") : ""}`;
       const ms = q.months;
-      $("brQbo").innerHTML = ms.length ? `<table class="tt br-t br-small"><thead><tr><th>Account</th><th>Bucket</th>${ms.map((m) => `<th>${esc(m)}</th>`).join("")}<th>Total</th></tr></thead><tbody>${q.accounts.map((a) => `<tr><td class="l">${esc(a.account)}<br><span class="when">${esc(a.section)}</span></td><td>${esc(a.bucket.replace("_", " "))}</td>${ms.map((m) => `<td>${a.months[m] === undefined ? "" : usd(a.months[m])}</td>`).join("")}<td><b>${usd(a.total)}</b></td></tr>`).join("")}</tbody></table>`
+      $("brQbo").innerHTML = ms.length ? `<table class="tt br-t br-small"><thead><tr><th>Account</th><th>Counts as</th>${ms.map((m) => `<th>${esc(m)}</th>`).join("")}<th>Total</th></tr></thead><tbody>${q.accounts.map((a) => `<tr><td class="l">${esc(a.account)}<br><span class="when">${esc(a.section)}</span></td><td>${esc(brBucket[a.bucket] || a.bucket.replace("_", " "))}</td>${ms.map((m) => `<td>${a.months[m] === undefined ? "" : usd(a.months[m])}</td>`).join("")}<td><b>${usd(a.total)}</b></td></tr>`).join("")}</tbody></table>`
         : '<p class="empty">No QuickBooks lines for these months yet.</p>';
     }
   }
@@ -1693,6 +1731,6 @@ table.br-small{font-size:12.5px} table.br-small th,table.br-small td{padding:5px
   else if (session) load(); else showSignIn();
 })();
 </script>
-<script src="coach.js?v=6db2dc2-1793395452"></script>
+<script src="coach.js?v=773b23f-1793396632"></script>
 </body>
 </html>
