@@ -9,8 +9,8 @@
 <title>My CFN Page</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Quicksand:wght@500;700&display=swap">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
-<link rel="stylesheet" href="board.css?v=5653a5d-1793405553">
-<link rel="stylesheet" href="coach.css?v=5653a5d-1793405553">
+<link rel="stylesheet" href="board.css?v=0e77c63-1793428551">
+<link rel="stylesheet" href="coach.css?v=0e77c63-1793428551">
 <style>
 .wrap{max-width:680px}
 .three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
@@ -169,6 +169,23 @@ table.br-small{font-size:12.5px} table.br-small th,table.br-small td{padding:5px
 .br-idx.good{background:#E3F4EA;color:#067647} .br-idx.bad{background:#FDEBD8;color:#B45309}
 .br-nt{color:var(--muted);font-size:12px;font-style:italic}
 .br-print-head{display:none}
+/* Winners and losers: a table on desktop and in the PDF, one compact row per closer on a phone. */
+table.wl-t{width:100%;border-collapse:collapse;font-size:13.5px;font-variant-numeric:tabular-nums}
+table.wl-t th{font-size:12px;color:var(--muted);font-weight:500;text-align:right;padding:0 0 8px 10px;border-bottom:1px solid var(--line);white-space:nowrap;vertical-align:bottom}
+table.wl-t th small{display:block;font-size:11px}
+table.wl-t td{text-align:right;padding:8px 0 8px 10px;border-bottom:1px solid var(--tint);white-space:nowrap}
+table.wl-t th:first-child,table.wl-t td:first-child{text-align:left;padding-left:0;white-space:normal}
+table.wl-t td small{color:var(--muted);font-size:12px}
+table.wl-t tr.wl-tot td{font-weight:700;border-top:2px solid var(--line);border-bottom:0}
+.wl-net{font-weight:700} .wl-net.win{color:#067647} .wl-net.lose{color:#B42318}
+.fdot.winning{background:#16A34A} .fdot.even,.fdot.pending{background:#9AA3B2}
+.wl-pend{color:var(--muted);font-size:12px;font-style:italic;font-weight:400}
+.wl-list{display:none}
+.wl-r{padding:9px 0;border-bottom:1px solid var(--tint)} .wl-r:last-child{border-bottom:0}
+.wl-r1{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:14px;font-variant-numeric:tabular-nums} .wl-r1 > span:first-child{min-width:0;overflow-wrap:anywhere}
+.wl-r2{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.45;font-variant-numeric:tabular-nums}
+.wl-r.wl-tot{border-top:2px solid var(--line)} .wl-r.wl-tot .wl-r1{font-weight:700}
+.wl-foot{margin:10px 0 0;font-size:12px;color:var(--muted);line-height:1.45}
 @media (max-width:700px){
   .fkpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
   .fk-v{font-size:22px}
@@ -183,6 +200,7 @@ table.br-small{font-size:12.5px} table.br-small th,table.br-small td{padding:5px
   .fmoney .fm-r{grid-template-columns:104px minmax(0,1fr);gap:4px 10px} .fmoney .fm-v{grid-column:2;text-align:left;font-size:12.5px}
   .fdown a{grid-template-columns:62px 1fr}
   table.fcl{font-size:12.5px} table.fcl th,table.fcl td{padding-left:6px}
+  #br-wl table.wl-t{display:none} #br-wl .wl-list{display:block}
   .fx > details > summary .fmuted{display:none} .fx > details > summary .fchev{margin-left:auto}
 }
 @media print{
@@ -197,10 +215,11 @@ table.br-small{font-size:12.5px} table.br-small th,table.br-small td{padding:5px
   .fx > details > summary .fchev{display:none}
   .fx > details{break-inside:auto} .fx > details + details{break-before:page}
   .br-scroll{overflow:visible} table.br-t{font-size:11px} table.br-small{font-size:9.5px}
-  .fchip,.fbar,.fbar i,.fm-track,.fm-track i,.fm-track b,.fm-key i,.fm-key b,.fnote,.fbook,.fdot,.br-idx,.br-pills a.pill{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  #br-wl table.wl-t{display:table !important;font-size:11px} #br-wl .wl-list{display:none !important}
+  .wl-net,.fchip,.fbar,.fbar i,.fm-track,.fm-track i,.fm-track b,.fm-key i,.fm-key b,.fnote,.fbook,.fdot,.br-idx,.br-pills a.pill{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
 </style>
-<script src="config.js?v=5653a5d-1793405553"></script>
+<script src="config.js?v=0e77c63-1793428551"></script>
 </head>
 <body>
 <div class="wrap">
@@ -245,7 +264,7 @@ table.br-small{font-size:12.5px} table.br-small th,table.br-small td{padding:5px
     <div class="fstack">
       <div class="fc fhead" id="br-head">
         <div class="fh-main">
-          <span class="br-pills br-noprint" id="brPeriods"><a class="pill" data-p="month" href="/me#finance?period=month">Month</a><a class="pill" data-p="quarter" href="/me#finance?period=quarter">Quarter</a><a class="pill" data-p="ytd" href="/me#finance?period=ytd">YTD</a><a class="pill" data-p="custom" href="/me#finance?period=custom">Custom</a></span>
+          <span class="br-pills br-noprint" id="brPeriods"><a class="pill" data-p="day" href="/me#finance?period=day">Day</a><a class="pill" data-p="month" href="/me#finance?period=month">Month</a><a class="pill" data-p="quarter" href="/me#finance?period=quarter">Quarter</a><a class="pill" data-p="ytd" href="/me#finance?period=ytd">YTD</a><a class="pill" data-p="custom" href="/me#finance?period=custom">Custom</a></span>
           <span class="fh-div br-noprint"></span>
           <span class="fh-per"><button class="br-noprint" id="finPrev" aria-label="Earlier">&lsaquo;</button><span id="brPeriod"></span><button class="br-noprint" id="finNext" aria-label="Later">&rsaquo;</button></span>
           <form class="br-custom br-noprint" id="brCustom" hidden><label>From <input class="f" type="date" name="from" required></label><label>To <input class="f" type="date" name="to" required></label><button class="go small">Show</button></form>
@@ -254,6 +273,8 @@ table.br-small{font-size:12.5px} table.br-small th,table.br-small td{padding:5px
         <p class="fh-status" id="brAsOf"></p>
       </div>
       <div class="fkpis" id="brKpis"></div>
+      <div class="fc" id="br-wl"><div class="fc-h"><p class="fc-t">Winners and losers <span class="fi" id="brWlInfo" tabindex="0">i</span></p><span class="fmuted">net per closer, best first</span></div>
+        <div class="br-scroll"><table class="wl-t" id="brWlT"></table></div><div class="wl-list" id="brWlList"></div><p class="wl-foot" id="brWlFoot"></p></div>
       <p class="fnote" id="brTruth"></p>
       <div class="fc fstrip" id="brStats"></div>
       <div class="fg2">
@@ -1206,6 +1227,33 @@ table.br-small{font-size:12.5px} table.br-small th,table.br-small td{padding:5px
   const brVal = (m, prog) => !m || m.tracked === false ? null : prog ? m.trending : m.at;
   const brDay = (iso, year) => new Date(iso + "T12:00:00Z").toLocaleDateString("en-US", { month: "short", day: "numeric", ...(year ? { year: "numeric" } : {}), timeZone: "UTC" });
   const brTag = { profitable: "Profitable", break_even: "Break even", losing: "Losing money", ramping: "Ramping" };
+  const wlTag = { winning: "Winning", losing: "Losing", even: "Even", pending: "Calls pending" };
+  // Winners and losers: each closer's revenue against lead cost and pay, best net first, then the team total.
+  function renderWinLose(sc) {
+    const rows = sc ? sc.rows : [], t = sc && sc.total, rt = sc && sc.rates;
+    const n0 = (v) => v === null || v === undefined ? "-" : Number(v).toLocaleString("en-US");
+    const PEND = "calls pending (after 6 PM)";
+    const net = (r) => r.net === null || r.net === undefined ? '<span class="wl-pend">pending</span>' : `<span class="wl-net ${r.tag === "winning" ? "win" : r.tag === "losing" ? "lose" : ""}">${esc(usd(r.net))}</span>`;
+    const dot = (r) => `<i class="fdot ${esc(r.tag)}" title="${esc(wlTag[r.tag] || r.tag)}"></i>`;
+    const payTip = (r) => r.overseas ? `Hourly ${usd(r.pay_base)} (${r.login_hours} h in Vici) + per deal ${usd(r.pay_deals)}` : `Salary and tax ${usd(r.pay_base)} + commission ${usd(r.pay_deals)}`;
+    const io = (n, o) => `${n0(n)} <small>(${n0(o)})</small>`;
+    const cells = (r) => (r.pending ? `<td colspan="2"><span class="wl-pend">${esc(PEND)}</span></td>` : `<td>${io(r.in_calls, r.in_120)}</td><td>${io(r.out_calls, r.out_120)}</td>`)
+      + `<td>${r.lead_cost === null ? "-" : esc(usd(r.lead_cost))}</td><td title="${esc(payTip(r))}">${esc(usd(r.pay))}</td><td>${n0(r.pulls)}</td><td>${n0(r.deals)}</td>`
+      + `<td>${esc(brShort(r.debt, "money"))}</td><td>${esc(usd(r.revenue))}</td><td>${net(r)}</td>`;
+    const none = "No closer calls or deals for this period yet.";
+    $("brWlT").innerHTML = rows.length
+      ? `<thead><tr><th>Closer</th><th>Inbound<small>calls (over 2 min)</small></th><th>Outbound<small>calls (over 2 min)</small></th><th>Lead cost</th><th>Pay</th><th>Pulls</th><th>Deals</th><th>Debt</th><th>Revenue</th><th>Net</th></tr></thead><tbody>`
+        + rows.map((r) => `<tr><td>${dot(r)}${esc(r.closer)}</td>${cells(r)}</tr>`).join("") + `<tr class="wl-tot"><td>Team</td>${cells(t)}</tr></tbody>`
+      : `<tbody><tr><td><span class="empty">${none}</span></td></tr></tbody>`;
+    const small = (r) => [r.pending ? PEND : `In ${n0(r.in_calls)} (${n0(r.in_120)} over 2 min) · Out ${n0(r.out_calls)} (${n0(r.out_120)})`, `${n0(r.deals)} deal${r.deals === 1 ? "" : "s"}`,
+      `${brShort(r.debt, "money")} debt`, `lead ${r.lead_cost === null ? "-" : usd(r.lead_cost)}`, `pay ${usd(r.pay)}`].map(esc).join(" · ");
+    $("brWlList").innerHTML = rows.length
+      ? rows.map((r) => `<div class="wl-r"><div class="wl-r1"><span>${dot(r)}${esc(r.closer)}</span>${net(r)}</div><div class="wl-r2">${small(r)}</div></div>`).join("")
+        + `<div class="wl-r wl-tot"><div class="wl-r1"><span>Team</span>${net(t)}</div><div class="wl-r2">${small(t)}</div></div>`
+      : `<p class="empty">${none}</p>`;
+    $("brWlFoot").textContent = rt ? `Lead cost ${usd(rt.lead_cost_per_inbound_120)} per inbound call over 2 min (outbound callbacks free). Revenue ${rt.revenue_pct}% of debt, if the deal clears. Pay: salary plus ${rt.employer_tax_pct}% tax per weekday plus ${rt.commission_pct}% commission; overseas hourly from Vici login plus per deal. Credit pulls are free.` : "";
+    $("brWlInfo").title = "Net = revenue minus lead cost minus pay, for the days shown (up to today). Green: winning. Red: losing. Calls are sorted into inbound and outbound each evening from 6:15 PM; until then they show as pending. Hover Pay for how it adds up.";
+  }
   function renderReview(rv) {
     brLast = rv;
     const p = rv.period, prog = p.in_progress;
@@ -1214,12 +1262,13 @@ table.br-small{font-size:12.5px} table.br-small th,table.br-small td{padding:5px
     if (p.kind === "custom") { $("brCustom").from.value = p.from; $("brCustom").to.value = p.to; }
     $("brPeriod").textContent = p.label; $("brPrintPeriod").textContent = p.label;
     $("finPrev").hidden = $("finNext").hidden = p.kind === "custom";
+    renderWinLose(rv.scorecard);
     // Header status: one quiet line.
     const q = rv.qbo;
     const left = p.workdays_left === null || p.workdays_left === undefined ? "" : p.workdays_left === 0 ? ", no workdays left" : `, ${p.workdays_left} workday${p.workdays_left === 1 ? "" : "s"} left`;
     const asOf = new Date(rv.as_of).toLocaleString("en-US", { timeZone: "America/Los_Angeles", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
-    const span = p.kind === "custom" ? "this range" : p.kind === "month" ? "the month" : p.kind === "quarter" ? "the quarter" : "the year";
-    $("brAsOf").textContent = `${brDay(p.from)} to ${brDay(p.to, true)} · ${prog ? p.share_done_pct + "% of floor days done" + left : p.started ? "Complete" : "Not started"} · ${prog ? `Big numbers show where ${span} ends at today's pace · ` : ""}Updated ${asOf} Pacific`;
+    const span = p.kind === "custom" ? "this range" : p.kind === "day" ? "the day" : p.kind === "month" ? "the month" : p.kind === "quarter" ? "the quarter" : "the year";
+    $("brAsOf").textContent = `${p.kind === "day" ? brDay(p.from, true) : brDay(p.from) + " to " + brDay(p.to, true)} · ${prog ? p.share_done_pct + "% of floor days done" + left : p.started ? "Complete" : "Not started"} · ${prog ? `Big numbers show where ${span} ends at today's pace · ` : ""}Updated ${asOf} Pacific`;
     const om = Object.fromEntries(rv.ops.map((m) => [m.key, m])), mm = Object.fromEntries(rv.money.metrics.map((m) => [m.key, m]));
     // Headline tiles.
     // Booked in QuickBooks, for the same days: income, the costs above, and what is left. Net only when every month is in QuickBooks.
@@ -1346,12 +1395,18 @@ table.br-small{font-size:12.5px} table.br-small th,table.br-small td{padding:5px
           .map(([k, v, pl, money]) => `<div class="sc-row"><span>${esc(k)}</span><span class="when">${pl === null || pl === undefined ? "" : "plan " + (money ? usd(pl) : Math.round(pl))}</span><span>${v === null ? '<span class="when">QuickBooks</span>' : (money ? usd(v) : v)}${v === null || pl === null || pl === undefined || m.current ? "" : vsPlan(v, pl)}</span></div>`).join("")}
         ${qb ? `<div class="when" style="margin-top:4px">QuickBooks: income ${usd(qb.income)} · marketing ${usd(qb.marketing)} · credit pulls ${usd(qb.credit_pulls)} · payroll ${usd(qb.payroll)} · other ${usd(qb.overhead)}</div>` : ""}</div>`; }).join("");
   }
-  // Earlier / later: a month, a quarter, or a year at a time, keeping the period type and the planned closers.
+  // Earlier / later: a floor day (Sundays skipped, never past today), a month, a quarter, or a year at a time, keeping the period type and the planned closers.
   const finParams = () => new URLSearchParams(location.hash.replace(/^#finance\??/, ""));
   const finGo = (p) => { for (const [k, v] of [...p.entries()]) if (!v) p.delete(k); location.hash = "finance" + (p.toString() ? "?" + p.toString() : ""); };
   const finShift = (k) => {
-    const p = finParams(), kind = p.get("period") || "month";
+    const p = finParams(), kind = p.get("period") || (p.get("month") ? "month" : "day");
     if (kind === "custom") return;
+    if (kind === "day") {
+      let d = p.get("day") || (brLast && brLast.period.kind === "day" ? brLast.period.from : new Date().toISOString().slice(0, 10));
+      do { d = new Date(Date.parse(d + "T12:00:00Z") + k * 864e5).toISOString().slice(0, 10); } while (new Date(d + "T12:00:00Z").getUTCDay() === 0);
+      if (d > new Date().toLocaleDateString("en-CA", { timeZone: "America/Los_Angeles" })) return;
+      p.set("period", "day"); p.set("day", d); p.delete("month"); finGo(p); return;
+    }
     const d = new Date((p.get("month") || (brLast && brLast.period.from.slice(0, 7)) || new Date().toISOString().slice(0, 7)) + "-15T12:00:00Z");
     d.setUTCMonth(d.getUTCMonth() + k * (kind === "quarter" ? 3 : kind === "ytd" ? 12 : 1));
     p.set("month", d.toISOString().slice(0, 7)); finGo(p);
@@ -1658,7 +1713,8 @@ table.br-small{font-size:12.5px} table.br-small th,table.br-small td{padding:5px
   async function load() {
     const week = viewing === "report" ? new URLSearchParams(location.hash.replace(/^#report\??/, "")).get("week") : null;
     const cp = viewing === "calls" ? new URLSearchParams(location.hash.replace(/^#calls\??/, "")) : viewing === "finance" ? new URLSearchParams(location.hash.replace(/^#finance\??/, "")) : new URLSearchParams();
-    const extra = ["id", "view", "month", "period", "from", "to", "closers"].map((k) => cp.get(k) ? "&" + k + "=" + encodeURIComponent(cp.get(k)) : "").join("");
+    if (viewing === "finance" && !cp.get("period") && !cp.get("month")) cp.set("period", "day"); // the Finance tab opens on the last floor day
+    const extra = ["id", "view", "month", "period", "from", "to", "day", "closers"].map((k) => cp.get(k) ? "&" + k + "=" + encodeURIComponent(cp.get(k)) : "").join("");
     try { render(await api("/me" + (viewing ? "?rep=" + encodeURIComponent(viewing) + (week ? "&week=" + encodeURIComponent(week) : "") + extra : ""))); } catch (e) { if (e.message) showErr(e.message); }
   }
   $("pick").onchange = () => {
@@ -1737,6 +1793,6 @@ table.br-small{font-size:12.5px} table.br-small th,table.br-small td{padding:5px
   else if (session) load(); else showSignIn();
 })();
 </script>
-<script src="coach.js?v=5653a5d-1793405553"></script>
+<script src="coach.js?v=0e77c63-1793428551"></script>
 </body>
 </html>
