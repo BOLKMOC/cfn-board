@@ -9,8 +9,8 @@
 <title>My CFN Page</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Quicksand:wght@500;700&display=swap">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
-<link rel="stylesheet" href="board.css?v=9bdd597-1793470908">
-<link rel="stylesheet" href="coach.css?v=9bdd597-1793470908">
+<link rel="stylesheet" href="board.css?v=e83d6c3-1793483636">
+<link rel="stylesheet" href="coach.css?v=e83d6c3-1793483636">
 <style>
 .wrap{max-width:680px}
 .three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
@@ -25,7 +25,6 @@ details{border-bottom:1px solid var(--tint);padding:8px 0}
 details summary{display:flex;justify-content:space-between;cursor:pointer;font-size:15px;list-style:none}
 details table{width:100%;font-size:13px;border-collapse:collapse;margin-top:8px}
 details td,details th{text-align:left;padding:4px 2px;border-bottom:1px solid var(--tint)} details th{color:var(--muted);font-weight:500}
-.neg{color:#B91C1C}
 select.f{background:#fff}
 [hidden]{display:none !important}
 .ctwholist{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:6px}
@@ -139,6 +138,7 @@ body.fin-wide .wrap{max-width:1180px}
 .fbook .fb-g{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px} .fbook .fb-g span{display:block;color:var(--muted);font-size:11.5px} .fbook .fb-g b{font-size:15px;font-variant-numeric:tabular-nums} .fbook .fb-g b.neg{color:#B42318}
 .fm-track b{position:absolute;top:-3px;bottom:-3px;width:2px;margin-left:-1px;background:var(--ink);border-radius:1px}
 .fm-v{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums} .fm-v span{color:var(--muted)}
+.fmoney .fm-r.fm-sub{color:var(--muted)} .fmoney .fm-r.fm-sub .fm-v{color:var(--muted)}
 .fnx .fn-r{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:baseline;gap:2px 10px;padding:10px 0;border-bottom:1px solid var(--tint)} .fnx .fn-r:last-of-type{border-bottom:0}
 .fnx .fn-l{font-size:13.5px} .fnx .fn-v{font-size:20px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 .fnx .fn-s{grid-column:1/-1;display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
@@ -229,7 +229,7 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
   .wl-net,.fchip,.fbar,.fbar i,.fm-track,.fm-track i,.fm-track b,.fm-key i,.fm-key b,.fnote,.fbook,.fdot,.br-idx,.br-pills a.pill{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
 </style>
-<script src="config.js?v=9bdd597-1793470908"></script>
+<script src="config.js?v=e83d6c3-1793483636"></script>
 </head>
 <body>
 <div class="wrap">
@@ -284,7 +284,7 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
       </div>
       <div class="fkpis" id="brKpis"></div>
       <div class="fc" id="br-wl"><div class="fc-h"><p class="fc-t">Winners and losers <span class="fi" id="brWlInfo" tabindex="0">i</span></p><span class="fmuted">net per closer, best first</span></div>
-        <div class="br-scroll"><table class="wl-t" id="brWlT"></table></div><div class="wl-list" id="brWlList"></div><p class="wl-foot" id="brWlFoot"></p></div>
+        <div class="br-scroll"><table class="wl-t" id="brWlT"></table></div><div class="wl-list" id="brWlList"></div><p class="wl-foot" id="brWlCover" hidden></p><p class="wl-foot" id="brWlSub" hidden></p><p class="wl-foot" id="brWlFoot"></p></div>
       <div class="fc fpay" id="br-pay"><div class="fc-h"><p class="fc-t">Next payouts <span class="fi" id="brPayInfo" tabindex="0">i</span></p><span class="fmuted">from Cordoba, every Monday</span></div>
         <div class="fpay-top" id="brPayTop"></div><p class="fpay-sub" id="brPaySub"></p>
         <div class="br-scroll"><table class="fcl fpay-t" id="brPayNext"></table></div><div class="fpay-list" id="brPayNextList"></div>
@@ -915,7 +915,9 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
     dl.view = rows;
     const total = rows.reduce((s, r) => s + (r.debt || 0), 0);
     $("dlTitle").textContent = dl.title || "Deals";
-    $("dlSum").textContent = `${rows.length} deal${rows.length === 1 ? "" : "s"} · ${money(total)} debt${rows.length ? " · avg " + money(total / rows.length) : ""}${dl.truncated ? " · first 3,000 only" : ""}`;
+    // Returned deals are listed here but count nowhere else (the board and Finance leave them out until resubmitted), so say so.
+    const returned = rows.filter((r) => r.status === "Returned").length;
+    $("dlSum").textContent = `${rows.length} deal${rows.length === 1 ? "" : "s"} · ${money(total)} debt${rows.length ? " · avg " + money(total / rows.length) : ""}${returned ? ` · ${returned} returned (not counted on the board or Finance)` : ""}${dl.truncated ? " · first 3,000 only" : ""}`;
     const anyWhy = rows.some((r) => r.reason);
     const cols = [...(set.startsWith("speed_") ? COLS : COLS.filter(([c]) => c !== "days")), ...(anyWhy ? [["reason", "Why (from Forth notes)"]] : [])];
     $("dlHead").innerHTML = cols.map(([c, t]) => `<th data-col="${c}" style="cursor:pointer">${t}${c === sort ? (asc ? " &#9650;" : " &#9660;") : ""}</th>`).join("");
@@ -1248,9 +1250,9 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
   function renderWinLose(sc) {
     const rows = sc ? sc.rows : [], t = sc && sc.total, rt = sc && sc.rates;
     const n0 = (v) => v === null || v === undefined ? "-" : Number(v).toLocaleString("en-US");
-    const PEND = "calls pending (after 6 PM)";
     const est = (r) => r.estimated ? "≈ " : "";
-    const estTip = (r) => r.estimated ? ` title="${esc(`Estimate: ${r.days_done} of ${r.days_total} days sorted into inbound and outbound so far`)}"` : "";
+    const estWhy = (r) => [r.pending ? `${r.days_done} of ${r.days_total} days sorted into inbound and outbound so far` : "", r.lead_cost_estimated ? "lead cost paid is not in QuickBooks yet for part of this period, so the latest month's figure is used" : ""].filter(Boolean).join("; ");
+    const estTip = (r) => r.estimated ? ` title="${esc(`Estimate: ${estWhy(r)}`)}"` : "";
     const net = (r) => r.net === null || r.net === undefined ? '<span class="wl-pend">pending</span>' : `<span class="wl-net ${r.tag === "winning" ? "win" : r.tag === "losing" ? "lose" : ""}"${estTip(r)}>${est(r)}${esc(usd(r.net))}</span>`;
     const dot = (r) => `<i class="fdot ${esc(r.tag)}" title="${esc(wlTag[r.tag] || r.tag)}"></i>`;
     const payTip = (r) => r.overseas ? `Hourly ${usd(r.pay_base)} (${r.login_hours} h in Vici) + per deal ${usd(r.pay_deals)}` : `Salary and tax ${usd(r.pay_base)} + commission ${usd(r.pay_deals)}`;
@@ -1260,7 +1262,7 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
       + `<td>${esc(brShort(r.debt, "money"))}</td><td>${esc(usd(r.revenue))}</td><td>${net(r)}</td>`;
     const none = "No closer calls or deals for this period yet.";
     $("brWlT").innerHTML = rows.length
-      ? `<thead><tr><th>Closer</th><th>Inbound<small>calls (over 2 min)</small></th><th>Outbound<small>calls (over 2 min)</small></th><th>Lead cost</th><th>Pay</th><th>Pulls</th><th>Deals</th><th>Debt</th><th>Revenue</th><th>Net</th></tr></thead><tbody>`
+      ? `<thead><tr><th>Closer</th><th>Inbound<small>calls (over 2 min)</small></th><th>Outbound<small>calls (over 2 min)</small></th><th>Lead cost<small>(paid)</small></th><th>Pay</th><th>Pulls</th><th>Deals</th><th>Debt</th><th>Revenue</th><th>Net</th></tr></thead><tbody>`
         + rows.map((r) => `<tr><td>${dot(r)}${esc(r.closer)}</td>${cells(r)}</tr>`).join("") + `<tr class="wl-tot"><td>Team</td>${cells(t)}</tr></tbody>`
       : `<tbody><tr><td><span class="empty">${none}</span></td></tr></tbody>`;
     const small = (r) => [r.pending ? `≈ ${n0(r.in_120)} over 2 min (${r.days_done} of ${r.days_total} days sorted)` : `In ${n0(r.in_calls)} (${n0(r.in_120)} over 2 min) · Out ${n0(r.out_calls)} (${n0(r.out_120)})`, `${n0(r.deals)} deal${r.deals === 1 ? "" : "s"}`,
@@ -1269,8 +1271,14 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
       ? rows.map((r) => `<div class="wl-r"><div class="wl-r1"><span>${dot(r)}${esc(r.closer)}</span>${net(r)}</div><div class="wl-r2">${small(r)}</div></div>`).join("")
         + `<div class="wl-r wl-tot"><div class="wl-r1"><span>Team</span>${net(t)}</div><div class="wl-r2">${small(t)}</div></div>`
       : `<p class="empty">${none}</p>`;
-    $("brWlFoot").textContent = rt ? `Lead cost ${usd(rt.lead_cost_per_inbound_120)} per inbound call over 2 min (outbound callbacks free). Revenue ${rt.revenue_pct}% of debt, if the deal clears. Pay: salary plus ${rt.employer_tax_pct}% tax per weekday plus ${rt.commission_pct}% commission; overseas hourly from Vici login plus per deal. Credit pulls are free. ≈ means some days are not sorted yet and are estimated.` : "";
-    $("brWlInfo").title = "Net = revenue minus lead cost minus pay, for the days shown (up to today). Green: winning. Red: losing. Calls are sorted into inbound and outbound each evening from 6:15 PM. Days not sorted yet are estimated (≈) from the closer's own share of inbound calls over 2 minutes, and firm up as they are sorted. Hover Pay for how it adds up.";
+    // Days the Vici pull does not cover yet (it began late October 2026): say so, or the net reads as complete.
+    const cover = sc && sc.vici && sc.vici.note ? sc.vici.note : "";
+    $("brWlCover").hidden = !cover; $("brWlCover").textContent = cover;
+    // What leads would cost at full price against what CFN paid: the gap is BOL's subsidy (owner, 2026-10-31).
+    const sub = t && rows.length ? `At full price leads would be ${usd(t.lead_cost_full)} (paid ${t.lead_cost_estimated ? "≈ " : ""}${usd(t.lead_cost)}). ${t.paid_over_full ? `Paid is ${usd(t.lead_cost - t.lead_cost_full)} over full price.` : `BOL is covering ${t.lead_cost_estimated ? "≈ " : ""}${usd(t.subsidy)}.`}` : "";
+    $("brWlSub").hidden = !sub; $("brWlSub").textContent = sub;
+    $("brWlFoot").textContent = rt ? `Lead cost: what CFN paid BOL (QuickBooks), split by each closer's inbound calls over 2 min. Full price is ${usd(rt.full_price_per_inbound_120)} per call; the gap is BOL's subsidy. Revenue ${rt.revenue_pct}% of debt, if the deal clears. Pay: salary plus ${rt.employer_tax_pct}% tax per weekday plus ${rt.commission_pct}% commission; overseas hourly from Vici login plus per deal. Credit pulls are free. ≈ means some days are not sorted yet, or the month is not in QuickBooks yet, and are estimated.` : "";
+    $("brWlInfo").title = "Net = revenue minus lead cost (what CFN paid) minus pay, for the days shown (up to today). Green: winning. Red: losing. Calls are sorted into inbound and outbound each evening from 6:15 PM. Days not sorted yet are estimated (≈) from the closer's own share of inbound calls over 2 minutes, and firm up as they are sorted. Hover Pay for how it adds up.";
   }
   // Next payouts: what Cordoba should pay on the coming Mondays (expected from scheduled 1st payments) and what the last files paid.
   function renderPayouts(po) {
@@ -1346,7 +1354,8 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
     const qbRow = (l, v) => `<div class="qb"><span>${l}</span><b class="${v < 0 ? "neg" : ""}">${brShort(v, "money")}</b></div>`;
     $("brKpis").innerHTML = tile("Debt enrolled", om.debt) + tile("Deals", om.total_deals)
       + tile("Revenue", mm.revenue, model, qbSome ? qbRow("In QuickBooks", mo.qbo_income) : "")
-      + tile("Operating profit", mm.operating_profit, "Earned + expected revenue minus the costs below (costs from QuickBooks when it has the month). " + model, qbAll ? qbRow("QuickBooks net", qbNet) : "");
+      + tile("Operating profit", mm.operating_profit, "Earned + expected revenue minus the costs below (costs from QuickBooks when it has the month). At full lead price: the same, if CFN paid BOL full price for leads instead of the subsidized price. " + model,
+        (qbAll ? qbRow("QuickBooks net", qbNet) : "") + (mo.operating_profit_full === null || mo.operating_profit_full === undefined ? "" : `<div><span>At full lead price</span><b class="${mo.operating_profit_full < 0 ? "neg" : ""}">${brShort(mo.operating_profit_full, "money")}</b></div>`));
     // The honest line: the model counts money before it arrives; QuickBooks counts it when it lands.
     $("brTruth").innerHTML = `<b>Revenue and profit above are earned + expected, not cash.</b> So far: ${esc(brK(mo.revenue_earned))} earned (1st deposit cleared) and ${esc(brK(mo.revenue_expected))} still expected. `
       + (qbAll ? `QuickBooks has booked ${esc(brK(mo.qbo_income))} income and ${esc(brK(qbCosts))} costs, a net of <b class="${qbNet < 0 ? "neg" : ""}">${esc(brK(qbNet))}</b>.`
@@ -1363,10 +1372,12 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
     const fm = rv.money.metrics;
     const bars = [["Revenue", mm.revenue, "earned + expected"], ["Marketing", mm.marketing, "leads"], ["Workforce", mm.workforce, "payroll"], ["Credit pulls", mm.credit_pulls_cost, ""], ["Software and overhead", mm.overhead, ""], ["Operating profit", mm.operating_profit, "earned + expected"]].filter(([, m]) => m);
     const max = Math.max(1, ...bars.map(([, m]) => Math.max(Math.abs(brVal(m, prog) ?? 0), Math.abs(m.target ?? 0))));
+    // BOL lead subsidy: leads at full price less what CFN paid (so far), shown beside Marketing with no bar or budget.
+    const subRow = mo.lead_subsidy === null || mo.lead_subsidy === undefined ? "" : `<div class="fm-r fm-sub"><span>BOL lead subsidy<small>full price minus paid</small></span><div title="Leads at full price minus what CFN paid BOL, so far"></div><span class="fm-v">${esc(brK(mo.lead_subsidy))} <span>so far</span></span></div>`;
     $("brBars").innerHTML = bars.map(([l, m, sub]) => {
       const v = brVal(m, prog) ?? 0, t = m.target, has = t !== null && t !== undefined;
       return `<div class="fm-r"><span>${esc(l)}${sub ? `<small>${esc(sub)}</small>` : ""}</span><div class="fm-track" title="${prog ? "At today's pace" : "Actual"} ${esc(usd(v))}${has ? ", budget " + esc(usd(t)) + " (" + m.target_pct + "%)" : ""}"><i class="${brState(m)}" style="width:${Math.max(1, Math.min(100, Math.abs(v) / max * 100))}%"></i>${has ? `<b style="left:${Math.abs(t) / max * 100}%"></b>` : ""}</div>`
-        + `<span class="fm-v">${esc(brK(v))} <span>of ${has ? esc(brK(t)) : "no budget"}</span></span></div>`;
+        + `<span class="fm-v">${esc(brK(v))} <span>of ${has ? esc(brK(t)) : "no budget"}</span></span></div>` + (l === "Marketing" ? subRow : "");
     }).join("");
     $("brBarWord").textContent = prog ? "Pace" : "Actual";
     const qDate = q && !q.waiting && q.last_report_at ? new Date(q.last_report_at).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "America/Los_Angeles" }) : "";
@@ -1854,6 +1865,6 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
   else if (session) load(); else showSignIn();
 })();
 </script>
-<script src="coach.js?v=9bdd597-1793470908"></script>
+<script src="coach.js?v=e83d6c3-1793483636"></script>
 </body>
 </html>
