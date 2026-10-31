@@ -9,8 +9,8 @@
 <title>My CFN Page</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Quicksand:wght@500;700&display=swap">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
-<link rel="stylesheet" href="board.css?v=0e77c63-1793428551">
-<link rel="stylesheet" href="coach.css?v=0e77c63-1793428551">
+<link rel="stylesheet" href="board.css?v=1983e86-1793457325">
+<link rel="stylesheet" href="coach.css?v=1983e86-1793457325">
 <style>
 .wrap{max-width:680px}
 .three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
@@ -186,6 +186,14 @@ table.wl-t tr.wl-tot td{font-weight:700;border-top:2px solid var(--line);border-
 .wl-r2{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.45;font-variant-numeric:tabular-nums}
 .wl-r.wl-tot{border-top:2px solid var(--line)} .wl-r.wl-tot .wl-r1{font-weight:700}
 .wl-foot{margin:10px 0 0;font-size:12px;color:var(--muted);line-height:1.45}
+/* Next payouts: the coming Monday big, then the next Mondays and the recent ones. Tables on desktop and in the PDF, rows on a phone. */
+.fpay-top{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px;padding:6px 0 0}
+.fpay-top .fp-v{font-size:25px;font-weight:700;color:var(--ink);line-height:1.2;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.fpay-top .fp-r{font-size:14px;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+.fpay-sub{margin:4px 0 10px;font-size:12.5px;color:var(--muted);line-height:1.45}
+.fpay .fp-h{font-size:13px;color:var(--muted);margin:14px 0 6px}
+table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
+.fpay-list{display:none}
 @media (max-width:700px){
   .fkpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
   .fk-v{font-size:22px}
@@ -201,6 +209,7 @@ table.wl-t tr.wl-tot td{font-weight:700;border-top:2px solid var(--line);border-
   .fdown a{grid-template-columns:62px 1fr}
   table.fcl{font-size:12.5px} table.fcl th,table.fcl td{padding-left:6px}
   #br-wl table.wl-t{display:none} #br-wl .wl-list{display:block}
+  #br-pay table.fpay-t{display:none} #br-pay .fpay-list{display:block} .fpay-top .fp-v{font-size:22px}
   .fx > details > summary .fmuted{display:none} .fx > details > summary .fchev{margin-left:auto}
 }
 @media print{
@@ -216,10 +225,11 @@ table.wl-t tr.wl-tot td{font-weight:700;border-top:2px solid var(--line);border-
   .fx > details{break-inside:auto} .fx > details + details{break-before:page}
   .br-scroll{overflow:visible} table.br-t{font-size:11px} table.br-small{font-size:9.5px}
   #br-wl table.wl-t{display:table !important;font-size:11px} #br-wl .wl-list{display:none !important}
+  #br-pay table.fpay-t{display:table !important;font-size:11px} #br-pay .fpay-list{display:none !important}
   .wl-net,.fchip,.fbar,.fbar i,.fm-track,.fm-track i,.fm-track b,.fm-key i,.fm-key b,.fnote,.fbook,.fdot,.br-idx,.br-pills a.pill{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
 </style>
-<script src="config.js?v=0e77c63-1793428551"></script>
+<script src="config.js?v=1983e86-1793457325"></script>
 </head>
 <body>
 <div class="wrap">
@@ -275,6 +285,12 @@ table.wl-t tr.wl-tot td{font-weight:700;border-top:2px solid var(--line);border-
       <div class="fkpis" id="brKpis"></div>
       <div class="fc" id="br-wl"><div class="fc-h"><p class="fc-t">Winners and losers <span class="fi" id="brWlInfo" tabindex="0">i</span></p><span class="fmuted">net per closer, best first</span></div>
         <div class="br-scroll"><table class="wl-t" id="brWlT"></table></div><div class="wl-list" id="brWlList"></div><p class="wl-foot" id="brWlFoot"></p></div>
+      <div class="fc fpay" id="br-pay"><div class="fc-h"><p class="fc-t">Next payouts <span class="fi" id="brPayInfo" tabindex="0">i</span></p><span class="fmuted">from Cordoba, every Monday</span></div>
+        <div class="fpay-top" id="brPayTop"></div><p class="fpay-sub" id="brPaySub"></p>
+        <div class="br-scroll"><table class="fcl fpay-t" id="brPayNext"></table></div><div class="fpay-list" id="brPayNextList"></div>
+        <p class="fp-h">Recent Mondays</p>
+        <div class="br-scroll"><table class="fcl fpay-t" id="brPayHist"></table></div><div class="fpay-list" id="brPayHistList"></div>
+        <p class="wl-foot" id="brPayFoot"></p></div>
       <p class="fnote" id="brTruth"></p>
       <div class="fc fstrip" id="brStats"></div>
       <div class="fg2">
@@ -1254,6 +1270,48 @@ table.wl-t tr.wl-tot td{font-weight:700;border-top:2px solid var(--line);border-
     $("brWlFoot").textContent = rt ? `Lead cost ${usd(rt.lead_cost_per_inbound_120)} per inbound call over 2 min (outbound callbacks free). Revenue ${rt.revenue_pct}% of debt, if the deal clears. Pay: salary plus ${rt.employer_tax_pct}% tax per weekday plus ${rt.commission_pct}% commission; overseas hourly from Vici login plus per deal. Credit pulls are free.` : "";
     $("brWlInfo").title = "Net = revenue minus lead cost minus pay, for the days shown (up to today). Green: winning. Red: losing. Calls are sorted into inbound and outbound each evening from 6:15 PM; until then they show as pending. Hover Pay for how it adds up.";
   }
+  // Next payouts: what Cordoba should pay on the coming Mondays (expected from scheduled 1st payments) and what the last files paid.
+  function renderPayouts(po) {
+    $("br-pay").hidden = !po;
+    if (!po) return;
+    const wd = (iso) => new Date(iso + "T12:00:00Z").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", timeZone: "UTC" });
+    const due = (a, b) => brDay(a) + " to " + (a.slice(0, 7) === b.slice(0, 7) ? String(Number(b.slice(8))) : brDay(b));
+    const k0 = (v) => v === null || v === undefined ? "-" : Math.abs(v) >= 999.5 ? (v < 0 ? "-$" : "$") + Math.round(Math.abs(v) / 1000) + "K" : usd(v);
+    const pct = po.rate_pct, cr = po.clear_rate || {}, next = po.next || [], hist = (po.history || []).slice(0, 4), n0 = (v) => Number(v || 0).toLocaleString("en-US");
+    const more = "more deals will be added";
+    const n = next[0];
+    if (!n) { $("brPayTop").innerHTML = ""; $("brPaySub").textContent = ""; }
+    else {
+      $("brPayTop").innerHTML = n.net
+        ? `<span class="fp-v">${esc(wd(n.monday))}: about ${esc(brK(n.net.likely))}</span><span class="fp-r">(${esc(k0(n.net.low))} to ${esc(k0(n.net.high))})</span>`
+        : `<span class="fp-v">${esc(wd(n.monday))}: not enough history yet</span>`;
+      $("brPaySub").textContent = `From 1st payments due ${due(n.due_from, n.due_to)}: ${n0(n.deals)} deal${n.deals === 1 ? "" : "s"}, ${brK(n.scheduled_debt)} scheduled.`
+        + (cr.likely_pct === null || cr.likely_pct === undefined ? " The forecast starts once a few weeks of payout files are matched to Forth." : ` ${cr.likely_pct}% of scheduled debt has cleared in past weeks.`)
+        + (n.at_risk_debt ? ` ${brK(n.at_risk_debt)} of it is already cancelled, returned, or pending cancel (the rate allows for cancels).` : "")
+        + (n.more_coming ? " More deals will be added (dates still being booked)." : "");
+    }
+    const exp = (x, key) => x.gross ? brK(x.gross[key]) : "-";
+    $("brPayNext").innerHTML = next.length
+      ? `<thead><tr><th>Monday</th><th>Payments due</th><th>Deals</th><th>Scheduled</th><th>Low</th><th>Likely</th><th>High</th><th>Chargebacks</th><th>Net</th></tr></thead><tbody>`
+        + next.map((x) => `<tr><td>${esc(wd(x.monday))}${x.more_coming ? `<small>${more}</small>` : ""}</td><td>${esc(due(x.due_from, x.due_to))}</td><td>${esc(n0(x.deals))}</td><td>${esc(brK(x.scheduled_debt))}</td>`
+          + `<td>${esc(exp(x, "low"))}</td><td>${esc(exp(x, "likely"))}</td><td>${esc(exp(x, "high"))}</td><td>${esc(brK(x.chargebacks))}</td><td><b>${x.net ? esc(brK(x.net.likely)) : "-"}</b></td></tr>`).join("") + "</tbody>"
+      : "";
+    $("brPayNextList").innerHTML = next.map((x) => `<div class="wl-r"><div class="wl-r1"><span>${esc(wd(x.monday))}</span><b>${x.net ? esc(brK(x.net.likely)) : "-"}</b></div>`
+      + `<div class="wl-r2">${[`Due ${due(x.due_from, x.due_to)}`, `${n0(x.deals)} deals`, `${brK(x.scheduled_debt)} scheduled`, x.gross ? `${brK(x.gross.low)} to ${brK(x.gross.high)} expected` : "no forecast yet", `chargebacks ${brK(x.chargebacks)}`, ...(x.more_coming ? [more] : [])].map(esc).join(" · ")}</div></div>`).join("");
+    const none = "No payout files loaded yet.";
+    $("brPayHist").innerHTML = hist.length
+      ? `<thead><tr><th>Monday</th><th>First pays</th><th>Debt</th><th>Paid at ${esc(pct)}%</th><th>Chargebacks</th><th>Net</th></tr></thead><tbody>`
+        + hist.map((h) => `<tr><td>${esc(wd(h.report_date))}</td><td>${esc(n0(h.first_pays))}</td><td>${esc(brK(h.first_pay_debt))}</td><td>${esc(brK(h.gross))}</td>`
+          + `<td>${esc(brK(h.chargeback_amount))}${h.chargebacks ? `<small>${esc(n0(h.chargebacks))} chargeback${h.chargebacks === 1 ? "" : "s"}</small>` : ""}</td><td><b>${esc(brK(h.net))}</b></td></tr>`).join("") + "</tbody>"
+      : `<tbody><tr><td><span class="empty">${none}</span></td></tr></tbody>`;
+    $("brPayHistList").innerHTML = hist.length
+      ? hist.map((h) => `<div class="wl-r"><div class="wl-r1"><span>${esc(wd(h.report_date))}</span><b>${esc(brK(h.net))}</b></div>`
+        + `<div class="wl-r2">${[`${n0(h.first_pays)} first pays`, `${brK(h.first_pay_debt)} debt`, `paid ${brK(h.gross)}`, `chargebacks ${brK(h.chargeback_amount)} (${n0(h.chargebacks)})`].map(esc).join(" · ")}</div></div>`).join("")
+      : `<p class="empty">${none}</p>`;
+    $("brPayFoot").textContent = `Expected = scheduled 1st payment debt x the share that has cleared in past weeks x ${pct}%. Chargebacks at the recent average. Cordoba's file lands each Monday for 1st payments that cleared the week before.`;
+    $("brPayInfo").title = `Net = ${pct}% of the 1st payment debt on Cordoba's file, less ${pct}% of the chargeback debt (assumed; to be checked against what Cordoba wires). `
+      + `The cleared share comes from the last ${(cr.weeks || []).length} weeks that ended at least ${Math.round((cr.mature_days || 21) / 7)} weeks ago: likely is all of them together, the range is the worst and best week. Not tied to the period picked above.`;
+  }
   function renderReview(rv) {
     brLast = rv;
     const p = rv.period, prog = p.in_progress;
@@ -1263,6 +1321,7 @@ table.wl-t tr.wl-tot td{font-weight:700;border-top:2px solid var(--line);border-
     $("brPeriod").textContent = p.label; $("brPrintPeriod").textContent = p.label;
     $("finPrev").hidden = $("finNext").hidden = p.kind === "custom";
     renderWinLose(rv.scorecard);
+    renderPayouts(rv.payouts);
     // Header status: one quiet line.
     const q = rv.qbo;
     const left = p.workdays_left === null || p.workdays_left === undefined ? "" : p.workdays_left === 0 ? ", no workdays left" : `, ${p.workdays_left} workday${p.workdays_left === 1 ? "" : "s"} left`;
@@ -1793,6 +1852,6 @@ table.wl-t tr.wl-tot td{font-weight:700;border-top:2px solid var(--line);border-
   else if (session) load(); else showSignIn();
 })();
 </script>
-<script src="coach.js?v=0e77c63-1793428551"></script>
+<script src="coach.js?v=1983e86-1793457325"></script>
 </body>
 </html>
