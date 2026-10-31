@@ -9,8 +9,8 @@
 <title>My CFN Page</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Quicksand:wght@500;700&display=swap">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
-<link rel="stylesheet" href="board.css?v=1983e86-1793457325">
-<link rel="stylesheet" href="coach.css?v=1983e86-1793457325">
+<link rel="stylesheet" href="board.css?v=9bdd597-1793470908">
+<link rel="stylesheet" href="coach.css?v=9bdd597-1793470908">
 <style>
 .wrap{max-width:680px}
 .three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
@@ -229,7 +229,7 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
   .wl-net,.fchip,.fbar,.fbar i,.fm-track,.fm-track i,.fm-track b,.fm-key i,.fm-key b,.fnote,.fbook,.fdot,.br-idx,.br-pills a.pill{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
 </style>
-<script src="config.js?v=1983e86-1793457325"></script>
+<script src="config.js?v=9bdd597-1793470908"></script>
 </head>
 <body>
 <div class="wrap">
@@ -1249,26 +1249,28 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
     const rows = sc ? sc.rows : [], t = sc && sc.total, rt = sc && sc.rates;
     const n0 = (v) => v === null || v === undefined ? "-" : Number(v).toLocaleString("en-US");
     const PEND = "calls pending (after 6 PM)";
-    const net = (r) => r.net === null || r.net === undefined ? '<span class="wl-pend">pending</span>' : `<span class="wl-net ${r.tag === "winning" ? "win" : r.tag === "losing" ? "lose" : ""}">${esc(usd(r.net))}</span>`;
+    const est = (r) => r.estimated ? "≈ " : "";
+    const estTip = (r) => r.estimated ? ` title="${esc(`Estimate: ${r.days_done} of ${r.days_total} days sorted into inbound and outbound so far`)}"` : "";
+    const net = (r) => r.net === null || r.net === undefined ? '<span class="wl-pend">pending</span>' : `<span class="wl-net ${r.tag === "winning" ? "win" : r.tag === "losing" ? "lose" : ""}"${estTip(r)}>${est(r)}${esc(usd(r.net))}</span>`;
     const dot = (r) => `<i class="fdot ${esc(r.tag)}" title="${esc(wlTag[r.tag] || r.tag)}"></i>`;
     const payTip = (r) => r.overseas ? `Hourly ${usd(r.pay_base)} (${r.login_hours} h in Vici) + per deal ${usd(r.pay_deals)}` : `Salary and tax ${usd(r.pay_base)} + commission ${usd(r.pay_deals)}`;
     const io = (n, o) => `${n0(n)} <small>(${n0(o)})</small>`;
-    const cells = (r) => (r.pending ? `<td colspan="2"><span class="wl-pend">${esc(PEND)}</span></td>` : `<td>${io(r.in_calls, r.in_120)}</td><td>${io(r.out_calls, r.out_120)}</td>`)
-      + `<td>${r.lead_cost === null ? "-" : esc(usd(r.lead_cost))}</td><td title="${esc(payTip(r))}">${esc(usd(r.pay))}</td><td>${n0(r.pulls)}</td><td>${n0(r.deals)}</td>`
+    const cells = (r) => (r.pending ? `<td colspan="2"><span class="wl-pend"${estTip(r)}>${esc(`≈ ${n0(r.in_120)} over 2 min · ${r.days_done} of ${r.days_total} days sorted`)}</span></td>` : `<td>${io(r.in_calls, r.in_120)}</td><td>${io(r.out_calls, r.out_120)}</td>`)
+      + `<td${estTip(r)}>${est(r)}${r.lead_cost === null ? "-" : esc(usd(r.lead_cost))}</td><td title="${esc(payTip(r))}">${esc(usd(r.pay))}</td><td>${n0(r.pulls)}</td><td>${n0(r.deals)}</td>`
       + `<td>${esc(brShort(r.debt, "money"))}</td><td>${esc(usd(r.revenue))}</td><td>${net(r)}</td>`;
     const none = "No closer calls or deals for this period yet.";
     $("brWlT").innerHTML = rows.length
       ? `<thead><tr><th>Closer</th><th>Inbound<small>calls (over 2 min)</small></th><th>Outbound<small>calls (over 2 min)</small></th><th>Lead cost</th><th>Pay</th><th>Pulls</th><th>Deals</th><th>Debt</th><th>Revenue</th><th>Net</th></tr></thead><tbody>`
         + rows.map((r) => `<tr><td>${dot(r)}${esc(r.closer)}</td>${cells(r)}</tr>`).join("") + `<tr class="wl-tot"><td>Team</td>${cells(t)}</tr></tbody>`
       : `<tbody><tr><td><span class="empty">${none}</span></td></tr></tbody>`;
-    const small = (r) => [r.pending ? PEND : `In ${n0(r.in_calls)} (${n0(r.in_120)} over 2 min) · Out ${n0(r.out_calls)} (${n0(r.out_120)})`, `${n0(r.deals)} deal${r.deals === 1 ? "" : "s"}`,
-      `${brShort(r.debt, "money")} debt`, `lead ${r.lead_cost === null ? "-" : usd(r.lead_cost)}`, `pay ${usd(r.pay)}`].map(esc).join(" · ");
+    const small = (r) => [r.pending ? `≈ ${n0(r.in_120)} over 2 min (${r.days_done} of ${r.days_total} days sorted)` : `In ${n0(r.in_calls)} (${n0(r.in_120)} over 2 min) · Out ${n0(r.out_calls)} (${n0(r.out_120)})`, `${n0(r.deals)} deal${r.deals === 1 ? "" : "s"}`,
+      `${brShort(r.debt, "money")} debt`, `lead ${est(r)}${r.lead_cost === null ? "-" : usd(r.lead_cost)}`, `pay ${usd(r.pay)}`].map(esc).join(" · ");
     $("brWlList").innerHTML = rows.length
       ? rows.map((r) => `<div class="wl-r"><div class="wl-r1"><span>${dot(r)}${esc(r.closer)}</span>${net(r)}</div><div class="wl-r2">${small(r)}</div></div>`).join("")
         + `<div class="wl-r wl-tot"><div class="wl-r1"><span>Team</span>${net(t)}</div><div class="wl-r2">${small(t)}</div></div>`
       : `<p class="empty">${none}</p>`;
-    $("brWlFoot").textContent = rt ? `Lead cost ${usd(rt.lead_cost_per_inbound_120)} per inbound call over 2 min (outbound callbacks free). Revenue ${rt.revenue_pct}% of debt, if the deal clears. Pay: salary plus ${rt.employer_tax_pct}% tax per weekday plus ${rt.commission_pct}% commission; overseas hourly from Vici login plus per deal. Credit pulls are free.` : "";
-    $("brWlInfo").title = "Net = revenue minus lead cost minus pay, for the days shown (up to today). Green: winning. Red: losing. Calls are sorted into inbound and outbound each evening from 6:15 PM; until then they show as pending. Hover Pay for how it adds up.";
+    $("brWlFoot").textContent = rt ? `Lead cost ${usd(rt.lead_cost_per_inbound_120)} per inbound call over 2 min (outbound callbacks free). Revenue ${rt.revenue_pct}% of debt, if the deal clears. Pay: salary plus ${rt.employer_tax_pct}% tax per weekday plus ${rt.commission_pct}% commission; overseas hourly from Vici login plus per deal. Credit pulls are free. ≈ means some days are not sorted yet and are estimated.` : "";
+    $("brWlInfo").title = "Net = revenue minus lead cost minus pay, for the days shown (up to today). Green: winning. Red: losing. Calls are sorted into inbound and outbound each evening from 6:15 PM. Days not sorted yet are estimated (≈) from the closer's own share of inbound calls over 2 minutes, and firm up as they are sorted. Hover Pay for how it adds up.";
   }
   // Next payouts: what Cordoba should pay on the coming Mondays (expected from scheduled 1st payments) and what the last files paid.
   function renderPayouts(po) {
@@ -1852,6 +1854,6 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
   else if (session) load(); else showSignIn();
 })();
 </script>
-<script src="coach.js?v=1983e86-1793457325"></script>
+<script src="coach.js?v=9bdd597-1793470908"></script>
 </body>
 </html>
