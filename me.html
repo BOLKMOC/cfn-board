@@ -9,8 +9,8 @@
 <title>My CFN Page</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Quicksand:wght@500;700&display=swap">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
-<link rel="stylesheet" href="board.css?v=e8b41f1-1793397773">
-<link rel="stylesheet" href="coach.css?v=e8b41f1-1793397773">
+<link rel="stylesheet" href="board.css?v=5653a5d-1793405553">
+<link rel="stylesheet" href="coach.css?v=5653a5d-1793405553">
 <style>
 .wrap{max-width:680px}
 .three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
@@ -200,7 +200,7 @@ table.br-small{font-size:12.5px} table.br-small th,table.br-small td{padding:5px
   .fchip,.fbar,.fbar i,.fm-track,.fm-track i,.fm-track b,.fm-key i,.fm-key b,.fnote,.fbook,.fdot,.br-idx,.br-pills a.pill{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
 </style>
-<script src="config.js?v=e8b41f1-1793397773"></script>
+<script src="config.js?v=5653a5d-1793405553"></script>
 </head>
 <body>
 <div class="wrap">
@@ -329,6 +329,7 @@ table.br-small{font-size:12.5px} table.br-small th,table.br-small td{padding:5px
     <div id="ciTeam"></div>
     <p class="label"><span>Returned to fix</span><span id="retN"></span></p>
     <p class="note" style="margin:0 0 8px">Sent back by Forth in the last 30 days. They do not count on the board until fixed and resubmitted. Longest waiting first.</p>
+    <p class="note" id="retWhy" style="margin:0 0 8px" hidden></p>
     <div id="retGroups"></div>
     <p class="label" style="margin-top:20px"><span>At risk of cancel</span><span id="riskN"></span></p>
     <p class="note" style="margin:0 0 8px">Pending cancel, NSF, admin pause, cancellation review. Most debt first. "Paid" means commission was already paid, so a cancel means a clawback.</p>
@@ -774,7 +775,7 @@ table.br-small{font-size:12.5px} table.br-small th,table.br-small td{padding:5px
       : `Help me save my deal with ${c.client} (Forth ID ${c.forth_id}). Status: ${c.status}${c.since ? " since " + day(c.since) : ""}. ${c.payments_cleared >= 2 ? "2+ payments cleared" : c.payments_cleared === 1 ? "1 payment cleared" : "No payment cleared yet"}. Give me the save call, step by step, with what to say.`);
     $("pcCard").hidden = !pc.length;
     $("pcN").textContent = pc.length + " deal" + (pc.length === 1 ? "" : "s");
-    $("pcList").innerHTML = pc.map((c) => `<li><span><b>${esc(c.client)}</b> <span class="when">Forth ID ${esc(c.forth_id)}</span><br><span class="note">${esc(c.status)}${c.since ? " since " + day(c.since) : ""}${c.enrolled ? " · enrolled " + day(c.enrolled) : ""}${c.payments_cleared >= 2 ? " · 2+ payments cleared (bonus safe)" : c.payments_cleared === 1 ? " · 1 payment cleared" : " · no payment cleared yet"}${c.commission_paid && c.payments_cleared < 2 ? " · bonus already paid (clawback risk)" : ""}</span><br><a class="savebtn" href="${saveLink(c)}">${c.status === "Returned" ? "Help me fix this" : "Help me save this"}</a>${aiBtn(c.forth_id, c.client)}${aiLast(c)}</span><span>${c.debt ? money(c.debt) : ""}</span></li>`).join("");
+    $("pcList").innerHTML = pc.map((c) => `<li><span><b>${esc(c.client)}</b> <span class="when">Forth ID ${esc(c.forth_id)}</span><br><span class="note">${esc(c.status)}${c.since ? " since " + day(c.since) : ""}${c.enrolled ? " · enrolled " + day(c.enrolled) : ""}${c.payments_cleared >= 2 ? " · 2+ payments cleared (bonus safe)" : c.payments_cleared === 1 ? " · 1 payment cleared" : " · no payment cleared yet"}${c.commission_paid && c.payments_cleared < 2 ? " · bonus already paid (clawback risk)" : ""}</span>${c.reason ? `<br><span class="when">Why: ${esc(c.reason)}${c.reason_detail ? " · " + esc(c.reason_detail) : ""}</span>` : ""}<br><a class="savebtn" href="${saveLink(c)}">${c.status === "Returned" ? "Help me fix this" : "Help me save this"}</a>${aiBtn(c.forth_id, c.client)}${aiLast(c)}</span><span>${c.debt ? money(c.debt) : ""}</span></li>`).join("");
     const fp = d.first_pay_month;
     $("fpCard").hidden = !fp || !fp.deals;
     if (fp && fp.deals) {
@@ -1051,9 +1052,11 @@ table.br-small{font-size:12.5px} table.br-small th,table.br-small td{padding:5px
       return [...by.values()].map((list) => ({ list: list.sort(kind === "returned" ? (a, b) => (b.days || 0) - (a.days || 0) : (a, b) => (b.debt || 0) - (a.debt || 0)) }))
         .sort(kind === "returned" ? (a, b) => (b.list[0].days || 0) - (a.list[0].days || 0) : (a, b) => sum(b.list) - sum(a.list));
     };
+    // Why it came back, from the Forth notes (category, then the one-line summary). Muted; nothing when not read yet.
+    const why = (r) => r.reason ? `<div class="when">Why: ${esc(r.reason)}${r.reason_detail ? ` · ${esc(r.reason_detail)}` : ""}</div>` : "";
     const deal = (r, kind) => `<div class="deal"><div><b>Forth ${esc(r.forth_id)}</b> · ${esc(r.client)}${kind === "risk" ? ` · <span class="st">${esc(r.status)}</span>` : ""}</div>
       <div class="when">${money(r.debt)}${kind === "risk" ? ` · since ${r.since ? day(r.since.slice(0, 10)) : "?"} (${days(r.days)}) · ${r.payments_cleared >= 2 ? "2+" : r.payments_cleared} payment${r.payments_cleared === 1 ? "" : "s"} · <span class="${r.commission_paid ? "neg" : ""}">${r.commission_paid ? "Paid" : "Not paid"}</span>` : ` · <span class="${r.days >= 2 ? "neg" : ""}">waiting ${days(r.days)}</span>`}</div>
-      <div class="ai">${aiBtn(r.forth_id, r.client)}${aiLast(r)}</div></div>`;
+      ${why(r)}<div class="ai">${aiBtn(r.forth_id, r.client)}${aiLast(r)}</div></div>`;
     const cards = (rows, kind, empty) => rows.length ? groups(rows, kind).map((g) => { const r0 = g.list[0], paid = g.list.filter((x) => x.commission_paid).length;
         return `<details class="sc-card"><summary style="display:flex;justify-content:space-between;gap:8px;cursor:pointer"><span><b>${esc(r0.closer)}</b>${r0.shown_as && r0.shown_as !== r0.closer ? ` <span class="when">${esc(r0.shown_as)}</span>` : ""}</span>
           <span style="white-space:nowrap">${g.list.length} · <b>${money(sum(g.list))}</b>${kind === "risk" && paid ? ` · <span class="neg">${paid} paid</span>` : kind === "returned" ? ` · <span class="${(r0.days || 0) >= 2 ? "neg" : "when"}">${days(r0.days)}</span>` : ""}</span></summary>
@@ -1063,6 +1066,9 @@ table.br-small{font-size:12.5px} table.br-small th,table.br-small td{padding:5px
     const rA = act(s.returned), kA = act(s.at_risk), rP = past(s.returned), kP = past(s.at_risk);
     $("retN").textContent = rA.length ? `${rA.length} · ${money(sum(rA))}` : "none";
     $("riskN").textContent = kA.length ? `${kA.length} · ${money(sum(kA))}${kA.filter((r) => r.commission_paid).length ? ` · ${kA.filter((r) => r.commission_paid).length} paid` : ""}` : "none";
+    const topWhy = ((s.reasons && s.reasons.returned) || [])[0];
+    $("retWhy").hidden = !topWhy || !rA.length;
+    $("retWhy").textContent = topWhy ? `Top reason: ${topWhy.reason} (${topWhy.deals} of ${rA.length})` : "";
     $("retGroups").innerHTML = cards(rA, "returned", "Nothing returned. Nice.");
     $("riskGroups").innerHTML = cards(kA, "risk", "No deals at risk.");
     $("pastN").textContent = rP.length || kP.length ? `${kP.length} at risk · ${money(sum(kP))}${rP.length ? ` · ${rP.length} returned` : ""}` : "none";
@@ -1731,6 +1737,6 @@ table.br-small{font-size:12.5px} table.br-small th,table.br-small td{padding:5px
   else if (session) load(); else showSignIn();
 })();
 </script>
-<script src="coach.js?v=e8b41f1-1793397773"></script>
+<script src="coach.js?v=5653a5d-1793405553"></script>
 </body>
 </html>
