@@ -9,8 +9,8 @@
 <title>My CFN Page</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Quicksand:wght@500;700&display=swap">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
-<link rel="stylesheet" href="board.css?v=5f6e390-1793600533">
-<link rel="stylesheet" href="coach.css?v=5f6e390-1793600533">
+<link rel="stylesheet" href="board.css?v=226edfb-1793601444">
+<link rel="stylesheet" href="coach.css?v=226edfb-1793601444">
 <style>
 .wrap{max-width:680px}
 .three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
@@ -229,7 +229,7 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
   .wl-net,.fchip,.fbar,.fbar i,.fm-track,.fm-track i,.fm-track b,.fm-key i,.fm-key b,.fnote,.fbook,.fdot,.br-idx,.br-pills a.pill{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
 </style>
-<script src="config.js?v=5f6e390-1793600533"></script>
+<script src="config.js?v=226edfb-1793601444"></script>
 </head>
 <body>
 <div class="wrap">
@@ -1313,13 +1313,13 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
       + `<div class="wl-r2">${[`Due ${due(x.due_from, x.due_to)}`, `${n0(x.deals)} deals`, `${brK(x.scheduled_debt)} scheduled`, x.gross ? `${brK(x.gross.low)} to ${brK(x.gross.high)} expected` : "no forecast yet", `chargebacks ${brK(x.chargebacks)}`, ...(x.more_coming ? [more] : [])].map(esc).join(" · ")}</div></div>`).join("");
     const none = "No payout files loaded yet.";
     $("brPayHist").innerHTML = hist.length
-      ? `<thead><tr><th>Monday</th><th>First pays</th><th>Debt</th><th>Paid at ${esc(pct)}%</th><th>Chargebacks</th><th>Net</th></tr></thead><tbody>`
+      ? `<thead><tr><th>Monday</th><th>First pays</th><th>Debt</th><th>Debt x ${esc(pct)}%</th><th>Chargebacks</th><th>Net</th></tr></thead><tbody>`
         + hist.map((h) => `<tr><td>${esc(wd(h.report_date))}</td><td>${esc(n0(h.first_pays))}</td><td>${esc(brK(h.first_pay_debt))}</td><td>${esc(brK(h.gross))}</td>`
           + `<td>${esc(brK(h.chargeback_amount))}${h.chargebacks ? `<small>${esc(n0(h.chargebacks))} chargeback${h.chargebacks === 1 ? "" : "s"}</small>` : ""}</td><td><b>${esc(brK(h.net))}</b></td></tr>`).join("") + "</tbody>"
       : `<tbody><tr><td><span class="empty">${none}</span></td></tr></tbody>`;
     $("brPayHistList").innerHTML = hist.length
       ? hist.map((h) => `<div class="wl-r"><div class="wl-r1"><span>${esc(wd(h.report_date))}</span><b>${esc(brK(h.net))}</b></div>`
-        + `<div class="wl-r2">${[`${n0(h.first_pays)} first pays`, `${brK(h.first_pay_debt)} debt`, `paid ${brK(h.gross)}`, `chargebacks ${brK(h.chargeback_amount)} (${n0(h.chargebacks)})`].map(esc).join(" · ")}</div></div>`).join("")
+        + `<div class="wl-r2">${[`${n0(h.first_pays)} first pays`, `${brK(h.first_pay_debt)} debt`, `${brK(h.gross)} at ${pct}%`, `chargebacks ${brK(h.chargeback_amount)} (${n0(h.chargebacks)})`].map(esc).join(" · ")}</div></div>`).join("")
       : `<p class="empty">${none}</p>`;
     $("brPayFoot").textContent = `Expected = scheduled 1st payment debt x the share that has cleared in past weeks x ${pct}%. Chargebacks at the recent average. Cordoba's file lands each Monday for 1st payments that cleared the week before.`;
     $("brPayInfo").title = `Net = ${pct}% of the 1st payment debt on Cordoba's file, less ${pct}% of the chargeback debt (assumed; to be checked against what Cordoba wires). `
@@ -1869,6 +1869,6 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
   else if (session) load(); else showSignIn();
 })();
 </script>
-<script src="coach.js?v=5f6e390-1793600533"></script>
+<script src="coach.js?v=226edfb-1793601444"></script>
 </body>
 </html>
