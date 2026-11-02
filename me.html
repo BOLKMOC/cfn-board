@@ -9,8 +9,8 @@
 <title>My CFN Page</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Quicksand:wght@500;700&display=swap">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
-<link rel="stylesheet" href="board.css?v=e83d6c3-1793483636">
-<link rel="stylesheet" href="coach.css?v=e83d6c3-1793483636">
+<link rel="stylesheet" href="board.css?v=93e3373-1793599105">
+<link rel="stylesheet" href="coach.css?v=93e3373-1793599105">
 <style>
 .wrap{max-width:680px}
 .three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
@@ -49,7 +49,7 @@ table.onb td{text-align:center;vertical-align:top} table.onb th{text-align:cente
 button.go.small{padding:5px 10px;font-size:12px}
 .filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:4px 0 10px} .filters label{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted)}
 .actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px} .go.ghost{background:#fff;color:var(--blue);border:1px solid var(--blue)}
-.neg{color:#C62828}
+.neg{color:#C62828} .coach{color:#93370D;font-weight:700}
 .savebtn{display:inline-block;margin-top:6px;background:#1F4FD8;color:#fff;border-radius:8px;padding:5px 10px;font-size:12.5px;font-weight:600;text-decoration:none}
 .savebtn.ai{background:#0E7C66;border:0;cursor:pointer;margin-left:6px;font-family:inherit}
 .savebtn.ai[disabled]{background:#9AA3B2;cursor:default}
@@ -229,7 +229,7 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
   .wl-net,.fchip,.fbar,.fbar i,.fm-track,.fm-track i,.fm-track b,.fm-key i,.fm-key b,.fnote,.fbook,.fdot,.br-idx,.br-pills a.pill{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
 </style>
-<script src="config.js?v=e83d6c3-1793483636"></script>
+<script src="config.js?v=93e3373-1793599105"></script>
 </head>
 <body>
 <div class="wrap">
@@ -328,7 +328,7 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
     <p style="margin:0 0 12px;display:flex;gap:8px"><a class="pill" id="callsTabList" href="/me#calls">Calls</a><a class="pill" id="callsTabScore" href="/me#calls?view=scorecard">Scorecard</a></p>
     <div id="scoreView" hidden>
       <p class="label"><span>Best practices scorecard</span><span><button class="link" id="scPrev">&larr;</button> <b id="scMonth"></b> <button class="link" id="scNext">&rarr;</button></span></p>
-      <p class="note" style="margin:0 0 10px">Layer 1: the owner's rules (no outcome promises, a target payment before the price, longest program only and remove a card to lower the price, ask for the close, credit dip told up front) and compliance. Pass = no rule broken and no flags on the call. Layer 2: the 4 areas, 1 to 5 from scored calls. Top closer = most net debt this month. Conversion = net deals per 100 Vici calls. Gaps are against the top closer.</p>
+      <p class="note" style="margin:0 0 10px">Fix (red): the 3 hard stops (a promised result, bank info before the credit and collections warnings, the wrong program). Coach (amber): behaviors to work on and other compliance items. Done well (green): nothing to fix. Layer 2: the 4 areas, 1 to 5 from scored calls. Top closer = most net debt this month. Conversion = net deals per 100 Vici calls. Gaps are against the top closer.</p>
       <div id="scTop"></div>
       <div id="scCards"></div>
       <p class="label" style="margin-top:22px"><span>Closers who say X get Y</span><span class="when">last 3 months</span></p>
@@ -1124,15 +1124,15 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
     $("scoreView").hidden = !sc;
     if (sc) { $("callList").hidden = true; $("callDetail").hidden = true; renderScorecard(d.scorecard); return; }
     const c = d.counts || {};
-    $("callsN").textContent = `${c.scored || 0} scored` + (c.waiting ? ` · ${c.waiting} waiting` : "") + (c.failed ? ` · ${c.failed} failed` : "");
-    const status = (r) => r.status === "scored" ? (r.closed === true ? "Yes" : r.closed === false ? "No" : "") : r.status === "new" ? '<span class="when">waiting to be scored</span>' : r.status === "transcribed" ? '<span class="when">being scored</span>' : r.status === "skipped" ? `<span class="when">not scored: ${esc(r.error || "skipped")}</span>` : `<span class="neg">${esc(r.status)}</span>${r.error ? `<br><span class="when">${esc(String(r.error).slice(0, 120))}</span>` : ""}`;
+    $("callsN").textContent = `${c.scored || 0} scored` + (c.waiting ? ` · ${c.waiting} waiting` : "") + (c.failed ? ` · ${c.failed} could not be scored` : "");
+    const status = (r) => r.status === "scored" ? (r.closed === true ? "Yes" : r.closed === false ? "No" : "") : r.status === "new" ? '<span class="when">waiting to be scored</span>' : r.status === "transcribed" ? '<span class="when">being scored</span>' : r.status === "skipped" ? `<span class="when">not scored: ${esc(r.error || "skipped")}</span>` : `<span class="when">could not be scored</span>${r.error ? `<br><span class="when">${esc(String(r.error).slice(0, 120))}</span>` : ""}`;
     const short = (iso) => iso ? new Date(iso).toLocaleString("en-US", { timeZone: "America/Los_Angeles", month: "short", day: "numeric" }) + ", " + new Date(iso).toLocaleTimeString("en-US", { timeZone: "America/Los_Angeles", hour: "numeric", minute: "2-digit" }) : "";
     const result = (r) => {
       if (r.status !== "scored") return status(r);
-      const broke = (r.broken || []).length ? `<br><b class="neg">Rule broken: ${(r.broken || []).map(esc).join("; ")}</b>` : "";
-      const flags = r.compliance_flags ? `<br><b class="neg">${r.compliance_flags} compliance flag${r.compliance_flags === 1 ? "" : "s"}</b>` : "";
+      const fix = (r.fix || []).length ? `<br><b class="neg">Fix: ${(r.fix || []).map(esc).join("; ")}</b>` : "";
+      const coach = r.coach ? `<br><span class="coach">Coach: ${r.coach} to work on</span>` : "";
       const ls = r.losses || [], loss = ls.length ? `<br><span class="when">${ls.slice(0, 3).map(esc).join("; ")}${ls.length > 3 ? `; +${ls.length - 3} more` : ""}</span>` : "";
-      return `<b>${r.closed === true ? "Closed" : r.closed === false ? "Not closed" : "Scored"}</b>${broke}${flags}${loss}`;
+      return `<b>${r.closed === true ? "Closed" : r.closed === false ? "Not closed" : "Scored"}</b>${fix}${coach}${loss}`;
     };
     $("callRows").innerHTML = d.calls.length ? d.calls.map((r) => `<tr data-call="${esc(r.call_id)}" style="cursor:pointer"><td>${esc(short(r.started_at))}${r.minutes ? `<br><span class="when">${mins(r.minutes)} min</span>` : ""}</td><td><b>${esc(r.closer)}</b><br><span class="when">${esc(r.call_sign || "")}${r.contact_id ? "<br>Forth " + esc(r.contact_id) : ""}</span></td><td>${result(r)}</td></tr>`).join("")
       : '<tr><td colspan="3" class="empty" style="text-align:left">No calls yet. The first pull runs after 6 PM Pacific on a floor day.</td></tr>';
@@ -1147,8 +1147,11 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
     $("cdAudio").innerHTML = det.has_audio ? '<button class="go small" id="cdPlay">Play recording</button>' : '<span class="when">Recording not kept.</span>';
     const list = (title, items) => items.length ? `<p class="label" style="margin-top:14px"><span>${title}</span></p><ul style="margin:0;padding-left:20px">${items.join("")}</ul>` : "";
     $("cdBody").innerHTML =
-      ((det.rules || []).length ? `<p class="label" style="margin-top:14px"><span>The ${det.rules.length} rules</span><span>${det.broken.length ? `<b class="neg">${det.broken.length} broken</b>` : '<b class="ok">all kept</b>'}</span></p><table class="tt calls checks"><tbody>${det.rules.map((r) => `<tr><td><b>${esc(r.label)}</b>${r.result === "fail" && (r.quote || r.minute) ? `<br><span class="neg">${r.minute ? esc(r.minute) + " " : ""}${r.quote ? "&ldquo;" + esc(r.quote) + "&rdquo;" : ""}</span>` : ""}</td><td>${r.result === "fail" ? '<b class="neg">Broken</b>' : r.result === "pass" ? '<span class="ok">Kept</span>' : '<span class="when">Not reached</span>'}</td></tr>`).join("")}</tbody></table>` : "")
-      + (det.compliance.length ? list("Compliance flags", det.compliance.map((x) => typeof x === "string" ? `<li class="neg">${esc(x)}</li>` : `<li><span class="neg"><b>${x.minute ? esc(x.minute) + " " : ""}&ldquo;${esc(x.quote || "")}&rdquo;</b></span><br>${esc(x.issue || "")}</li>`)) : "")
+      `<p class="label" style="margin-top:14px"><span>Fix</span><span>${det.fix.length ? `<b class="neg">${det.fix.length} to fix</b>` : '<b class="ok">Done well</b>'}</span></p>`
+      + (det.fix.length ? `<ul style="margin:0;padding-left:20px">${det.fix.map((x) => `<li><b class="neg">${esc(x.label)}</b>${x.quote || x.minute ? `<br>${x.minute ? esc(x.minute) + " " : ""}${x.quote ? "&ldquo;" + esc(x.quote) + "&rdquo;" : ""}` : ""}</li>`).join("")}</ul>` : "")
+      + (det.behaviors.length ? `<p class="label" style="margin-top:14px"><span>Behaviors</span><span>${det.coach.length ? `<span class="coach">${det.coach.length} to coach</span>` : '<b class="ok">Done well</b>'}</span></p><table class="tt calls checks"><tbody>${det.behaviors.map((b) => `<tr><td><b>${esc(b.label)}</b>${b.key === "trial_closes" ? ` <span class="when">${esc(String(b.answer))}</span>` : ""}${b.state === "coach" ? `<br><span class="when">${esc(det.coach.find((x) => x.key === b.key)?.label || "")}</span>` : ""}</td><td>${b.state === "coach" ? '<span class="coach">Coach</span>' : b.state === "done" ? '<span class="ok">Done well</span>' : '<span class="when">Not reached</span>'}</td></tr>`).join("")}</tbody></table>`
+        : list("Coach", det.coach.map((x) => `<li><span class="coach">${esc(x.label)}</span>${x.quote || x.minute ? `<br><span class="when">${x.minute ? esc(x.minute) + " " : ""}${x.quote ? "&ldquo;" + esc(x.quote) + "&rdquo;" : ""}</span>` : ""}</li>`)))
+      + (det.compliance.length ? list("Coach: compliance", det.compliance.map((x) => typeof x === "string" ? `<li class="coach">${esc(x)}</li>` : `<li><span class="coach">${x.minute ? esc(x.minute) + " " : ""}&ldquo;${esc(x.quote || "")}&rdquo;</span><br>${esc(x.issue || "")}</li>`)) : "")
       + list("Coaching", det.coaching.map((x) => `<li>${esc(typeof x === "string" ? x : x.point || x.text || JSON.stringify(x))}</li>`))
       + (det.best_line ? `<p class="label" style="margin-top:14px"><span>Best line</span></p><p style="margin:0">&ldquo;${esc(typeof det.best_line === "string" ? det.best_line : det.best_line.quote || "")}&rdquo;</p>` : "")
       + list("Where it lost momentum", det.loss_codes.map((l) => `<li><b>${esc(l.code)}</b> ${esc(l.label)}${l.minute !== undefined && l.minute !== null ? ` <span class="when">min ${esc(l.minute)}</span>` : ""}${l.evidence ? `<br><span class="when">${esc(l.evidence)}</span>` : ""}</li>`))
@@ -1156,7 +1159,7 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
       ;
     $("cdTranscript").textContent = det.transcript || "No transcript.";
     const areas = det.areas || [];
-    $("cdScore").innerHTML = areas.some((a) => a.score !== null) || det.status === "scored" ? `<p class="label" style="margin-top:6px"><span>Scorecard</span><span>${det.rules_pass === false ? `<b class="neg">Rules: ${det.broken.length} broken</b> · ` : (det.rules || []).length ? '<b class="ok">Rules: pass</b> · ' : ""}${det.compliance_pass ? '<b class="ok">Compliance: pass</b>' : '<b class="neg">Compliance: ' + det.compliance.length + ' flag' + (det.compliance.length === 1 ? "" : "s") + '</b>'}</span></p>`
+    $("cdScore").innerHTML = areas.some((a) => a.score !== null) || det.status === "scored" ? `<p class="label" style="margin-top:6px"><span>Scorecard</span><span>${det.nothing_to_fix ? '<b class="ok">Done well: nothing to fix</b>' : `<b class="neg">Fix: ${det.fix.length}</b>`}${det.coach.length + det.compliance.length ? ` · <span class="coach">Coach: ${det.coach.length + det.compliance.length}</span>` : ""}</span></p>`
       + areas.map((a) => `<div style="padding:8px 0;border-bottom:1px solid var(--tint)"><div style="display:flex;justify-content:space-between;gap:8px"><b>${esc(a.label)}</b><span class="dots" style="white-space:nowrap">${a.score === null ? '<span class="when">not scored</span>' : dots(a.score) + (a.score ? ` <b style="letter-spacing:0;color:inherit">${a.score}/5</b>` : "")}</span></div>
           ${a.feedback ? `<div style="font-size:14px;margin-top:4px">${esc(a.feedback)}</div>` : ""}${a.quote ? `<div class="when" style="margin-top:4px">Their line${a.minute ? " at " + esc(a.minute) : ""}: &ldquo;${esc(a.quote)}&rdquo;</div>` : ""}</div>`).join("")
       + (areas.length ? `<details style="margin-top:10px"${areas.some((a) => a.my_score !== null) ? " open" : ""}><summary><span>Your scores (calibration)</span></summary><form id="calForm" style="margin-top:8px">
@@ -1185,7 +1188,7 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
     const pct = (v) => v === null || v === undefined ? "-" : v + "%";
     $("scCards").innerHTML = s.closers.length ? s.closers.map((c) => `<div class="sc-card${c.is_top ? " top" : ""}">
         <div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline"><b>${esc(c.closer)}${c.is_top ? " &#9733;" : ""}</b><span class="when">${esc(c.call_sign || "")}</span></div>
-        <div class="when" style="margin:4px 0 8px">${c.net_deals} net of ${c.submitted} · ${money(c.net_debt)} · ${c.conversion === null ? "no Vici calls" : c.conversion + " per 100 calls"} · ${c.calls_scored ? `${c.rule_breaks ? `<b class="neg">${c.rule_breaks} rule break${c.rule_breaks === 1 ? "" : "s"}</b> · ` : ""}rules and compliance pass ${pct(c.compliance_pass_pct)} of ${c.calls_scored} scored call${c.calls_scored === 1 ? "" : "s"}` : "no calls scored yet"}</div>
+        <div class="when" style="margin:4px 0 8px">${c.net_deals} net of ${c.submitted} · ${money(c.net_debt)} · ${c.conversion === null ? "no Vici calls" : c.conversion + " per 100 calls"} · ${c.calls_scored ? `${c.fix_count ? `<b class="neg">Fix: ${c.fix_count}</b> · ` : ""}nothing to fix on ${pct(c.no_fix_pct)} of ${c.calls_scored} scored call${c.calls_scored === 1 ? "" : "s"}` : "no calls scored yet"}</div>
         ${AREA.map((a) => { const v = c.areas[a.key], g = c.gaps[a.key];
           return `<div class="sc-row"><span>${esc(a.label)}</span><span class="sc-bar"><i style="width:${v.avg ? (v.avg / 5) * 100 : 0}%"></i></span><span style="min-width:74px;text-align:right">${v.avg === null ? '<span class="when">-</span>' : "<b>" + v.avg + "</b>"}${g === null || c.is_top ? "" : ` <span class="${g < 0 ? "gap-neg" : "gap-pos"}">${g > 0 ? "+" : ""}${g}</span>`}</span></div>`; }).join("")}
       </div>`).join("") : '<p class="empty">No closers with deals or calls this month yet.</p>';
@@ -1865,6 +1868,6 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
   else if (session) load(); else showSignIn();
 })();
 </script>
-<script src="coach.js?v=e83d6c3-1793483636"></script>
+<script src="coach.js?v=93e3373-1793599105"></script>
 </body>
 </html>
