@@ -10,10 +10,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Quicksand:wght@500;700&display=swap">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
-<link rel="stylesheet" href="board.css?v=226edfb-1793601444">
-<link rel="stylesheet" href="coach.css?v=226edfb-1793601444">
-<script src="config.js?v=226edfb-1793601444"></script>
-<script src="confetti.browser.js?v=226edfb-1793601444"></script>
+<link rel="stylesheet" href="board.css?v=c5c036b-1793642259">
+<link rel="stylesheet" href="coach.css?v=c5c036b-1793642259">
+<script src="config.js?v=c5c036b-1793642259"></script>
+<script src="confetti.browser.js?v=c5c036b-1793642259"></script>
 <style>
 /* Sales contest card: standings by call sign, a cut line, who is out greyed. */
 .contest{margin-bottom:14px;border:2px solid var(--blue)}
@@ -48,7 +48,7 @@ body.tv .contest ol.leaders li{font-size:24px} body.tv .ctteams .v{font-size:34p
     <div class="note" id="ctFoot"></div>
   </section>
 
-  <div class="pswitch tabs" role="group" aria-label="Show the board for"><button data-p="day" aria-pressed="true">Today</button><button data-p="week" aria-pressed="false">This week</button><button data-p="month" aria-pressed="false">This month</button></div>
+  <div class="pswitch tabs" role="group" aria-label="Show the board for"><button data-p="day" aria-pressed="true">Today</button><button data-p="week" aria-pressed="false">This week</button><button data-p="month" aria-pressed="false">This month</button><button data-p="last_month" aria-pressed="false">Last month</button></div>
 
   <div class="grid">
     <section class="card" aria-labelledby="t-debt" id="cardDebt" data-set="day">
@@ -159,58 +159,71 @@ body.tv .contest ol.leaders li{font-size:24px} body.tv .ctteams .v{font-size:34p
     setTimeout(() => $("overlay").classList.remove("show"), 8000);
   }
   $("overlay").onclick = () => $("overlay").classList.remove("show");
-  // One switch for the page: the debt and deals cards, Top reps, and the wins list all follow it.
-  const PERIODS = ["day", "week", "month"];
-  try { const p = localStorage.getItem("cfnBoardPeriod"); if (PERIODS.includes(p)) period = p; } catch {}
+  // One switch for the page: the debt and deals cards, Top reps, and the wins list all follow it. Last month is a closed
+  // book (final numbers, no pace, no click-through) and is not in the TV cycle.
+  const PERIODS = ["day", "week", "month"], LAST = "last_month";
+  try { const p = localStorage.getItem("cfnBoardPeriod"); if (PERIODS.includes(p) || p === LAST) period = p; } catch {}
   function renderPeriod() {
+    if (period === LAST && data && !data.last_month) period = "month"; // an older server without last month
     document.querySelectorAll(".pswitch button").forEach((x) => x.setAttribute("aria-pressed", x.dataset.p === period));
     if (!data) return;
-    const d = data, g = d.goals || {}, P = d[period];
-    const when = period === "day" ? "today" : period === "week" ? "this week" : "this month";
-    const name = period === "day" ? "Today" : period === "week" ? "This week" : "This month";
-    const goal = period === "day" ? g.daily : period === "week" ? g.weekly : g.month;
-    const goalDeals = period === "day" ? g.daily_deals : period === "week" ? g.weekly_deals : g.month_deals;
+    const d = data, g = d.goals || {}, P = d[period], last = period === LAST;
+    const when = period === "day" ? "today" : period === "week" ? "this week" : last ? "in " + P.label : "this month";
+    const name = period === "day" ? "Today" : period === "week" ? "This week" : last ? P.label : "This month";
+    const goal = period === "day" ? g.daily : period === "week" ? g.weekly : last ? P.goal : g.month;
+    const goalDeals = period === "day" ? g.daily_deals : period === "week" ? g.weekly_deals : last ? P.goal_deals : g.month_deals;
     const set = period === "month" ? "month_submitted" : period;
     const retSet = period === "month" ? "month_returned" : "returned_" + period;
-    const pace = (pct) => pct >= P.pace_pct ? "ahead of pace" : "behind pace";
+    const pace = (pct) => last ? "final" : pct >= P.pace_pct ? "ahead of pace" : "behind pace";
     const left = period === "month" ? ` · ${P.workdays_left} working day${P.workdays_left === 1 ? "" : "s"} left` : "";
-    $("cardDebt").dataset.set = set; $("cardDeals").dataset.set = set;
+    // Last month: the cards open nothing (the deals panel has no last-month set) and the pace marker is gone.
+    if (last) { delete $("cardDebt").dataset.set; delete $("cardDeals").dataset.set; } else { $("cardDebt").dataset.set = set; $("cardDeals").dataset.set = set; }
+    $("debtPace").style.display = last ? "none" : ""; $("dealsPace").style.display = last ? "none" : "";
     $("t-debt").textContent = name + ": enrolled debt"; $("t-deals").textContent = name + ": deals";
     $("debtGoal").textContent = goal ? "Goal " + money(goal) : "";
     $("debtBig").textContent = money(P.debt);
     $("debtSub").textContent = `${P.debt_pct ?? 0}% of goal${P.avg_deal ? " · avg " + money(P.avg_deal) + " per deal" : ""}`;
     bar("debtBar", "debtPace", P.debt_pct, P.pace_pct, P.goal_hit);
     $("debtBarWrap").setAttribute("aria-label", `${P.debt_pct ?? 0}% of the goal ${when}`);
-    $("debtNote").textContent = (P.goal_hit ? (period === "day" ? "Goal hit! Keep stacking." : "Goal hit!") : goal ? `${money(Math.max(0, goal - P.debt))} to go · ${pace(P.debt_pct)}` : "") + left;
+    $("debtNote").textContent = last ? (P.goal_hit ? `Goal hit! · ${P.label}: final` : goal ? `${money(Math.max(0, goal - P.debt))} short of goal · ${P.label}: final` : `${P.label}: final`)
+      : (P.goal_hit ? (period === "day" ? "Goal hit! Keep stacking." : "Goal hit!") : goal ? `${money(Math.max(0, goal - P.debt))} to go · ${pace(P.debt_pct)}` : "") + left;
     $("dealsGoal").textContent = goalDeals ? "Goal " + whole(goalDeals) : "";
     $("dealsBig").textContent = P.deals;
-    $("dealsSub").innerHTML = `deal${P.deals === 1 ? "" : "s"} ${when}${goalDeals ? ` · ${P.deals_pct ?? 0}% of goal` : ""}${P.returned?.deals ? ` · <span data-set="${retSet}" class="neg">${P.returned.deals} returned to fix (${money(P.returned.debt)})</span>` : ""}`;
+    $("dealsSub").innerHTML = `deal${P.deals === 1 ? "" : "s"} ${when}${goalDeals ? ` · ${P.deals_pct ?? 0}% of goal` : ""}${P.returned?.deals ? ` · <span${last ? "" : ` data-set="${retSet}"`} class="neg">${P.returned.deals} returned to fix (${money(P.returned.debt)})</span>` : ""}`;
     const dealsHit = goalDeals && P.deals >= goalDeals;
     bar("dealsBar", "dealsPace", P.deals_pct, P.pace_pct, dealsHit);
     $("dealsBarWrap").setAttribute("aria-label", `${P.deals_pct ?? 0}% of the deal goal ${when}`);
-    $("dealsNote").textContent = dealsHit ? "Deal goal hit!" : goalDeals ? `${whole(Math.max(0, goalDeals - P.deals))} to go · ${pace(P.deals_pct)}` : "";
+    $("dealsNote").textContent = last ? (dealsHit ? `Deal goal hit! · ${P.label}: final` : goalDeals ? `${whole(Math.max(0, goalDeals - P.deals))} short of goal · ${P.label}: final` : `${P.label}: final`)
+      : dealsHit ? "Deal goal hit!" : goalDeals ? `${whole(Math.max(0, goalDeals - P.deals))} to go · ${pace(P.deals_pct)}` : "";
     // The month card's summary line repeats the big cards when Month is picked.
     $("monthSum").hidden = period === "month"; $("monthGoal").hidden = period === "month";
     renderLeaders(when); renderFeed(when);
   }
   function renderLeaders(when) {
-    const list = period === "day" ? data.top_today : period === "week" ? data.top_week : (data.top_month || []);
-    $("t-top").textContent = "Top reps " + when + (period === "month" ? " (deals that stuck)" : "");
-    const stick = (r) => period === "month" && r.stick !== null && r.stick !== undefined ? ` · <span class="stick" title="Share of their deals since June that were not cancelled or returned">${r.stick}% stick</span>` : "";
+    // Month and last month rank on deals that stuck (stickLeaders in src/board.ts); last month's rows open nothing.
+    const last = period === LAST, stuck = last || period === "month";
+    const list = period === "day" ? data.top_today : period === "week" ? data.top_week : last ? (data.last_month.top || []) : (data.top_month || []);
+    $("t-top").textContent = "Top reps " + when + (stuck ? " (deals that stuck)" : "");
+    const stick = (r) => stuck && r.stick !== null && r.stick !== undefined ? ` · <span class="stick" title="Share of their deals since June that were not cancelled or returned">${r.stick}% stick</span>` : "";
+    const open = (r) => last ? "" : ` data-set="${period === "month" ? "month_submitted" : period}" data-rep="${esc(r.name)}"`;
     const top = list[0];
     $("spot").hidden = !top;
-    if (top) $("spot").innerHTML = `<span class="crown" aria-hidden="true">&#9819;</span><div><div class="k">Top agent ${when}${period === "month" ? " (deals that stuck)" : ""}</div><div class="who">${label(top.name)}</div><div class="what">${money(top.debt)} ${period === "month" ? "net" : "enrolled"} · ${top.deals} deal${top.deals === 1 ? "" : "s"}${stick(top)}</div></div>`;
-    $("leaders").innerHTML = list.length ? list.map((r, i) => `<li data-set="${period === "month" ? "month_submitted" : period}" data-rep="${esc(r.name)}"><span><span class="rank">${i + 1}.</span>${i === 0 ? '<span class="crown" aria-label="leader">&#9819;</span> ' : ""}${label(r.name)}</span><span><b class="size">${money(r.debt)}</b> <span class="when">· ${r.deals} deal${r.deals === 1 ? "" : "s"}${stick(r)}</span></span></li>`).join("")
-      : `<li class="empty">First deal ${when} takes the crown.</li>`;
+    if (top) $("spot").innerHTML = `<span class="crown" aria-hidden="true">&#9819;</span><div><div class="k">Top agent ${when}${stuck ? " (deals that stuck)" : ""}</div><div class="who">${label(top.name)}</div><div class="what">${money(top.debt)} ${stuck ? "net" : "enrolled"} · ${top.deals} deal${top.deals === 1 ? "" : "s"}${stick(top)}</div></div>`;
+    $("leaders").innerHTML = list.length ? list.map((r, i) => `<li${open(r)}><span><span class="rank">${i + 1}.</span>${i === 0 ? '<span class="crown" aria-label="leader">&#9819;</span> ' : ""}${label(r.name)}</span><span><b class="size">${money(r.debt)}</b> <span class="when">· ${r.deals} deal${r.deals === 1 ? "" : "s"}${stick(r)}</span></span></li>`).join("")
+      : last ? `<li class="empty">No deals ${when}.</li>` : `<li class="empty">First deal ${when} takes the crown.</li>`;
   }
   function renderFeed(when) {
     // Week and month: the latest 15, so the list stays next to Top reps instead of running down the page.
-    const all = (period === "day" ? data.feed : period === "week" ? data.feed_week : data.feed_month) || [];
+    // Last month: the server sends the newest 15 of its deals; "latest 15" shows when the month had more.
+    const last = period === LAST;
+    const all = (period === "day" ? data.feed : period === "week" ? data.feed_week : last ? data.last_month.feed : data.feed_month) || [];
     const list = period === "day" ? all : all.slice(0, 15);
     const set = period === "month" ? "month_submitted" : period;
-    $("t-feed").textContent = period === "day" ? "Live wins today" : `Wins ${when}` + (all.length > list.length ? ` (latest ${list.length})` : "");
-    $("feed").innerHTML = list.length ? list.map((f) => `<li${f.kind === "deal" ? ` data-set="${set}" data-rep="${esc(f.name)}"` : ""}><span>${f.kind === "loan" ? "&#127974;" : "&#127942;"} ${label(f.name)} · ${f.kind === "loan" ? "Nationwide loan" : "deal"}${f.debt ? ` <b class="size">${money(f.debt)}</b>` : ""}</span><span class="when">${ago(f.at)}</span></li>`).join("")
-      : `<li class="empty">No wins yet ${when}. Be first.</li>`;
+    const more = last ? data.last_month.deals > list.length : all.length > list.length;
+    const day = (iso) => new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    $("t-feed").textContent = period === "day" ? "Live wins today" : `Wins ${when}` + (more ? ` (latest ${list.length})` : "");
+    $("feed").innerHTML = list.length ? list.map((f) => `<li${f.kind === "deal" && !last ? ` data-set="${set}" data-rep="${esc(f.name)}"` : ""}><span>${f.kind === "loan" ? "&#127974;" : "&#127942;"} ${label(f.name)} · ${f.kind === "loan" ? "Nationwide loan" : "deal"}${f.debt ? ` <b class="size">${money(f.debt)}</b>` : ""}</span><span class="when">${last ? day(f.at) : ago(f.at)}</span></li>`).join("")
+      : last ? `<li class="empty">No wins ${when}.</li>` : `<li class="empty">No wins yet ${when}. Be first.</li>`;
   }
   const pick = (p) => { period = p; try { localStorage.setItem("cfnBoardPeriod", p); } catch {} renderPeriod(); };
   document.querySelectorAll(".pswitch button").forEach((x) => x.onclick = () => pick(x.dataset.p));
@@ -356,6 +369,6 @@ body.tv .contest ol.leaders li{font-size:24px} body.tv .ctteams .v{font-size:34p
   load(); setInterval(load, 15000);
 })();
 </script>
-<script src="coach.js?v=226edfb-1793601444"></script>
+<script src="coach.js?v=c5c036b-1793642259"></script>
 </body>
 </html>
