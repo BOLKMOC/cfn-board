@@ -9,8 +9,8 @@
 <title>My CFN Page</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Quicksand:wght@500;700&display=swap">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
-<link rel="stylesheet" href="board.css?v=c5c036b-1793642259">
-<link rel="stylesheet" href="coach.css?v=c5c036b-1793642259">
+<link rel="stylesheet" href="board.css?v=856e0ed-1793730904">
+<link rel="stylesheet" href="coach.css?v=856e0ed-1793730904">
 <style>
 .wrap{max-width:680px}
 .three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
@@ -229,7 +229,7 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
   .wl-net,.fchip,.fbar,.fbar i,.fm-track,.fm-track i,.fm-track b,.fm-key i,.fm-key b,.fnote,.fbook,.fdot,.br-idx,.br-pills a.pill{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
 </style>
-<script src="config.js?v=c5c036b-1793642259"></script>
+<script src="config.js?v=856e0ed-1793730904"></script>
 </head>
 <body>
 <div class="wrap">
@@ -328,7 +328,7 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
     <p style="margin:0 0 12px;display:flex;gap:8px"><a class="pill" id="callsTabList" href="/me#calls">Calls</a><a class="pill" id="callsTabScore" href="/me#calls?view=scorecard">Scorecard</a></p>
     <div id="scoreView" hidden>
       <p class="label"><span>Best practices scorecard</span><span><button class="link" id="scPrev">&larr;</button> <b id="scMonth"></b> <button class="link" id="scNext">&rarr;</button></span></p>
-      <p class="note" style="margin:0 0 10px">Fix (red): the 3 hard stops (a promised result, bank info before the credit and collections warnings, the wrong program). Coach (amber): behaviors to work on and other compliance items. Done well (green): nothing to fix. Layer 2: the 4 areas, 1 to 5 from scored calls. Top closer = most net debt this month. Conversion = net deals per 100 Vici calls. Gaps are against the top closer.</p>
+      <p class="note" style="margin:0 0 10px">Fix (red): the 3 hard stops (a promised result, bank info taken before the two warnings: credit will drop, creditors can still call or sue; the wrong program). Coach (amber): behaviors to work on and other compliance items. Done well (green): nothing to fix. Layer 2: the 4 areas, 1 to 5 from scored calls. Top closer = most net debt this month. Conversion = net deals per 100 Vici calls. Gaps are against the top closer.</p>
       <div id="scTop"></div>
       <div id="scCards"></div>
       <p class="label" style="margin-top:22px"><span>Closers who say X get Y</span><span class="when">last 3 months</span></p>
@@ -340,6 +340,12 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
       <p class="label" style="margin-top:22px"><span>Calibration</span><span id="scCalDue" class="when"></span></p>
       <p class="note" style="margin:0 0 10px">Each quarter managers rescore calls (open a call, "Your scores"). This shows how often the scorer agrees with managers.</p>
       <div id="scCal"></div>
+    </div>
+    <div id="fbReview" hidden>
+      <p class="label"><span>Feedback to review</span><span id="fbN" class="when"></span></p>
+      <p class="note" style="margin:0 0 10px">Managers' right or wrong on a flagged call, from the QA group. It trains the scorer only when both owners accept it; either one dismissing drops it. A call marked wrong is left out of the Fix counts until then.</p>
+      <div id="fbList"></div>
+      <p class="note" id="fbMsg" aria-live="polite"></p>
     </div>
     <div id="callList">
       <p class="label"><span>Call QA</span><span id="callsN"></span></p>
@@ -1122,14 +1128,14 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
     const sc = d.view === "scorecard";
     $("callsTabList").toggleAttribute("aria-current", !sc); $("callsTabScore").toggleAttribute("aria-current", sc);
     $("scoreView").hidden = !sc;
-    if (sc) { $("callList").hidden = true; $("callDetail").hidden = true; renderScorecard(d.scorecard); return; }
+    if (sc) { $("callList").hidden = true; $("callDetail").hidden = true; $("fbReview").hidden = true; renderScorecard(d.scorecard); return; }
     const c = d.counts || {};
     $("callsN").textContent = `${c.scored || 0} scored` + (c.waiting ? ` · ${c.waiting} waiting` : "") + (c.failed ? ` · ${c.failed} could not be scored` : "");
     const status = (r) => r.status === "scored" ? (r.closed === true ? "Yes" : r.closed === false ? "No" : "") : r.status === "new" ? '<span class="when">waiting to be scored</span>' : r.status === "transcribed" ? '<span class="when">being scored</span>' : r.status === "skipped" ? `<span class="when">not scored: ${esc(r.error || "skipped")}</span>` : `<span class="when">could not be scored</span>${r.error ? `<br><span class="when">${esc(String(r.error).slice(0, 120))}</span>` : ""}`;
     const short = (iso) => iso ? new Date(iso).toLocaleString("en-US", { timeZone: "America/Los_Angeles", month: "short", day: "numeric" }) + ", " + new Date(iso).toLocaleTimeString("en-US", { timeZone: "America/Los_Angeles", hour: "numeric", minute: "2-digit" }) : "";
     const result = (r) => {
       if (r.status !== "scored") return status(r);
-      const fix = (r.fix || []).length ? `<br><b class="neg">Fix: ${(r.fix || []).map(esc).join("; ")}</b>` : "";
+      const fix = ((r.fix || []).length ? `<br><b class="neg">Fix: ${(r.fix || []).map(esc).join("; ")}</b>` : "") + ((r.disputed || []).length ? `<br><span class="when">Disputed: ${r.disputed.map(esc).join("; ")}</span>` : "");
       const coach = r.coach ? `<br><span class="coach">Coach: ${r.coach} to work on</span>` : "";
       const ls = r.losses || [], loss = ls.length ? `<br><span class="when">${ls.slice(0, 3).map(esc).join("; ")}${ls.length > 3 ? `; +${ls.length - 3} more` : ""}</span>` : "";
       return `<b>${r.closed === true ? "Closed" : r.closed === false ? "Not closed" : "Scored"}</b>${fix}${coach}${loss}`;
@@ -1137,6 +1143,7 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
     $("callRows").innerHTML = d.calls.length ? d.calls.map((r) => `<tr data-call="${esc(r.call_id)}" style="cursor:pointer"><td>${esc(short(r.started_at))}${r.minutes ? `<br><span class="when">${mins(r.minutes)} min</span>` : ""}</td><td><b>${esc(r.closer)}</b><br><span class="when">${esc(r.call_sign || "")}${r.contact_id ? "<br>Forth " + esc(r.contact_id) : ""}</span></td><td>${result(r)}</td></tr>`).join("")
       : '<tr><td colspan="3" class="empty" style="text-align:left">No calls yet. The first pull runs after 6 PM Pacific on a floor day.</td></tr>';
     const det = d.detail;
+    renderFeedback(det ? null : d.feedback_review);
     $("callList").hidden = !!det; $("callDetail").hidden = !det;
     if (new URLSearchParams(location.hash.replace(/^#calls\??/, "")).get("id") && !det) $("callsMsg").textContent = "That call was not found.";
     if (!det) return;
@@ -1149,6 +1156,7 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
     $("cdBody").innerHTML =
       `<p class="label" style="margin-top:14px"><span>Fix</span><span>${det.fix.length ? `<b class="neg">${det.fix.length} to fix</b>` : '<b class="ok">Done well</b>'}</span></p>`
       + (det.fix.length ? `<ul style="margin:0;padding-left:20px">${det.fix.map((x) => `<li><b class="neg">${esc(x.label)}</b>${x.quote || x.minute ? `<br>${x.minute ? esc(x.minute) + " " : ""}${x.quote ? "&ldquo;" + esc(x.quote) + "&rdquo;" : ""}` : ""}</li>`).join("")}</ul>` : "")
+      + ((det.disputes || []).length ? `<ul style="margin:6px 0 0;padding-left:20px">${det.disputes.map((x) => `<li><b>${esc(x.label)}</b>${x.minute || x.quote ? ` <span class="when">${x.minute ? esc(x.minute) + " " : ""}${x.quote ? "&ldquo;" + esc(x.quote) + "&rdquo;" : ""}</span>` : ""}<br><span class="coach">${x.status === "accepted" ? "Flag overturned (both owners accepted). " : ""}Disputed by ${esc(x.by)}${x.reason ? ": " + esc(x.reason) : ""}</span></li>`).join("")}</ul>` : "")
       + (det.behaviors.length ? `<p class="label" style="margin-top:14px"><span>Behaviors</span><span>${det.coach.length ? `<span class="coach">${det.coach.length} to coach</span>` : '<b class="ok">Done well</b>'}</span></p><table class="tt calls checks"><tbody>${det.behaviors.map((b) => `<tr><td><b>${esc(b.label)}</b>${b.key === "trial_closes" ? ` <span class="when">${esc(String(b.answer))}</span>` : ""}${b.state === "coach" ? `<br><span class="when">${esc(det.coach.find((x) => x.key === b.key)?.label || "")}</span>` : ""}</td><td>${b.state === "coach" ? '<span class="coach">Coach</span>' : b.state === "done" ? '<span class="ok">Done well</span>' : '<span class="when">Not reached</span>'}</td></tr>`).join("")}</tbody></table>`
         : list("Coach", det.coach.map((x) => `<li><span class="coach">${esc(x.label)}</span>${x.quote || x.minute ? `<br><span class="when">${x.minute ? esc(x.minute) + " " : ""}${x.quote ? "&ldquo;" + esc(x.quote) + "&rdquo;" : ""}</span>` : ""}</li>`)))
       + (det.compliance.length ? list("Coach: compliance", det.compliance.map((x) => typeof x === "string" ? `<li class="coach">${esc(x)}</li>` : `<li><span class="coach">${x.minute ? esc(x.minute) + " " : ""}&ldquo;${esc(x.quote || "")}&rdquo;</span><br>${esc(x.issue || "")}</li>`)) : "")
@@ -1167,6 +1175,26 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
           <textarea name="note" rows="2" maxlength="500" placeholder="Note (optional)" style="width:100%;box-sizing:border-box;margin-top:6px">${esc(areas.find((a) => a.my_note)?.my_note || "")}</textarea>
           <button class="go small" type="submit" style="margin-top:6px">Save my scores</button> <span id="calMsg" class="when"></span></form></details>` : "") : "";
   }
+  // Feedback to review (the two feedback owners only; the server sends it only to them). Each owner records only their own decision.
+  function renderFeedback(fb) {
+    $("fbReview").hidden = !fb;
+    if (!fb) return;
+    const items = fb.items || [];
+    $("fbN").textContent = items.length ? `${items.length} waiting` : "";
+    $("fbList").innerHTML = items.length ? items.map((x) => `<div class="deal" data-fb="${esc(String(x.id))}"><div><b>${esc(x.label)}</b> <span class="when">#${esc(String(x.id))} · ${esc(x.closer)}${x.minute ? " · " + esc(x.minute) : ""}</span></div>
+        ${x.quote ? `<div style="font-size:14px">&ldquo;${esc(x.quote)}&rdquo;</div>` : ""}
+        <div style="font-size:14px">${esc(x.by)} says <b class="${x.verdict === "wrong" ? "neg" : "ok"}">${esc(x.verdict)}</b>${x.reason ? ": " + esc(x.reason) : ""}</div>
+        <div class="when">${esc(x.decisions_line)} · <a href="/me#calls?id=${esc(x.call_id)}">call</a></div>
+        <p style="margin:6px 0 0;display:flex;gap:8px"><button class="go small" data-d="accept"${x.decisions[fb.me] === "accept" ? " disabled" : ""}>Accept</button><button class="link" data-d="dismiss"${x.decisions[fb.me] === "dismiss" ? " disabled" : ""}>Dismiss</button></p></div>`).join("")
+      : '<p class="empty">Nothing waiting.</p>';
+  }
+  $("fbList").onclick = async (e) => {
+    const b = e.target.closest("[data-d]"), card = e.target.closest("[data-fb]");
+    if (!b || !card) return;
+    $("fbMsg").textContent = "Saving...";
+    try { const j = await api("/me/qa-feedback", { id: Number(card.dataset.fb), decision: b.dataset.d }); renderFeedback(j.review); $("fbMsg").textContent = j.status === "accepted" ? "Accepted by both: it trains the scorer now." : j.status === "dismissed" ? "Dismissed." : "Saved. Waiting for the other owner."; }
+    catch (err) { $("fbMsg").textContent = err.message; }
+  };
   $("callRows").onclick = (e) => { const tr = e.target.closest("[data-call]"); if (tr) location.hash = "calls?id=" + tr.dataset.call; };
   $("callBack").onclick = () => { location.hash = "calls"; };
   $("cdAudio").onclick = async (e) => {
@@ -1556,9 +1584,37 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
       return `<details><summary><span>${esc(b.name)}</span><b>${cents(b.payable)}</b></summary><div class="note">${esc(parts)}</div>
         ${rows ? `<div style="overflow-x:auto"><table><tr><th>Client</th><th>Enrolled</th><th>1st pay</th><th>Debt</th><th>Days</th><th>Rate</th><th>Amount</th></tr>${rows}</table></div>` : ""}</details>`;
     }).join("") : '<p class="empty">No commission lines yet. They appear once the payout files are in.</p>';
+    const closers = p.reps.filter((b) => b.payable > 0).length, open = p.reviews.length;
     $("payApprove").innerHTML = locked
-      ? `<p style="margin:0"><b>Approved</b> by ${esc(p.approved_by || "")} on ${esc(new Date(p.approved_at).toLocaleString("en-US", { timeZone: "America/Los_Angeles", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }))}. Locked.</p>`
-      : `<p class="label">To approve</p><p style="margin:0">${p.reviews.length ? "Clear the review items first. Then r" : "R"}eply on Telegram: <b>${esc(p.approve_with)}</b></p><p class="note" style="margin:6px 0 0">Approval locks this payroll. A person still clicks Submit in Gusto.</p>`;
+      ? `<p style="margin:0"><b>Approved</b> by ${esc(p.approved_by || "")} at ${esc(new Date(String(p.approved_at).replace(" ", "T").replace(/([+-]\d\d)$/, "$1:00")).toLocaleString("en-US", { timeZone: "America/Los_Angeles", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }))} PT. Locked.</p>`
+      : `<p class="label">To approve</p><p style="margin:0">${open ? "Clear the review items first. Then r" : "R"}eply on Telegram: <b>${esc(p.approve_with)}</b>${p.can_approve ? ", or approve here." : ""}</p>
+        ${p.can_approve ? `<button class="go" id="payApproveOpen" type="button" style="min-height:44px;margin-top:10px"${open ? " disabled" : ""}>Approve payroll</button>
+        <form id="payConfirm" hidden style="margin-top:12px;border-top:1px solid var(--line);padding-top:12px">
+          <p class="label">Confirm approval</p>
+          <p style="margin:0">Pay date <b>${day(p.pay_date)}</b> · <b>${cents(p.totals.payable)}</b> commission · <b>${closers}</b> closer${closers === 1 ? "" : "s"} · <b>${p.totals.deals}</b> deal${p.totals.deals === 1 ? "" : "s"}</p>
+          <label class="note" style="display:block;margin-top:10px">Type ${esc(p.approve_with)} to confirm
+            <input class="f" id="payConfirmText" autocomplete="off" autocapitalize="characters" spellcheck="false" style="font-size:16px;min-height:44px;margin-top:4px"></label>
+          <div class="actions" style="margin:10px 0 0"><button class="go" id="payConfirmGo" type="submit" disabled style="min-height:44px">Approve</button><button class="link" id="payConfirmCancel" type="button" style="min-height:44px">Cancel</button></div>
+          <p class="note" id="payApproveMsg" aria-live="polite"></p>
+        </form>` : ""}
+        <p class="note" style="margin:6px 0 0">Approval locks this payroll. A person still clicks Submit in Gusto.</p>`;
+    if (locked || !p.can_approve) return;
+    // The approver's button: a confirm box, Approve only once the exact words are typed (the same words Telegram wants).
+    const box = $("payConfirm"), typed = $("payConfirmText"), go = $("payConfirmGo");
+    const matches = () => typed.value.trim().replace(/\s+/g, " ").toUpperCase() === p.approve_with;
+    $("payApproveOpen").onclick = () => { box.hidden = false; $("payApproveOpen").hidden = true; typed.focus(); };
+    $("payConfirmCancel").onclick = () => { box.hidden = true; typed.value = ""; go.disabled = true; $("payApproveOpen").hidden = false; $("payApproveMsg").textContent = ""; };
+    typed.oninput = () => { go.disabled = !matches(); };
+    box.onsubmit = async (e) => {
+      e.preventDefault();
+      if (!matches()) return;
+      go.disabled = true; $("payApproveMsg").textContent = "Approving...";
+      try {
+        const j = await api("/me/payroll/approve", { pay_date: p.pay_date, confirm: typed.value.trim().replace(/\s+/g, " ") });
+        renderPayroll(j.payroll);
+        $("payApprove").insertAdjacentHTML("beforeend", '<p class="note" style="margin:6px 0 0">The payroll chat on Telegram gets the approved note within 5 minutes.</p>');
+      } catch (err) { $("payApproveMsg").textContent = err.message; go.disabled = !matches(); }
+    };
   }
   // Contests tab: launch form (type, name, points, start, the type's own fields, prize, who's in) and the live and past list.
   const ptTime = (iso) => new Date(iso).toLocaleString("en-US", { timeZone: "America/Los_Angeles", weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) + " PT";
@@ -1869,6 +1925,6 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
   else if (session) load(); else showSignIn();
 })();
 </script>
-<script src="coach.js?v=c5c036b-1793642259"></script>
+<script src="coach.js?v=856e0ed-1793730904"></script>
 </body>
 </html>
