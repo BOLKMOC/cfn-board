@@ -9,8 +9,8 @@
 <title>My CFN Page</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Quicksand:wght@500;700&display=swap">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
-<link rel="stylesheet" href="board.css?v=856e0ed-1793730926">
-<link rel="stylesheet" href="coach.css?v=856e0ed-1793730926">
+<link rel="stylesheet" href="board.css?v=2cca041-1793742190">
+<link rel="stylesheet" href="coach.css?v=2cca041-1793742190">
 <style>
 .wrap{max-width:680px}
 .three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
@@ -229,7 +229,7 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
   .wl-net,.fchip,.fbar,.fbar i,.fm-track,.fm-track i,.fm-track b,.fm-key i,.fm-key b,.fnote,.fbook,.fdot,.br-idx,.br-pills a.pill{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
 </style>
-<script src="config.js?v=856e0ed-1793730926"></script>
+<script src="config.js?v=2cca041-1793742190"></script>
 </head>
 <body>
 <div class="wrap">
@@ -1282,7 +1282,7 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
     const rows = sc ? sc.rows : [], t = sc && sc.total, rt = sc && sc.rates;
     const n0 = (v) => v === null || v === undefined ? "-" : Number(v).toLocaleString("en-US");
     const est = (r) => r.estimated ? "≈ " : "";
-    const estWhy = (r) => [r.pending ? `${r.days_done} of ${r.days_total} days sorted into inbound and outbound so far` : "", r.lead_cost_estimated ? "lead cost paid is not in QuickBooks yet for part of this period, so the latest month's figure is used" : ""].filter(Boolean).join("; ");
+    const estWhy = (r) => r.pending ? `${r.days_done} of ${r.days_total} days sorted into inbound and outbound so far` : "";
     const estTip = (r) => r.estimated ? ` title="${esc(`Estimate: ${estWhy(r)}`)}"` : "";
     const net = (r) => r.net === null || r.net === undefined ? '<span class="wl-pend">pending</span>' : `<span class="wl-net ${r.tag === "winning" ? "win" : r.tag === "losing" ? "lose" : ""}"${estTip(r)}>${est(r)}${esc(usd(r.net))}</span>`;
     const dot = (r) => `<i class="fdot ${esc(r.tag)}" title="${esc(wlTag[r.tag] || r.tag)}"></i>`;
@@ -1308,7 +1308,7 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
     // What leads would cost at full price against what CFN paid: the gap is BOL's subsidy (owner, 2026-10-31).
     const sub = t && rows.length ? `At full price leads would be ${usd(t.lead_cost_full)} (paid ${t.lead_cost_estimated ? "≈ " : ""}${usd(t.lead_cost)}). ${t.paid_over_full ? `Paid is ${usd(t.lead_cost - t.lead_cost_full)} over full price.` : `BOL is covering ${t.lead_cost_estimated ? "≈ " : ""}${usd(t.subsidy)}.`}` : "";
     $("brWlSub").hidden = !sub; $("brWlSub").textContent = sub;
-    $("brWlFoot").textContent = rt ? `Lead cost: what CFN paid BOL (QuickBooks), split by each closer's inbound calls over 2 min. Full price is ${usd(rt.full_price_per_inbound_120)} per call; the gap is BOL's subsidy. Revenue ${rt.revenue_pct}% of debt, if the deal clears. Pay: salary plus ${rt.employer_tax_pct}% tax per weekday plus ${rt.commission_pct}% commission; overseas hourly from Vici login plus per deal. Credit pulls are free. ≈ means some days are not sorted yet, or the month is not in QuickBooks yet, and are estimated.` : "";
+    $("brWlFoot").textContent = rt ? `Lead cost: ${usd(rt.paid_price_per_inbound_120)} per inbound call over 2 min (the standard for now). Full price is ${usd(rt.full_price_per_inbound_120)}; the gap is BOL's subsidy. Revenue ${rt.revenue_pct}% of debt, if the deal clears. Pay: salary plus ${rt.employer_tax_pct}% tax per weekday plus ${rt.commission_pct}% commission; overseas hourly from Vici login plus per deal. Credit pulls are free. ≈ means some days are not sorted into inbound and outbound yet, so their calls are estimated.` : "";
     $("brWlInfo").title = "Net = revenue minus lead cost (what CFN paid) minus pay, for the days shown (up to today). Green: winning. Red: losing. Calls are sorted into inbound and outbound each evening from 6:15 PM. Days not sorted yet are estimated (≈) from the closer's own share of inbound calls over 2 minutes, and firm up as they are sorted. Hover Pay for how it adds up.";
   }
   // Next payouts: what Cordoba should pay on the coming Mondays (expected from scheduled 1st payments) and what the last files paid.
@@ -1925,6 +1925,6 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
   else if (session) load(); else showSignIn();
 })();
 </script>
-<script src="coach.js?v=856e0ed-1793730926"></script>
+<script src="coach.js?v=2cca041-1793742190"></script>
 </body>
 </html>
