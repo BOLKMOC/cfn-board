@@ -9,8 +9,8 @@
 <title>My CFN Page</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Quicksand:wght@500;700&display=swap">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
-<link rel="stylesheet" href="board.css?v=83e3450-1793829326">
-<link rel="stylesheet" href="coach.css?v=83e3450-1793829326">
+<link rel="stylesheet" href="board.css?v=1f91789-1793903431">
+<link rel="stylesheet" href="coach.css?v=1f91789-1793903431">
 <style>
 .wrap{max-width:680px}
 .three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
@@ -210,6 +210,7 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
   table.fcl{font-size:12.5px} table.fcl th,table.fcl td{padding-left:6px}
   #br-wl table.wl-t{display:none} #br-wl .wl-list{display:block}
   #br-pay table.fpay-t{display:none} #br-pay .fpay-list{display:block} .fpay-top .fp-v{font-size:22px}
+  #br-vx table.fpay-t{display:none} #br-vx .fpay-list{display:block}
   .fx > details > summary .fmuted{display:none} .fx > details > summary .fchev{margin-left:auto}
 }
 @media print{
@@ -226,10 +227,11 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
   .br-scroll{overflow:visible} table.br-t{font-size:11px} table.br-small{font-size:9.5px}
   #br-wl table.wl-t{display:table !important;font-size:11px} #br-wl .wl-list{display:none !important}
   #br-pay table.fpay-t{display:table !important;font-size:11px} #br-pay .fpay-list{display:none !important}
+  #br-vx table.fpay-t{display:table !important;font-size:11px} #br-vx .fpay-list{display:none !important}
   .wl-net,.fchip,.fbar,.fbar i,.fm-track,.fm-track i,.fm-track b,.fm-key i,.fm-key b,.fnote,.fbook,.fdot,.br-idx,.br-pills a.pill{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
 </style>
-<script src="config.js?v=83e3450-1793829326"></script>
+<script src="config.js?v=1f91789-1793903431"></script>
 </head>
 <body>
 <div class="wrap">
@@ -283,6 +285,10 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
         <p class="fh-status" id="brAsOf"></p>
       </div>
       <div class="fkpis" id="brKpis"></div>
+      <div class="fc fpay" id="br-vx" hidden><div class="fc-h"><p class="fc-t">Ken's bonus (Verixa) <span class="fi" id="brVxInfo" tabindex="0">i</span></p><span class="fmuted">only you see this</span></div>
+        <div class="fpay-top" id="brVxTop"></div><div class="fbar"><i id="brVxBar"></i></div><p class="fpay-sub" id="brVxSub"></p>
+        <div class="br-scroll"><table class="fcl fpay-t" id="brVxT"></table></div><div class="fpay-list" id="brVxList"></div>
+        <p class="fnote" id="brVxBol" style="margin-top:10px"></p><p class="wl-foot" id="brVxFoot"></p></div>
       <div class="fc" id="br-wl"><div class="fc-h"><p class="fc-t">Winners and losers <span class="fi" id="brWlInfo" tabindex="0">i</span></p><span class="fmuted">net per closer, best first</span></div>
         <div class="br-scroll"><table class="wl-t" id="brWlT"></table></div><div class="wl-list" id="brWlList"></div><p class="wl-foot" id="brWlCover" hidden></p><p class="wl-foot" id="brWlSub" hidden></p><p class="wl-foot" id="brWlFoot"></p></div>
       <div class="fc fpay" id="br-pay"><div class="fc-h"><p class="fc-t">Next payouts <span class="fi" id="brPayInfo" tabindex="0">i</span></p><span class="fmuted">from Cordoba, every Monday</span></div>
@@ -368,7 +374,7 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
   <section class="card" id="saves" style="margin-bottom:14px" hidden>
     <p class="note" style="margin:0 0 12px">Active closers only. Tap a closer to see their deals. Former closers are under <b>Past closers</b> at the bottom.</p>
     <p class="label"><span>First deposits coming up</span><span id="ciTeamN"></span></p>
-    <p class="note" style="margin:0 0 8px">Deals waiting on a first deposit in the next 3 business days, and deposits that likely did not clear (not on a Cordoba payout file a week after the date). The closer checks in 2 business days before. A check mark means it was done.</p>
+    <p class="note" style="margin:0 0 8px">Deals waiting on a first deposit in the next 3 business days, and deposits past their date that are not on a Cordoba payout file a week later, with what Forth's Servicing tab showed last night (the bot reads it after close). Cleared in Forth: tell a manager (Cordoba may not have paid us). NSF or nothing: call the client. The closer checks in 2 business days before. A check mark means it was done.</p>
     <div id="ciTeam"></div>
     <p class="label"><span>Returned to fix</span><span id="retN"></span></p>
     <p class="note" style="margin:0 0 8px">Sent back by Forth in the last 30 days. They do not count on the board until fixed and resubmitted. Longest waiting first.</p>
@@ -1054,7 +1060,7 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
     const cl = w.by_closer.filter((x) => x.status === "Cancelled");
     $("whyCloser").innerHTML = cl.length ? cl.map((x) => `<tr><td style="text-align:left"><b>${esc(x.closer)}</b><br><span class="when">${esc(x.top_reason)}</span></td><td>${x.n} of ${x.total}</td></tr>`).join("") : '<tr><td colspan="2" class="empty" style="text-align:left">None yet.</td></tr>';
   }
-  const ciWhen = (c) => c.when === "passed" ? `<span class="neg">deposit ${day(c.deposit_date)} likely did not clear (not on a payout file). Call the client.</span>` : c.business_days === 0 ? `<b>deposit today</b>` : `deposit ${day(c.deposit_date)} (${c.business_days} business day${c.business_days === 1 ? "" : "s"})`;
+  const ciWhen = (c) => c.when === "passed" ? `<span class="neg">deposit ${day(c.deposit_date)} not on Cordoba's payout file.</span> ${c.forth ? `<b>${esc(c.forth)}</b>. ${c.forth_cleared ? "Tell a manager (Cordoba may owe us); do not call the client." : "Call the client."}` : "Not read from Forth yet: check Forth servicing first; cleared there, tell a manager; not cleared, call the client."}` : c.business_days === 0 ? `<b>deposit today</b>` : `deposit ${day(c.deposit_date)} (${c.business_days} business day${c.business_days === 1 ? "" : "s"})`;
   const ciDone = (c) => c.checked_in ? `<span class="ok">&#10003; checked in</span>` : `<button class="savebtn" data-checkin="${esc(c.forth_id)}">Checked in</button>`;
   function renderCheckins(ci) {
     const rows = (ci && ci.rows) || [];
@@ -1101,7 +1107,7 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
     const why = (r) => r.reason ? `<div class="when">Why: ${esc(r.reason)}${r.reason_detail ? ` · ${esc(r.reason_detail)}` : ""}</div>` : "";
     const deal = (r, kind) => `<div class="deal"><div><b>Forth ${esc(r.forth_id)}</b> · ${esc(r.client)}${kind === "risk" ? ` · <span class="st">${esc(r.status)}</span>` : ""}</div>
       <div class="when">${money(r.debt)}${kind === "risk" ? ` · since ${r.since ? day(r.since.slice(0, 10)) : "?"} (${days(r.days)}) · ${r.payments_cleared >= 2 ? "2+" : r.payments_cleared} payment${r.payments_cleared === 1 ? "" : "s"} · <span class="${r.commission_paid ? "neg" : ""}">${r.commission_paid ? "Paid" : "Not paid"}</span>` : ` · <span class="${r.days >= 2 ? "neg" : ""}">waiting ${days(r.days)}</span>`}</div>
-      ${why(r)}<div class="ai">${aiBtn(r.forth_id, r.client)}${aiLast(r)}</div></div>`;
+      ${why(r)}${r.forth ? `<div class="when">${esc(r.forth)}</div>` : ""}<div class="ai">${aiBtn(r.forth_id, r.client)}${aiLast(r)}</div></div>`;
     const cards = (rows, kind, empty) => rows.length ? groups(rows, kind).map((g) => { const r0 = g.list[0], paid = g.list.filter((x) => x.commission_paid).length;
         return `<details class="sc-card"><summary style="display:flex;justify-content:space-between;gap:8px;cursor:pointer"><span><b>${esc(r0.closer)}</b>${r0.shown_as && r0.shown_as !== r0.closer ? ` <span class="when">${esc(r0.shown_as)}</span>` : ""}</span>
           <span style="white-space:nowrap">${g.list.length} · <b>${money(sum(g.list))}</b>${kind === "risk" && paid ? ` · <span class="neg">${paid} paid</span>` : kind === "returned" ? ` · <span class="${(r0.days || 0) >= 2 ? "neg" : "when"}">${days(r0.days)}</span>` : ""}</span></summary>
@@ -1312,6 +1318,41 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
     $("brWlInfo").title = "Net = revenue minus lead cost (what CFN paid) minus pay, for the days shown (up to today). Green: winning. Red: losing. Calls are sorted into inbound and outbound each evening from 6:15 PM. Days not sorted yet are estimated (≈) from the closer's own share of inbound calls over 2 minutes, and firm up as they are sorted. Hover Pay for how it adds up.";
   }
   // Next payouts: what Cordoba should pay on the coming Mondays (expected from scheduled 1st payments) and what the last files paid.
+  // Ken's (Verixa) bonus: 20% of each closed month's NOP once the running total passes its old high (src/verixa-bonus.ts).
+  function renderVerixa(vx) {
+    $("br-vx").hidden = !vx;
+    if (!vx) return;
+    const mon = (m) => new Date(m + "-15T12:00:00Z").toLocaleDateString("en-US", { month: "short", year: "numeric", timeZone: "UTC" });
+    const k = (v) => brK(v), q = vx.quarters.find((x) => x.quarter === vx.current_quarter);
+    const qName = (x) => x.replace(/^(\d{4})-(Q\d)$/, "$2 $1");
+    $("brVxTop").innerHTML = !vx.months.length ? `<span class="fp-v">No closed months in QuickBooks yet</span>`
+      : vx.earning ? `<span class="fp-v">Earning: ${esc(vx.rules.bonus_pct)}% of every new dollar</span><span class="fp-r">${esc(qName(vx.current_quarter))} so far ${esc(k(vx.current_quarter_bonus))}</span>`
+      : `<span class="fp-v">${esc(k(vx.to_earn))} more profit before any bonus</span><span class="fp-r">${esc(qName(vx.current_quarter))} so far ${esc(k(vx.current_quarter_bonus))}</span>`;
+    // The bar: how far the running total has come back toward the point where the bonus starts (from its lowest point).
+    const low = Math.min(0, ...vx.months.map((x) => x.cumulative)), span = vx.high - low;
+    const fill = vx.earning ? 100 : span > 0 ? Math.max(0, Math.min(100, Math.round((vx.cumulative - low) / span * 100))) : 0;
+    $("brVxBar").style.width = fill + "%"; $("brVxBar").className = vx.earning ? "g" : fill >= 85 ? "a" : "r";
+    $("brVxSub").textContent = vx.months.length
+      ? `Running profit (NOP) since ${mon(vx.rules.start_month)}: ${k(vx.cumulative)}${vx.high > 0 ? `, high ${k(vx.high)}` : ""}. Bonus earned so far ${k(vx.total_bonus)}. Counted through ${mon(vx.counted_through)}; ${mon(vx.open_month)} counts once its books close.`
+      : "";
+    const qRow = (x) => `${qName(x.quarter)}: ${k(x.bonus)}${x.bonus ? (x.paid ? " (paid)" : `, due ${brDay(x.due)}`) : ""}`;
+    $("brVxT").innerHTML = vx.months.length
+      ? `<thead><tr><th>Month</th><th>Income</th><th>Costs</th><th>Leads</th><th>NOP</th><th>Running total</th><th>Bonus</th></tr></thead><tbody>`
+        + vx.months.map((x) => `<tr><td>${esc(mon(x.month))}</td><td>${esc(k(x.income))}</td><td>${esc(k(x.costs))}</td><td>${esc(k(x.lead_cost))}</td>`
+          + `<td class="${x.nop < 0 ? "neg" : ""}">${esc(k(x.nop))}</td><td class="${x.cumulative < 0 ? "neg" : ""}">${esc(k(x.cumulative))}</td><td><b>${esc(k(x.bonus))}</b></td></tr>`).join("")
+        + `</tbody><tfoot><tr><td colspan="7">${vx.quarters.map((x) => esc(qRow(x))).join(" · ")}</td></tr></tfoot>`
+      : "";
+    $("brVxList").innerHTML = vx.months.map((x) => `<div class="wl-r"><div class="wl-r1"><span>${esc(mon(x.month))}</span><b>${esc(k(x.bonus))}</b></div>`
+      + `<div class="wl-r2">${[`NOP ${k(x.nop)}`, `running ${k(x.cumulative)}`, `income ${k(x.income)}`, `costs ${k(x.costs)}`, `leads ${k(x.lead_cost)}`].map(esc).join(" · ")}</div></div>`).join("")
+      + (vx.quarters.length ? `<p class="fpay-sub">${vx.quarters.map((x) => esc(qRow(x))).join(" · ")}</p>` : "");
+    const b = vx.bol;
+    $("brVxBol").innerHTML = `<b>BOL lead account, not reconciled yet.</b> Leads count at ${esc(usd(b.per_week))} a week since ${esc(brDay(b.from))}: ${esc(k(b.assumed))}. `
+      + `Paid to BOL in QuickBooks: ${esc(k(b.paid))}. Not settled: <b class="neg">${esc(k(b.gap))}</b>. What CFN owes BOL is still being worked out; this bonus uses ${esc(usd(b.per_week))} a week until it is.`;
+    $("brVxFoot").textContent = `Bonus = ${vx.rules.bonus_pct}% of Net Operating Profit, worked out monthly and paid each quarter within 30 days (Verixa agreement, Exhibit D). `
+      + `NOP = cash income in QuickBooks less every booked cost (Verixa's retainer and Sigma's fee included), with leads at ${usd(b.per_week)} a week. `
+      + `No bonus while the running total is below zero, never back-paid, and after a loss the old high has to be passed again. April to June ${vx.rules.start_month.slice(0, 4)} are not in QuickBooks here and are left out. Pro forma bonus for Apr to Dec: ${k(vx.rules.pro_forma_bonus)}.`;
+    $("brVxInfo").title = "Only on your Finance tab. Not shared with Ken.";
+  }
   function renderPayouts(po) {
     $("br-pay").hidden = !po;
     if (!po) return;
@@ -1363,6 +1404,7 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
     $("finPrev").hidden = $("finNext").hidden = p.kind === "custom";
     renderWinLose(rv.scorecard);
     renderPayouts(rv.payouts);
+    renderVerixa(rv.verixa);
     // Header status: one quiet line.
     const q = rv.qbo;
     const left = p.workdays_left === null || p.workdays_left === undefined ? "" : p.workdays_left === 0 ? ", no workdays left" : `, ${p.workdays_left} workday${p.workdays_left === 1 ? "" : "s"} left`;
@@ -1925,6 +1967,6 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
   else if (session) load(); else showSignIn();
 })();
 </script>
-<script src="coach.js?v=83e3450-1793829326"></script>
+<script src="coach.js?v=1f91789-1793903431"></script>
 </body>
 </html>
