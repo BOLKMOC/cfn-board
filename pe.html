@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://bseyusrbjztybfgjfbja.supabase.co; base-uri 'none'; form-action 'none'; object-src 'none'">
+<title>CFN Owner View</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Quicksand:wght@500;700&display=swap">
+<link rel="icon" href="logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="board.css?v=6daff9c-1794062445">
+<style>
+/* Owner view (hidden page, no link to it anywhere). The same sign-in and the same data as the Finance tab (/me#finance):
+   owners on config/finance.json review_viewers only. Laid out the way an owner reads a portfolio company: profit first,
+   then cash, growth, unit economics, people, obligations. Design rules: docs/design-rules.html. */
+.wrap{max-width:1100px}
+header{flex-wrap:wrap} header h1{white-space:nowrap}
+.sub{color:var(--muted);font-size:14px;margin:-6px 0 14px}
+.tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+@media(max-width:760px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:430px){.tiles{grid-template-columns:1fr}}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;min-width:0}
+.tile .k{font-size:13px;color:var(--muted);display:flex;justify-content:space-between;gap:8px}
+.tile .v{font-family:Quicksand,Inter,sans-serif;font-size:30px;font-weight:700;line-height:1.1;margin:6px 0 4px;letter-spacing:-.3px}
+.tile .v.neg{color:#B42318}.tile .v.pos{color:#067647}
+.tile .p{font-size:13px;color:var(--muted);line-height:1.45}
+.tile .p b{color:var(--ink);font-weight:600}
+.chip{display:inline-block;font-weight:700;font-size:12px;padding:2px 8px;border-radius:999px;margin-top:6px}
+.chip.red{background:#FDE8E7;color:#B42318}.chip.amber{background:#FEF3DC;color:#93370D}.chip.green{background:#E3F6EA;color:#067647}.chip.grey{background:var(--tint);color:var(--muted)}
+h2{font-size:16px;margin:22px 0 8px;color:var(--blue)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;overflow-x:auto} /* wide tables scroll inside the card on a phone */
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:right;color:var(--muted);font-weight:500;padding:6px 8px;border-bottom:2px solid var(--line);white-space:nowrap}
+td{text-align:right;padding:7px 8px;border-bottom:1px solid var(--tint);font-variant-numeric:tabular-nums;white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+td.neg{color:#B42318}td.pos{color:#067647}
+td.m{color:var(--muted)}
+.need{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--tint);font-size:14px}
+.need:last-child{border-bottom:0}
+.need i{width:4px;align-self:stretch;border-radius:2px;background:#E04B45;flex:none}
+.need i.a{background:#D9A21B}.need i.g{background:#12B76A}
+.need span{flex:1}.need em{font-style:normal;color:var(--muted);white-space:nowrap}
+.note{font-size:12.5px;color:var(--muted);line-height:1.5;margin-top:8px}
+.links{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.links a{display:inline-block;padding:6px 12px;border:1px solid var(--line);border-radius:999px;text-decoration:none;color:var(--blue);font-size:13px;background:#fff}
+#error{color:#B42318;margin:10px 0}
+[hidden]{display:none !important}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:760px){.two{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand"><img src="logo.svg" alt=""><h1>CFN · Owner view</h1></div>
+    <div class="live" id="live"><i></i><span id="asof">Loading</span></div>
+  </header>
+  <div class="sub">Private. Month to date, the way an owner reads a portfolio company. Detail is on the <a href="/me#finance">Finance tab</a>.</div>
+  <div id="error" hidden></div>
+  <div id="app" hidden>
+    <div class="tiles" id="tiles"></div>
+
+    <h2>Actual vs plan, by month</h2>
+    <div class="card"><table id="months"></table><div class="note">Revenue is 8% of enrolled debt, earned when the 1st deposit clears, expected at the plan clear rate while waiting. Operating profit for closed months is QuickBooks' books with fixed overhead; the current month is month to date plus the pro forma rate for the days gone by.</div></div>
+
+    <div class="two">
+      <div>
+        <h2>This month's forecast</h2>
+        <div class="card"><table id="forecast"></table><div class="note" id="forecastNote"></div></div>
+      </div>
+      <div>
+        <h2>Cash coming in</h2>
+        <div class="card"><table id="cash"></table><div class="note">Cordoba pays Monday for 1st payments that cleared the week before, at the measured clear rate. Bank balance: not connected yet.</div></div>
+      </div>
+    </div>
+
+    <h2>Needs you</h2>
+    <div class="card" id="needs"></div>
+
+    <h2>Obligations</h2>
+    <div class="card"><table id="oblig"></table><div class="note">Partner bonus: 20% of Net Operating Profit, closed months only, accrues only above the running high. Lead cost assumed at $20K a week from Jul 1 until the BOL account is reconciled; how the unpaid part is booked is for the CPA.</div></div>
+
+    <div class="links"><a href="/me#finance">Finance detail</a><a href="/me#finance?period=month">Money vs budget</a><a href="/me#payroll">Payroll</a></div>
+  </div>
+</div>
+<script src="config.js?v=6daff9c-1794062445"></script>
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const KEY = "cfn_session";
+  let session = null; try { session = localStorage.getItem(KEY); } catch {}
+  const local = new URLSearchParams(location.search).get("local") === "1"; // page test on a laptop: reads ./pe-sample.json instead
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const usd = (n) => (n < 0 ? "-$" : "$") + Math.abs(Math.round(n || 0)).toLocaleString("en-US");
+  const k = (n) => n === null || n === undefined ? "-" : Math.abs(n) >= 1e6 ? (n < 0 ? "-$" : "$") + (Math.abs(n) / 1e6).toFixed(2) + "M" : Math.abs(n) >= 1000 ? (n < 0 ? "-$" : "$") + (Math.abs(n) / 1000).toFixed(1) + "K" : usd(n);
+  const pct = (a, b) => (b ? Math.round((a / b) * 100) + "%" : "-");
+  const mon = (m) => new Date(m + "-15T12:00:00Z").toLocaleDateString("en-US", { month: "short", year: "numeric", timeZone: "UTC" });
+  const dayS = (d) => new Date(d + "T12:00:00Z").toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
+  const signClass = (n) => (n < 0 ? "neg" : n > 0 ? "pos" : "");
+  const showErr = (m) => { $("error").hidden = !m; $("error").textContent = m || ""; };
+
+  function toSignIn() { try { localStorage.setItem("cfn_next", "/pe"); } catch {} location.replace("/me"); }
+
+  async function load() {
+    if (local) return render(await (await fetch("pe-sample.json")).json());
+    if (!session) return toSignIn();
+    const r = await fetch(window.BOARD_API + "/me?rep=finance&period=month", { headers: { Authorization: "Bearer " + session } });
+    const j = await r.json().catch(() => ({}));
+    if (r.status === 401) return toSignIn();
+    if (!r.ok) { showErr(j.error || "Something went wrong"); return; }
+    render(j);
+  }
+
+  function render(d) {
+    const f = d.finance, rv = f.review, p = rv.period, mo = rv.money, mm = Object.fromEntries(mo.metrics.map((m) => [m.key, m])), om = Object.fromEntries(rv.ops.map((m) => [m.key, m]));
+    const prog = p.in_progress;
+    const asOf = new Date(rv.as_of).toLocaleString("en-US", { timeZone: "America/Los_Angeles", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+    $("asof").textContent = `${mon(p.from.slice(0, 7))} · ${p.share_done_pct}% of floor days done · updated ${asOf}`;
+    $("app").hidden = false;
+
+    // The six tiles.
+    const op = mm.operating_profit, rev = mm.revenue, nextMon = (rv.payouts.next || [])[0], last = rv.payouts.last;
+    const months = f.months || [], cur = months.find((m) => m.current), prevM = months.filter((m) => !m.current)[0];
+    const state = (m, lowerBetter) => { if (!m || m.target_pct === null) return "grey"; const v = m.target_pct; return lowerBetter ? (v <= 100 ? "green" : v <= 120 ? "amber" : "red") : (v >= 100 ? "green" : v >= 80 ? "amber" : "red"); };
+    const chip = (cls, text) => `<span class="chip ${cls}">${esc(text)}</span>`;
+    const rows = rv.profit.rows || [], profitable = rows.filter((r) => r.tag === "profitable").length, losing = rows.filter((r) => r.tag === "losing").length;
+    const abi = om.abi, clear = rv.payouts.clear_rate.likely, revPerDeal = abi && abi.at && clear ? abi.at * (rv.payouts.rate_pct / 100) * clear : null;
+    const cpd = om.cost_per_deal, t = rv.scorecard.total, leadPerDealFull = t.deals ? t.lead_cost_full / t.deals : null;
+    const v = rv.verixa;
+    const tiles = [
+      { k: "Operating profit · month to date", v: k(op.at), cls: signClass(op.at), p: `at pace <b>${k(op.trending)}</b> · plan <b>${k(op.target)}</b> · at full lead price <b>${k(mo.operating_profit_full)}</b>${prevM && prevM.actual.qbo ? ` · last month <b>${k(prevM.actual.qbo.operating_profit)}</b>` : ""}`,
+        chip: chip(state(op), op.target_pct === null ? "no plan" : `${op.target_pct}% of plan at pace`) },
+      { k: "Cash · next wire", v: nextMon && nextMon.net ? k(nextMon.net.likely) : "-", cls: "", p: nextMon ? `Mon ${dayS(nextMon.monday)}, range <b>${nextMon.net ? k(nextMon.net.low) : "-"}</b> to <b>${nextMon.net ? k(nextMon.net.high) : "-"}</b>${last ? ` · last wire <b>${k(last.net)}</b> (${dayS(last.report_date)})` : ""}` : "No payout file yet",
+        chip: chip("grey", "bank balance: not connected") },
+      { k: "Revenue · month to date", v: k(rev.at), cls: "", p: `at pace <b>${k(rev.trending)}</b> · plan <b>${k(rev.target)}</b>${prevM ? ` · last month <b>${k(prevM.actual.revenue)}</b> vs plan ${k(prevM.plan.revenue)}` : ""}`,
+        chip: chip(state(rev), rev.target_pct === null ? "no plan" : `${rev.target_pct}% of plan at pace`) },
+      { k: "Unit economics · per deal", v: revPerDeal === null ? "-" : k(revPerDeal), cls: "", p: `revenue per deal at the ${Math.round((clear || 0) * 100)}% clear rate · cost per deal <b>${cpd && cpd.at !== null ? k(cpd.at) : "-"}</b> (plan ${cpd && cpd.target !== null ? k(cpd.target) : "-"}) · at full lead price <b>${leadPerDealFull === null ? "-" : k(leadPerDealFull)}</b>`,
+        chip: chip(state(cpd, true), cpd && cpd.target_pct !== null ? `cost per deal ${cpd.target_pct}% of plan` : "no plan") },
+      { k: "People · closers", v: `${om.agents ? om.agents.at : "-"}`, cls: "", p: `on the floor · plan <b>${om.agents ? om.agents.target : "-"}</b> · <b>${profitable}</b> profitable, <b>${losing}</b> losing money, <b>${(rv.profit.ramping || []).length || rows.filter((r) => r.tag === "ramping").length}</b> ramping`,
+        chip: chip(losing ? "amber" : "green", losing ? `${losing} closer${losing === 1 ? "" : "s"} losing money` : "every closer profitable") },
+      { k: "Obligations", v: k(v.cumulative), cls: signClass(v.cumulative), p: `partner bonus running total through ${v.counted_through ? mon(v.counted_through) : "-"} · bonus earned <b>${k(v.total_bonus)}</b> · BOL leads not settled <b>${k(v.bol.gap)}</b>`,
+        chip: chip(v.cumulative < 0 ? "grey" : "amber", v.cumulative < 0 ? `${k(v.to_earn)} of profit before any bonus` : "bonus accruing") },
+    ];
+    $("tiles").innerHTML = tiles.map((x) => `<div class="tile"><div class="k">${esc(x.k)}</div><div class="v ${x.cls}">${esc(x.v)}</div><div class="p">${x.p}</div>${x.chip}</div>`).join("");
+
+    // Actual vs plan by month (last 4 months, newest first).
+    const mrows = months.slice(0, 4).map((m) => {
+      const a = m.actual, q = a.qbo, opA = m.current ? op.at : q ? q.operating_profit : null;
+      return `<tr><td>${esc(mon(m.month))}${m.current ? ' <span class="m">(so far)</span>' : ""}</td>
+        <td>${a.clients}<span class="m"> / ${Math.round(m.plan.clients)}</span></td>
+        <td>${k(a.submitted_debt)}<span class="m"> / ${k(m.plan.submitted_debt)}</span></td>
+        <td>${k(a.revenue)}<span class="m"> / ${k(m.plan.revenue)}</span></td>
+        <td class="${opA === null ? "m" : signClass(opA)}">${opA === null ? "not in QuickBooks" : k(opA)}<span class="m"> / ${k(m.plan.operating_profit)}</span></td>
+        <td>${opA === null ? "-" : pct(opA, m.plan.operating_profit)}</td></tr>`;
+    }).join("");
+    $("months").innerHTML = `<tr><th>Month</th><th>Deals / plan</th><th>Debt / plan</th><th>Revenue / plan</th><th>Operating profit / plan</th><th>Of plan</th></tr>${mrows}`;
+
+    // Forecast.
+    const n = rv.next;
+    const fr = (label, x, cls) => `<tr><td>${label}</td><td>${x.deals}</td><td>${k(x.debt)}</td><td>${k(x.revenue)}</td><td class="${cls || signClass(x.operating_profit)}">${k(x.operating_profit)}</td></tr>`;
+    $("forecast").innerHTML = `<tr><th>${esc(n.label)}</th><th>Deals</th><th>Debt</th><th>Revenue</th><th>Op. profit</th></tr>${fr("Low", n.low)}${fr("Likely", n.likely)}${fr("High", n.high)}${fr("Plan", n.target, "m")}`;
+    $("forecastNote").textContent = `Likely vs plan: ${k(n.gap.operating_profit)} operating profit, ${n.gap.deals} deals. ${n.method}`;
+
+    // Cash coming in: the next Mondays.
+    const crows = (rv.payouts.next || []).map((x) => `<tr><td>Mon ${dayS(x.monday)}${x.more_coming ? ' <span class="m">(more coming)</span>' : ""}</td><td>${x.deals}</td><td>${k(x.scheduled_debt)}</td><td>${x.net ? k(x.net.low) + " to " + k(x.net.high) : "-"}</td><td><b>${x.net ? k(x.net.likely) : "-"}</b></td></tr>`).join("");
+    $("cash").innerHTML = `<tr><th>Wire</th><th>Deals due</th><th>Debt</th><th>Range</th><th>Likely</th></tr>${crows}${last ? `<tr><td class="m">Last file ${dayS(last.report_date)}</td><td class="m">${last.first_pays}</td><td class="m">${k(last.first_pay_debt)}</td><td class="m">chargebacks ${k(last.chargeback_amount)}</td><td class="m">${k(last.net)}</td></tr>` : ""}`;
+
+    // Needs you: the biggest dollar gaps, then data health.
+    const needs = [];
+    for (const g of (rv.down || []).slice(0, 3)) needs.push({ c: g.impact < -25000 ? "" : "a", t: `${g.text}: about ${k(Math.abs(g.impact))} of profit`, e: "gap", href: "/me#finance" + (g.link || "") });
+    const qbo = rv.qbo;
+    if (qbo && !qbo.waiting) {
+      const ageH = (Date.now() - new Date(qbo.last_report_at).getTime()) / 36e5;
+      needs.push({ c: ageH > 36 ? "" : "g", t: `QuickBooks ${qbo.source === "email" ? "email" : "sync"} from ${new Date(qbo.last_report_at).toLocaleString("en-US", { timeZone: "America/Los_Angeles", month: "short", day: "numeric", hour: "numeric" })}${ageH > 36 ? ": older than 36 hours" : ""}`, e: ageH > 36 ? "check" : "ok" });
+    } else needs.push({ c: "", t: "QuickBooks has not reported yet", e: "check" });
+    if (nextMon && nextMon.at_risk_debt) needs.push({ c: "a", t: `${k(nextMon.at_risk_debt)} of debt due Mon ${dayS(nextMon.monday)} is at risk (cancelled, returned or pending cancel)`, e: "watch", href: "/me#finance" });
+    const uq = v.quarters && v.quarters.find((q) => !q.paid && q.bonus > 0);
+    if (uq) needs.push({ c: "a", t: `Partner bonus ${k(uq.bonus)} for ${uq.quarter} due ${uq.due}`, e: "pay" });
+    $("needs").innerHTML = needs.map((x) => `<div class="need"><i class="${x.c}"></i><span>${x.href ? `<a href="${esc(x.href)}" style="color:inherit;text-decoration:none">${esc(x.t)}</a>` : esc(x.t)}</span><em>${esc(x.e)}</em></div>`).join("") || '<div class="need"><i class="g"></i><span>Nothing waiting on you.</span></div>';
+
+    // Obligations.
+    $("oblig").innerHTML = `<tr><th>Item</th><th>Amount</th><th>Standing</th></tr>
+      <tr><td>Partner bonus (Verixa), running NOP since ${mon(v.rules.start_month)}</td><td class="${signClass(v.cumulative)}">${k(v.cumulative)}</td><td class="m">${v.earning ? "accruing" : `${k(v.to_earn)} of profit before it accrues`}</td></tr>
+      <tr><td>Partner bonus earned, all quarters</td><td>${k(v.total_bonus)}</td><td class="m">${(v.quarters || []).filter((q) => q.paid).length} quarter${(v.quarters || []).filter((q) => q.paid).length === 1 ? "" : "s"} paid</td></tr>
+      <tr><td>BOL leads since ${dayS(v.bol.from)} at ${k(v.bol.per_week)} a week</td><td>${k(v.bol.assumed)}</td><td class="m">paid ${k(v.bol.paid)}, not settled ${k(v.bol.gap)}</td></tr>
+      <tr><td>BOL lead subsidy this month (full price less paid)</td><td>${k(mo.lead_subsidy)}</td><td class="m">${k(t.lead_cost)} paid of ${k(t.lead_cost_full)} at full price</td></tr>`;
+  }
+
+  load().catch((e) => showErr(e.message || "Could not load"));
+})();
+</script>
+</body>
+</html>
