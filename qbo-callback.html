@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; object-src 'none'">
+<title>Connecting QuickBooks</title>
+<style>body{margin:0;font-family:Inter,system-ui,sans-serif;background:#F7F9FE;color:#111827;display:flex;align-items:center;justify-content:center;min-height:100vh}p{font-size:16px}</style>
+</head>
+<body>
+<p id="msg">Finishing the QuickBooks connection…</p>
+<script src="config.js"></script>
+<script>
+// Intuit sends the owner back here (the redirect URI on the Intuit app, same host as the board). This page only forwards
+// Intuit's query string (code, state, realmId) to the board function, which checks the state and swaps the code for tokens,
+// then sends the owner to the Finance tab. Nothing is stored or read here.
+(() => {
+  const q = location.search || "";
+  if (!/[?&]state=/.test(q)) { document.getElementById("msg").textContent = "Nothing to finish here. Open the Finance tab and tap Connect QuickBooks."; return; }
+  location.replace(window.BOARD_API + "/qbo/callback" + q);
+})();
+</script>
+</body>
+</html>
