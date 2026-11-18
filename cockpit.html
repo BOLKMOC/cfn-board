@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://bseyusrbjztybfgjfbja.supabase.co; base-uri 'none'; form-action 'none'; object-src 'none'">
+<title>CFN Cockpit</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Quicksand:wght@500;700&display=swap">
+<link rel="icon" href="logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="board.css?v=b841f86-1795042988">
+<style>
+/* The floor cockpit (src/cockpit.ts): six cards wired into one live number, every closer best to worst, the manager's list.
+   Mockup approved by the owner 2026-11-07 (HQ cfn/mockups). Design rules: docs/design-rules.html. Phone first (390px). */
+.wrap{max-width:720px}
+header{flex-wrap:wrap} header h1{white-space:nowrap}
+.sub{color:var(--muted);font-size:13px;margin:-6px 0 12px}
+.six{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+@media(max-width:400px){.six{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.sc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:9px 10px 7px;min-width:0;text-decoration:none;color:inherit;display:block}
+.sc .l{font-size:12px;color:var(--muted);line-height:1.2;min-height:2.4em}
+.sc .v{font-family:Quicksand,Inter,sans-serif;font-weight:700;font-size:20px;line-height:1.15;margin:3px 0 1px;letter-spacing:-.2px;white-space:nowrap}
+.sc .p{font-size:11.5px;color:var(--muted);line-height:1.3}
+.sc.green{border-color:#A6E3BF}.sc.green .v{color:#067647}
+.sc.amber{border-color:#F5D48A}.sc.amber .v{color:#93370D}
+.sc.red{border-color:#F4B4B0}.sc.red .v{color:#B42318}
+.sc.grey .v{color:var(--ink)}
+.sc svg{display:block;width:100%;height:14px;margin-top:4px}
+.wires{display:block;width:100%;height:22px;margin:-2px 0 -4px}
+.big{background:linear-gradient(180deg,#fff 0%,#F7F9FE 100%);border:1px solid var(--blue);border-radius:16px;padding:12px 14px 10px;box-shadow:0 0 0 1px rgba(31,79,216,.12),0 10px 30px rgba(31,79,216,.10)}
+.big .hd{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted);font-weight:600}
+.big .n{font-family:Quicksand,Inter,sans-serif;font-weight:700;font-size:38px;line-height:1;margin:6px 0 4px;letter-spacing:-.5px}
+.big .n.neg{color:#B42318}.big .n.pos{color:#067647}
+.big .u{font-size:12.5px;color:var(--muted);line-height:1.5}.big .u b{color:var(--ink);font-weight:600}
+.big svg{display:block;width:100%;height:56px;margin-top:6px}
+.ax{display:flex;justify-content:space-between;font-size:10px;color:#94A3B8;margin-top:2px}
+.sec{font-size:11px;letter-spacing:.08em;color:var(--muted);font-weight:700;margin:14px 2px 6px;display:flex;justify-content:space-between}
+.sec span:last-child{letter-spacing:0;color:var(--blue);font-weight:600}
+table.rt{width:100%;border-collapse:collapse;font-size:14px;background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.rt th{font-size:11px;color:var(--muted);font-weight:600;text-align:right;padding:6px 8px;border-bottom:1px solid var(--line)}
+.rt th:first-child,.rt td:first-child{text-align:left}
+.rt td{padding:7px 8px;border-bottom:1px solid var(--tint);text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.rt tr:last-child td{border-bottom:0}
+.rt td b{font-family:Quicksand,Inter,sans-serif;font-weight:700;font-size:14.5px}
+.rt td.g b{color:#067647}.rt td.r b{color:#B42318}.rt td.a b{color:#93370D}.rt td.m b{color:var(--muted);font-weight:500}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px;vertical-align:1px;background:#CDD6EA}
+.dot.g{background:#12B76A}.dot.r{background:#E04B45}.dot.a{background:#D9A21B}
+.rt .sub2{display:block;font-size:11px;color:var(--muted);margin-left:15px}
+.need{display:flex;gap:9px;align-items:flex-start;padding:8px 10px;border-radius:10px;background:var(--card);border:1px solid var(--line);margin-bottom:6px;font-size:14px;line-height:1.35;text-decoration:none;color:inherit}
+.need i{width:4px;align-self:stretch;border-radius:2px;background:#E04B45;flex:none}
+.need i.a{background:#D9A21B}.need i.g{background:#12B76A}
+.need span{flex:1}.need em{font-style:normal;color:var(--muted);font-size:12px;white-space:nowrap}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 0}
+.chips a{display:inline-block;padding:6px 12px;border:1px solid var(--line);border-radius:999px;text-decoration:none;color:var(--blue);font-size:13px;background:#fff}
+.note{font-size:12px;color:var(--muted);line-height:1.5;margin-top:8px}
+#error{color:#B42318;margin:10px 0}
+[hidden]{display:none !important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand"><img src="logo.svg" alt=""><h1 id="title">CFN</h1></div>
+    <div class="live" id="live"><i></i><span id="asof">Loading</span></div>
+  </header>
+  <div id="error" hidden></div>
+  <div id="app" hidden>
+    <div class="six" id="six"></div>
+    <svg class="wires" viewBox="0 0 362 22" preserveAspectRatio="none" aria-hidden="true">
+      <g fill="none" stroke="#1F4FD8" stroke-width="1.2" opacity=".55"><path d="M60 0 V7 Q60 12 68 12 H170 Q181 12 181 18 V22"/><path d="M181 0 V22"/><path d="M302 0 V7 Q302 12 294 12 H192 Q181 12 181 18 V22"/></g>
+      <circle cx="181" cy="20" r="2.5" fill="#1F4FD8"/>
+    </svg>
+    <div class="big" id="big"></div>
+
+    <div class="sec"><span>CLOSERS · PROFIT THIS MONTH</span><span id="closersSum"></span></div>
+    <table class="rt" id="closers"></table>
+    <div class="note" id="closersNote"></div>
+
+    <div class="sec"><span>NEEDS YOU</span></div>
+    <div id="needs"></div>
+
+    <div class="sec"><span>DETAIL</span></div>
+    <div class="chips" id="chips"></div>
+  </div>
+</div>
+<script src="config.js?v=b841f86-1795042988"></script>
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const KEY = "cfn_session";
+  let session = null; try { session = localStorage.getItem(KEY); } catch {}
+  const local = new URLSearchParams(location.search).get("local") === "1"; // page test on a laptop: reads ./cockpit-sample.json
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const usd = (n) => (n < 0 ? "-$" : "$") + Math.abs(Math.round(n || 0)).toLocaleString("en-US");
+  const k = (n) => n === null || n === undefined ? "-" : Math.abs(n) >= 1e6 ? (n < 0 ? "-$" : "$") + (Math.abs(n) / 1e6).toFixed(2) + "M" : Math.abs(n) >= 1000 ? (n < 0 ? "-$" : "$") + (Math.abs(n) / 1000).toFixed(1) + "K" : usd(n);
+  const mon = (m) => new Date(m + "-15T12:00:00Z").toLocaleDateString("en-US", { month: "long", timeZone: "UTC" });
+  const dayS = (d) => new Date(d + "T12:00:00Z").toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
+  const sign = (n) => (n < 0 ? "neg" : n > 0 ? "pos" : "");
+  const showErr = (m) => { $("error").hidden = !m; $("error").textContent = m || ""; };
+  function toSignIn() { try { localStorage.setItem("cfn_next", "/cockpit"); } catch {} location.replace("/me"); }
+
+  async function load() {
+    if (local) return render(await (await fetch("cockpit-sample.json")).json());
+    if (!session) return toSignIn();
+    const r = await fetch(window.BOARD_API + "/me?rep=cockpit", { headers: { Authorization: "Bearer " + session } });
+    const j = await r.json().catch(() => ({}));
+    if (r.status === 401) return toSignIn();
+    if (!r.ok) { showErr(j.error || "Something went wrong"); return; }
+    render(j);
+  }
+
+  // Three colors, three words (design rules): green on target, amber behind plan, red must change.
+  const toneOf = (pct, lowerBetter) => pct === null || pct === undefined ? "grey" : lowerBetter ? (pct <= 100 ? "green" : pct <= 125 ? "amber" : "red") : (pct >= 100 ? "green" : pct >= 75 ? "amber" : "red");
+  const spark = (pts, tone) => {
+    if (!pts || pts.length < 2) return "";
+    const max = Math.max(...pts) || 1, min = Math.min(...pts);
+    const y = (v) => 13 - ((v - min) / ((max - min) || 1)) * 11;
+    const d = pts.map((v, i) => `${i ? "L" : "M"}${(i / (pts.length - 1)) * 100} ${y(v).toFixed(1)}`).join(" ");
+    const col = { green: "#12B76A", amber: "#D9A21B", red: "#E04B45", grey: "#94A3B8" }[tone];
+    return `<svg viewBox="0 0 100 14" preserveAspectRatio="none"><path d="${d}" fill="none" stroke="${col}" stroke-width="1.5"/></svg>`;
+  };
+
+  function render(d) {
+    const c = d.cockpit, p = c.period, cd = c.cards, t = c.today, pr = c.profit;
+    const asOf = new Date(c.as_of).toLocaleString("en-US", { timeZone: "America/Los_Angeles", hour: "numeric", minute: "2-digit" });
+    $("title").textContent = `CFN · ${mon(p.month)}`;
+    $("asof").textContent = `Day ${Math.max(1, Math.round(p.floor_days * p.share_done_pct / 100))} of ${p.floor_days} · updated ${asOf}`;
+    $("app").hidden = false;
+    const ser = pr.series || [], dealsByDay = ser.map((s) => s.deals), debtByDay = ser.map((s) => s.debt_so_far);
+    // Six cards.
+    const todayPct = t.goal_debt ? Math.round((t.debt / t.goal_debt) * 100) : null;
+    const floor = t.floor && t.floor.age_minutes <= 15 ? `${t.floor.on_call + t.floor.ready} on phones, ${t.floor.paused} paused` : t.floor ? `${t.floor.logged_in} logged in at last check` : "floor count not on";
+    const card = (tone, label, value, p2, pts, href) => `<a class="sc ${tone}" href="${esc(href || "/me")}"><div class="l">${esc(label)}</div><div class="v">${esc(value)}</div><div class="p">${p2}</div>${spark(pts, tone)}</a>`;
+    const pctWord = (m) => m.target_pct === null ? "no plan" : `${m.target_pct}% of plan`;
+    $("six").innerHTML =
+      card(toneOf(todayPct), "Today", `${t.deals} · ${k(t.debt)}`, `goal ${t.goal_deals ?? "-"} · ${k(t.goal_debt)}<br>${esc(floor)}`, dealsByDay.slice(-8), "/me") +
+      card(toneOf(cd.revenue.target_pct), "Revenue", k(cd.revenue.at), `of ${k(cd.revenue.target)} · pace ${k(cd.revenue.trending)}`, debtByDay.slice(-8), "/me#finance?period=month") +
+      card(toneOf(cd.deals.target_pct), "Deals · debt", `${cd.deals.at ?? "-"} · ${k(cd.debt.at)}`, `plan ${cd.deals.target ?? "-"} · ${k(cd.debt.target)} · ${esc(pctWord(cd.deals))}`, dealsByDay.slice(-8), "/me#deals") +
+      card(cd.stick.pct === null ? "grey" : cd.stick.pct >= 70 ? "green" : cd.stick.pct >= 60 ? "amber" : "red", "Stick", cd.stick.pct === null ? "-" : `${cd.stick.pct}%`, `1st payments clearing, last ${cd.stick.weeks || 0} weeks`, null, "/me#finance") +
+      card(cd.cancels.pct === null ? "grey" : cd.cancels.target !== null && cd.cancels.pct > cd.cancels.target ? "red" : "green", "Cancels before 1st", cd.cancels.pct === null ? "-" : `${cd.cancels.pct}%`, `plan ${cd.cancels.target ?? "-"}% · ${cd.cancels.to_save} to save`, null, "/me#saves") +
+      card(cd.closers.losing ? "amber" : "green", "Closers", `${cd.closers.profitable} of ${cd.closers.total}`, `profitable · ${cd.closers.losing} losing money · ${cd.closers.ramping} ramping`, null, "#closers");
+    // The big number.
+    const pts = debtByDay.length ? debtByDay : [0, 0];
+    const max = Math.max(...pts) || 1;
+    const path = pts.map((v, i) => `${i ? "L" : "M"}${(i / Math.max(1, pts.length - 1)) * 362} ${(52 - (v / max) * 46).toFixed(1)}`).join(" ");
+    $("big").innerHTML = `<div class="hd"><span>Operating profit · month to date${pr.estimate ? " · partly estimated" : ""}</span><span class="live"><i></i>Live</span></div>
+      <div class="n ${sign(pr.at)}">${esc(k(pr.at))}</div>
+      <div class="u">at pace <b>${esc(k(pr.trending))}</b> · plan <b>${esc(k(pr.target))}</b> · at full lead price <b>${esc(k(pr.full))}</b></div>
+      <svg viewBox="0 0 362 56" preserveAspectRatio="none"><defs><linearGradient id="g" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#1F4FD8" stop-opacity=".35"/><stop offset="1" stop-color="#1F4FD8" stop-opacity="0"/></linearGradient></defs>
+        <path d="${path} V56 H0 Z" fill="url(#g)"/><path d="${path}" fill="none" stroke="#1F4FD8" stroke-width="2"/></svg>
+      <div class="ax"><span>${ser.length ? esc(dayS(ser[0].day)) : ""}</span><span>debt enrolled so far, by day</span><span>${ser.length ? esc(dayS(ser[ser.length - 1].day)) : ""}</span></div>`;
+    // Closers, best to worst.
+    const tag = { profitable: ["g", "g"], even: ["a", "a"], losing: ["r", "r"], ramping: ["a", "m"], pending: ["", "m"] };
+    $("closersSum").textContent = `${cd.closers.profitable} of ${cd.closers.total} profitable`;
+    $("closers").innerHTML = `<tr><th>Closer</th><th>Deals</th><th>Calls to close</th><th>Profit</th></tr>` + c.closers.map((r) => {
+      const [dot, col] = tag[r.tag] || ["", "m"];
+      return `<tr><td><span class="dot ${dot}"></span>${esc(r.closer)}${r.tag === "ramping" ? '<span class="sub2">ramping</span>' : r.estimated ? '<span class="sub2">calls still being sorted</span>' : ""}</td><td>${r.deals}</td><td>${r.calls_to_close === null ? "-" : r.calls_to_close}</td><td class="${col}"><b>${r.profit === null ? "-" : esc(k(r.profit))}</b></td></tr>`;
+    }).join("");
+    $("closersNote").textContent = "Calls to close: inbound calls over 2 minutes per deal this month. Profit: revenue from their deals less base pay, commission and their lead cost at the standard price. Green profitable, red losing money, ramping for a closer under 30 days.";
+    // Needs you.
+    $("needs").innerHTML = (c.needs || []).map((n) => `<a class="need" href="${esc(n.link)}"><i class="${n.level === "fix" ? "" : "a"}"></i><span>${esc(n.text)}</span><em>${n.level === "fix" ? "fix" : "watch"}</em></a>`).join("") || '<div class="need"><i class="g"></i><span>Nothing waiting on you.</span></div>';
+    $("chips").innerHTML = (c.detail || []).map((x) => `<a href="${esc(x.href)}">${esc(x.label)}</a>`).join("");
+  }
+  load().catch((e) => showErr(e.message || "Could not load"));
+})();
+</script>
+</body>
+</html>

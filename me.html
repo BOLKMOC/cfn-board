@@ -9,8 +9,8 @@
 <title>My CFN Page</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Quicksand:wght@500;700&display=swap">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
-<link rel="stylesheet" href="board.css?v=0ab47dd-1794347795">
-<link rel="stylesheet" href="coach.css?v=0ab47dd-1794347795">
+<link rel="stylesheet" href="board.css?v=b841f86-1795042988">
+<link rel="stylesheet" href="coach.css?v=b841f86-1795042988">
 <style>
 .wrap{max-width:680px}
 .three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
@@ -231,7 +231,7 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
   .wl-net,.fchip,.fbar,.fbar i,.fm-track,.fm-track i,.fm-track b,.fm-key i,.fm-key b,.fnote,.fbook,.fdot,.br-idx,.br-pills a.pill{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
 </style>
-<script src="config.js?v=0ab47dd-1794347795"></script>
+<script src="config.js?v=b841f86-1795042988"></script>
 </head>
 <body>
 <div class="wrap">
@@ -285,7 +285,7 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
         <p class="fh-status" id="brAsOf"></p>
       </div>
       <div class="fkpis" id="brKpis"></div>
-      <div class="fc fpay" id="br-vx" hidden><div class="fc-h"><p class="fc-t">Ken's bonus (Verixa) <span class="fi" id="brVxInfo" tabindex="0">i</span></p><span class="fmuted">only you see this</span></div>
+      <div class="fc fpay" id="br-vx" hidden><div class="fc-h"><p class="fc-t">Ken's bonus (Verixa) <span class="fi" id="brVxInfo" tabindex="0">i</span></p><span class="fmuted">Finance viewers only</span></div>
         <div class="fpay-top" id="brVxTop"></div><div class="fbar"><i id="brVxBar"></i></div><p class="fpay-sub" id="brVxSub"></p>
         <div class="br-scroll"><table class="fcl fpay-t" id="brVxT"></table></div><div class="fpay-list" id="brVxList"></div>
         <p class="fnote" id="brVxBol" style="margin-top:10px"></p><p class="wl-foot" id="brVxFoot"></p></div>
@@ -334,7 +334,7 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
     <p style="margin:0 0 12px;display:flex;gap:8px"><a class="pill" id="callsTabList" href="/me#calls">Calls</a><a class="pill" id="callsTabScore" href="/me#calls?view=scorecard">Scorecard</a></p>
     <div id="scoreView" hidden>
       <p class="label"><span>Best practices scorecard</span><span><button class="link" id="scPrev">&larr;</button> <b id="scMonth"></b> <button class="link" id="scNext">&rarr;</button></span></p>
-      <p class="note" style="margin:0 0 10px">Fix (red): the 3 hard stops (a promised result, bank info taken before the two warnings: credit will drop, creditors can still call or sue; the wrong program). Coach (amber): behaviors to work on and other compliance items. Done well (green): nothing to fix. Layer 2: the 4 areas, 1 to 5 from scored calls. Top closer = most net debt this month. Conversion = net deals per 100 Vici calls. Gaps are against the top closer.</p>
+      <p class="note" style="margin:0 0 10px">Fix (red): the 4 hard stops (a promised result, bank info taken before the two warnings: credit will drop, creditors can still call or sue; the wrong program; telling the caller they are getting a loan from Cordoba). Coach (amber): behaviors to work on and other compliance items. Done well (green): nothing to fix. Layer 2: the 4 areas, 1 to 5 from scored calls. Top closer = most net debt this month. Conversion = net deals per 100 Vici calls. Gaps are against the top closer.</p>
       <div id="scTop"></div>
       <div id="scCards"></div>
       <p class="label" style="margin-top:22px"><span>Closers who say X get Y</span><span class="when">last 3 months</span></p>
@@ -355,7 +355,7 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
     </div>
     <div id="callList">
       <p class="label"><span>Call QA</span><span id="callsN"></span></p>
-      <p class="note" style="margin:0 0 10px">Closer calls from Vici, pulled after 6 PM Pacific, Monday to Saturday. Calls of 5 minutes or longer are transcribed and scored (up to 40 a night, shared across closers) on the CFN checks. Tap a call for the full review. Recordings are kept 90 days.</p>
+      <p class="note" id="callsNote" style="margin:0 0 10px">Closer calls from Vici, pulled after 6 PM Pacific, Monday to Saturday. Calls of 5 minutes or longer are transcribed and scored (up to 40 a night, shared across closers) on the CFN checks. Tap a call for the full review. Recordings are kept 90 days.</p>
       <div><table class="tt calls"><thead><tr><th>When</th><th>Closer</th><th>Result</th></tr></thead><tbody id="callRows"></tbody></table></div>
     </div>
     <div id="callDetail" hidden>
@@ -366,7 +366,7 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
       <p id="cdAudio" style="margin:0 0 12px"></p>
       <div id="cdScore"></div>
       <div id="cdBody"></div>
-      <details style="margin-top:14px"><summary><span>Transcript</span></summary><pre id="cdTranscript" style="white-space:pre-wrap;font:inherit;font-size:14px;line-height:1.5;margin:8px 0 0"></pre></details>
+      <details id="cdTranscriptBox" style="margin-top:14px"><summary><span>Transcript</span></summary><pre id="cdTranscript" style="white-space:pre-wrap;font:inherit;font-size:14px;line-height:1.5;margin:8px 0 0"></pre></details>
     </div>
     <p class="note" id="callsMsg" aria-live="polite"></p>
   </section>
@@ -755,7 +755,7 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
       $("nav").querySelector("[data-v='']").textContent = "Reps";
       $("nav").insertAdjacentHTML("beforeend", '<a href="/me#payroll" data-v="payroll">Payroll</a><a href="/me#team" data-v="team">Team pay</a><a href="/me#onboarding" data-v="onboarding">Onboarding</a><a href="/me#report" data-v="report">Reports</a><a href="/me#deals" data-v="deals">Deals</a><a href="/me#saves" data-v="saves">Saves</a><a href="/me#calls" data-v="calls">Calls</a><a href="/me#contests" data-v="contests">Contests</a><a href="/me#hr" data-v="hr">HR</a><a href="/me#coach" data-v="coach">Coach library</a>');
     }
-    $("nav").querySelectorAll("a").forEach((a) => a.toggleAttribute("aria-current", a.dataset.v !== undefined && a.dataset.v === (mgr ? (["payroll", "team", "onboarding", "saves", "coach", "deals", "report", "calls", "finance", "contests", "hr"].includes(d.viewing) ? d.viewing : "") : "")));
+    $("nav").querySelectorAll("a").forEach((a) => a.toggleAttribute("aria-current", a.dataset.v !== undefined && a.dataset.v === (mgr ? (["payroll", "team", "onboarding", "saves", "coach", "deals", "report", "calls", "finance", "contests", "hr"].includes(d.viewing) ? d.viewing : "") : d.viewing === "calls" ? "calls" : "")));
     $("nav").querySelectorAll("a[aria-current]").forEach((a) => a.setAttribute("aria-current", "page"));
     $("mgr").hidden = !mgr;
     if (mgr) {
@@ -794,6 +794,19 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
         return;
       }
       if (!d.viewing) { $("app").hidden = true; $("hello").textContent = "Manager view"; return; }
+    }
+    // My calls (closers): only when the owner has turned the closer view on (the server decides; src/closer-calls.ts).
+    if (!mgr) {
+      $("callsTab").hidden = d.viewing !== "calls";
+      if ((d.my_calls || d.closer_view) && !$("nav").querySelector("[data-v=calls]")) $("nav").insertAdjacentHTML("beforeend", '<a href="/me#calls" data-v="calls">My calls</a>');
+      const myCalls = $("nav").querySelector("[data-v=calls]");
+      if (myCalls) { if (d.viewing === "calls") myCalls.setAttribute("aria-current", "page"); else myCalls.removeAttribute("aria-current"); }
+      if (d.viewing === "calls") {
+        if (d.closer_view) { renderCalls(d); return; }
+        $("app").hidden = true; $("hello").textContent = "My calls"; $("callList").hidden = true; $("callDetail").hidden = true; $("scoreView").hidden = true;
+        $("callsTabList").hidden = true; $("callsTabScore").hidden = true; $("callsMsg").innerHTML = 'My calls is not open yet. <a href="/me">Back to my page</a>';
+        return;
+      }
     }
     $("app").hidden = false;
     // Sales contest: the closer's own rank ("You're #4 of 9. 2 more deals to clear today's cut line.").
@@ -1130,8 +1143,11 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
   const mins = (m) => m === null || m === undefined ? "" : Math.floor(m) + ":" + String(Math.round((m % 1) * 60)).padStart(2, "0");
   const dots = (n) => n ? "&#9679;".repeat(n) + '<span style="opacity:.25">' + "&#9679;".repeat(5 - n) + "</span>" : '<span class="when">not reached</span>';
   function renderCalls(d) {
-    $("app").hidden = true; $("hello").textContent = "Manager view · calls"; $("callsMsg").textContent = "";
-    const sc = d.view === "scorecard";
+    const mine = !!d.closer_view; // a closer's own calls: no scorecard tab, no closer column names, no calibration
+    $("app").hidden = true; $("hello").textContent = mine ? "My calls" : "Manager view · calls"; $("callsMsg").textContent = "";
+    $("callsTabList").hidden = mine; $("callsTabScore").hidden = mine;
+    $("callsNote").textContent = mine ? `Your scored calls from the last ${d.days} days. Tap a call for the full review: what to fix, what to work on, and your best line.` : "Closer calls from Vici, pulled after 6 PM Pacific, Monday to Saturday. Calls of 5 minutes or longer are transcribed and scored (up to 40 a night, shared across closers) on the CFN checks. Tap a call for the full review. Recordings are kept 90 days.";
+    const sc = !mine && d.view === "scorecard";
     $("callsTabList").toggleAttribute("aria-current", !sc); $("callsTabScore").toggleAttribute("aria-current", sc);
     $("scoreView").hidden = !sc;
     if (sc) { $("callList").hidden = true; $("callDetail").hidden = true; $("fbReview").hidden = true; renderScorecard(d.scorecard); return; }
@@ -1147,7 +1163,7 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
       return `<b>${r.closed === true ? "Closed" : r.closed === false ? "Not closed" : "Scored"}</b>${fix}${coach}${loss}`;
     };
     $("callRows").innerHTML = d.calls.length ? d.calls.map((r) => `<tr data-call="${esc(r.call_id)}" style="cursor:pointer"><td>${esc(short(r.started_at))}${r.minutes ? `<br><span class="when">${mins(r.minutes)} min</span>` : ""}</td><td><b>${esc(r.closer)}</b><br><span class="when">${esc(r.call_sign || "")}${r.contact_id ? "<br>Forth " + esc(r.contact_id) : ""}</span></td><td>${result(r)}</td></tr>`).join("")
-      : '<tr><td colspan="3" class="empty" style="text-align:left">No calls yet. The first pull runs after 6 PM Pacific on a floor day.</td></tr>';
+      : `<tr><td colspan="3" class="empty" style="text-align:left">${mine ? `No scored calls in the last ${d.days} days yet.` : "No calls yet. The first pull runs after 6 PM Pacific on a floor day."}</td></tr>`;
     const det = d.detail;
     renderFeedback(det ? null : d.feedback_review);
     $("callList").hidden = !!det; $("callDetail").hidden = !det;
@@ -1157,7 +1173,7 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
     $("cdWhen").textContent = `${when(det.started_at)} · ${mins(det.minutes)}`;
     $("cdSummary").innerHTML = det.summary ? `${det.closed === true ? "<b>Closed.</b> " : det.closed === false ? "<b>Not closed.</b> " : ""}${esc(det.summary)}` : `<span class="when">Status: ${esc(det.status)}</span>`;
     $("cdForth").innerHTML = det.outcome_note ? `${det.contact_id ? "<b>Forth file " + esc(det.contact_id) + "</b> · " : ""}${esc(det.outcome_note.replace(/^Forth file \d+: /, ""))}` : "";
-    $("cdAudio").innerHTML = det.has_audio ? '<button class="go small" id="cdPlay">Play recording</button>' : '<span class="when">Recording not kept.</span>';
+    $("cdAudio").innerHTML = det.has_audio ? '<button class="go small" id="cdPlay">Play recording</button>' : mine ? "" : '<span class="when">Recording not kept.</span>';
     const list = (title, items) => items.length ? `<p class="label" style="margin-top:14px"><span>${title}</span></p><ul style="margin:0;padding-left:20px">${items.join("")}</ul>` : "";
     $("cdBody").innerHTML =
       `<p class="label" style="margin-top:14px"><span>Fix</span><span>${det.fix.length ? `<b class="neg">${det.fix.length} to fix</b>` : '<b class="ok">Done well</b>'}</span></p>`
@@ -1172,6 +1188,7 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
       + (det.checks.length ? `<p class="label" style="margin-top:14px"><span>The ${det.checks.length} checks</span></p><table class="tt calls checks"><thead><tr><th>Check</th><th>Result</th></tr></thead><tbody>${det.checks.map((g) => `<tr><td><b>${esc(g.label)}</b>${g.evidence ? `<br><span class="when">${g.minute ? esc(g.minute) + " · " : ""}${esc(g.evidence)}</span>` : ""}</td><td>${RESULT[g.result] || esc(g.result || "")}</td></tr>`).join("")}</tbody></table>` : "")
       ;
     $("cdTranscript").textContent = det.transcript || "No transcript.";
+    $("cdTranscriptBox").hidden = mine && !det.transcript_shown;
     const areas = det.areas || [];
     $("cdScore").innerHTML = areas.some((a) => a.score !== null) || det.status === "scored" ? `<p class="label" style="margin-top:6px"><span>Scorecard</span><span>${det.nothing_to_fix ? '<b class="ok">Done well: nothing to fix</b>' : `<b class="neg">Fix: ${det.fix.length}</b>`}${det.coach.length + det.compliance.length ? ` · <span class="coach">Coach: ${det.coach.length + det.compliance.length}</span>` : ""}</span></p>`
       + areas.map((a) => `<div style="padding:8px 0;border-bottom:1px solid var(--tint)"><div style="display:flex;justify-content:space-between;gap:8px"><b>${esc(a.label)}</b><span class="dots" style="white-space:nowrap">${a.score === null ? '<span class="when">not scored</span>' : dots(a.score) + (a.score ? ` <b style="letter-spacing:0;color:inherit">${a.score}/5</b>` : "")}</span></div>
@@ -1427,7 +1444,7 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
     };
     const model = "Earned + expected: 8% of the debt sold, counted when the 1st deposit clears (earned) or at the plan clear rate while waiting (expected). This is not the money in the bank yet.";
     const qbRow = (l, v) => `<div class="qb"><span>${l}</span><b class="${v < 0 ? "neg" : ""}">${brShort(v, "money")}</b></div>`;
-    $("brKpis").innerHTML = tile("Debt enrolled", om.debt) + tile("Deals", om.total_deals)
+    $("brKpis").innerHTML = tile("Debt enrolled", om.debt) + tile("Deals", om.cordoba_deals, "Cordoba deals submitted, the same count as the team board. Nationwide loans are reported by the week and shown underneath, not added in.", om.nationwide_loans && om.nationwide_loans.at ? `<div><span>Nationwide loans${p.kind === "day" ? " this week" : ""}</span><b>${brShort(om.nationwide_loans.at, "count")}</b></div>` : "")
       + tile("Revenue", mm.revenue, model, qbSome ? qbRow("In QuickBooks", mo.qbo_income) : "")
       + tile("Operating profit", mm.operating_profit, "Earned + expected revenue minus the costs below (costs from QuickBooks when it has the month). At full lead price: the same, if CFN paid BOL full price for leads instead of the subsidized price. " + model,
         (qbAll ? qbRow("QuickBooks net", qbNet) : "") + (mo.operating_profit_full === null || mo.operating_profit_full === undefined ? "" : `<div><span>At full lead price</span><b class="${mo.operating_profit_full < 0 ? "neg" : ""}">${brShort(mo.operating_profit_full, "money")}</b></div>`));
@@ -1970,6 +1987,6 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
   else if (session) load(); else showSignIn();
 })();
 </script>
-<script src="coach.js?v=0ab47dd-1794347795"></script>
+<script src="coach.js?v=b841f86-1795042988"></script>
 </body>
 </html>
