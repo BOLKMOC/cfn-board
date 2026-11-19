@@ -9,8 +9,8 @@
 <title>My CFN Page</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Quicksand:wght@500;700&display=swap">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
-<link rel="stylesheet" href="board.css?v=1792024-1795045379">
-<link rel="stylesheet" href="coach.css?v=1792024-1795045379">
+<link rel="stylesheet" href="board.css?v=75b227b-1795117482">
+<link rel="stylesheet" href="coach.css?v=75b227b-1795117482">
 <style>
 .wrap{max-width:680px}
 .three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
@@ -149,10 +149,6 @@ table.fcl th{font-size:12px;color:var(--muted);font-weight:500;text-align:right;
 table.fcl td{text-align:right;padding:7px 0 7px 8px;border-bottom:1px solid var(--tint);white-space:nowrap;vertical-align:top}
 table.fcl th:first-child,table.fcl td:first-child{text-align:left;padding-left:0;white-space:normal}
 table.fcl tr:last-child td{border-bottom:0}
-.fdot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px;vertical-align:1px;background:#9AA3B2}
-.fdot.profitable{background:#16A34A} .fdot.losing{background:#DC2626} .fdot.ramping{background:var(--blue)} .fdot.break_even{background:#9AA3B2}
-.fwhy{display:block;font-size:12px;color:var(--muted);margin:2px 0 0 15px}
-.flegend{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:10px;font-size:12px;color:var(--muted);align-items:center}
 .fx{padding:4px 16px}
 .fx > details{border-bottom:1px solid var(--line);padding:0} .fx > details:last-child{border-bottom:0}
 .fx > details > summary{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:13px 0;cursor:pointer;list-style:none;font-family:Quicksand,Inter,sans-serif;font-weight:700;font-size:14.5px}
@@ -169,7 +165,7 @@ table.br-small{font-size:12.5px} table.br-small th,table.br-small td{padding:5px
 .br-idx.good{background:#E3F4EA;color:#067647} .br-idx.bad{background:#FDEBD8;color:#B45309}
 .br-nt{color:var(--muted);font-size:12px;font-style:italic}
 .br-print-head{display:none}
-/* Winners and losers: a table on desktop and in the PDF, one compact row per closer on a phone. */
+/* The closer table and the real bill by week: a table on desktop and in the PDF, one compact row per item on a phone. */
 table.wl-t{width:100%;border-collapse:collapse;font-size:13.5px;font-variant-numeric:tabular-nums}
 table.wl-t th{font-size:12px;color:var(--muted);font-weight:500;text-align:right;padding:0 0 8px 10px;border-bottom:1px solid var(--line);white-space:nowrap;vertical-align:bottom}
 table.wl-t th small{display:block;font-size:11px}
@@ -177,9 +173,11 @@ table.wl-t td{text-align:right;padding:8px 0 8px 10px;border-bottom:1px solid va
 table.wl-t th:first-child,table.wl-t td:first-child{text-align:left;padding-left:0;white-space:normal}
 table.wl-t td small{color:var(--muted);font-size:12px}
 table.wl-t tr.wl-tot td{font-weight:700;border-top:2px solid var(--line);border-bottom:0}
-.wl-net{font-weight:700} .wl-net.win{color:#067647} .wl-net.lose{color:#B42318}
-.fdot.winning{background:#16A34A} .fdot.even,.fdot.pending{background:#9AA3B2}
-.wl-pend{color:var(--muted);font-size:12px;font-style:italic;font-weight:400}
+table.rp-t{font-size:13px} table.rp-t th{white-space:normal;min-width:52px} table.rp-t th:first-child{min-width:0}
+table.wl-t tr.rp-none td{color:var(--muted)}
+.rp-act{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.rp-h{font-size:13px;color:var(--muted);margin:18px 0 6px;display:flex;align-items:center;gap:6px}
+.fdown .fdn{font-size:13px;color:var(--muted);line-height:1.45;margin:8px 0 0;padding-top:8px;border-top:1px solid var(--tint)}
 .wl-list{display:none}
 .wl-r{padding:9px 0;border-bottom:1px solid var(--tint)} .wl-r:last-child{border-bottom:0}
 .wl-r1{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:14px;font-variant-numeric:tabular-nums} .wl-r1 > span:first-child{min-width:0;overflow-wrap:anywhere}
@@ -208,7 +206,7 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
   .fmoney .fm-r{grid-template-columns:104px minmax(0,1fr);gap:4px 10px} .fmoney .fm-v{grid-column:2;text-align:left;font-size:12.5px}
   .fdown a{grid-template-columns:62px 1fr}
   table.fcl{font-size:12.5px} table.fcl th,table.fcl td{padding-left:6px}
-  #br-wl table.wl-t{display:none} #br-wl .wl-list{display:block}
+  #br-rp table.wl-t{display:none} #br-rp .wl-list{display:block} #br-rp .fc-h{flex-wrap:wrap}
   #br-pay table.fpay-t{display:none} #br-pay .fpay-list{display:block} .fpay-top .fp-v{font-size:22px}
   #br-vx table.fpay-t{display:none} #br-vx .fpay-list{display:block}
   .fx > details > summary .fmuted{display:none} .fx > details > summary .fchev{margin-left:auto}
@@ -225,13 +223,13 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
   .fx > details > summary .fchev{display:none}
   .fx > details{break-inside:auto} .fx > details + details{break-before:page}
   .br-scroll{overflow:visible} table.br-t{font-size:11px} table.br-small{font-size:9.5px}
-  #br-wl table.wl-t{display:table !important;font-size:11px} #br-wl .wl-list{display:none !important}
+  #br-rp table.wl-t{display:table !important;font-size:9.5px} #br-rp .wl-list{display:none !important} #br-rp table.wl-t th,#br-rp table.wl-t td{padding-left:5px}
   #br-pay table.fpay-t{display:table !important;font-size:11px} #br-pay .fpay-list{display:none !important}
   #br-vx table.fpay-t{display:table !important;font-size:11px} #br-vx .fpay-list{display:none !important}
-  .wl-net,.fchip,.fbar,.fbar i,.fm-track,.fm-track i,.fm-track b,.fm-key i,.fm-key b,.fnote,.fbook,.fdot,.br-idx,.br-pills a.pill{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .fchip,.fbar,.fbar i,.fm-track,.fm-track i,.fm-track b,.fm-key i,.fm-key b,.fnote,.fbook,.br-idx,.br-pills a.pill{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
 </style>
-<script src="config.js?v=1792024-1795045379"></script>
+<script src="config.js?v=75b227b-1795117482"></script>
 </head>
 <body>
 <div class="wrap">
@@ -289,8 +287,10 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
         <div class="fpay-top" id="brVxTop"></div><div class="fbar"><i id="brVxBar"></i></div><p class="fpay-sub" id="brVxSub"></p>
         <div class="br-scroll"><table class="fcl fpay-t" id="brVxT"></table></div><div class="fpay-list" id="brVxList"></div>
         <p class="fnote" id="brVxBol" style="margin-top:10px"></p><p class="wl-foot" id="brVxFoot"></p></div>
-      <div class="fc" id="br-wl"><div class="fc-h"><p class="fc-t">Winners and losers <span class="fi" id="brWlInfo" tabindex="0">i</span></p><span class="fmuted">net per closer, best first</span></div>
-        <div class="br-scroll"><table class="wl-t" id="brWlT"></table></div><div class="wl-list" id="brWlList"></div><p class="wl-foot" id="brWlCover" hidden></p><p class="wl-foot" id="brWlSub" hidden></p><p class="wl-foot" id="brWlFoot"></p></div>
+      <div class="fc" id="br-rp"><div class="fc-h"><p class="fc-t">Closers <span class="fi" id="brRpInfo" tabindex="0">i</span></p><span class="rp-act"><span class="fmuted" id="brRpSub"></span><button class="go small ghost br-noprint" id="brRpCsv" type="button">Download tiers</button></span></div>
+        <div class="br-scroll"><table class="wl-t rp-t" id="brRpT"></table></div><div class="wl-list" id="brRpList"></div><p class="wl-foot" id="brRpFoot"></p>
+        <p class="rp-h">Real bill by week <span class="fi" id="brRpWeekInfo" tabindex="0">i</span></p>
+        <div class="br-scroll"><table class="wl-t" id="brRpWeeks"></table></div><div class="wl-list" id="brRpWeekList"></div></div>
       <div class="fc fpay" id="br-pay"><div class="fc-h"><p class="fc-t">Next payouts <span class="fi" id="brPayInfo" tabindex="0">i</span></p><span class="fmuted">from Cordoba, every Monday</span></div>
         <div class="fpay-top" id="brPayTop"></div><p class="fpay-sub" id="brPaySub"></p>
         <div class="br-scroll"><table class="fcl fpay-t" id="brPayNext"></table></div><div class="fpay-list" id="brPayNextList"></div>
@@ -303,12 +303,10 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
         <div class="fc fdown" id="br-down"><div class="fc-h"><p class="fc-t">What's taking us down <span class="fi" title="How much profit each gap costs on its own, with everything else at plan. Biggest first. Click one to see the numbers behind it." tabindex="0">i</span></p><span class="fmuted">profit lost vs plan</span></div><div id="brDown"></div></div>
         <div class="fc fmoney" id="br-fin"><div class="fc-h"><p class="fc-t">Money vs budget <span class="fi" id="brFinInfo" tabindex="0">i</span></p><span class="fm-key"><span><i></i><span id="brBarWord">Pace</span></span><span><b></b>Budget</span></span></div><div id="brBars"></div><div class="fbook" id="brBook"></div></div>
       </div>
-      <div class="fg2 fnext br-page">
+      <div class="br-page">
         <div class="fc fnx" id="br-next"><div class="fc-h"><p class="fc-t"><span id="brNextMonth"></span> forecast <span class="fi" id="brNextInfo" tabindex="0">i</span></p><span class="fmuted">likely, with range</span></div><div id="brNextRows"></div>
           <div class="fn-edit br-noprint"><span id="brClosersNow"></span> <button class="link" id="brClosersEdit" type="button">Edit closers planned</button>
             <span id="brClosersBox" hidden><input class="f br-num" type="number" min="1" max="200" id="brClosers" aria-label="Closers planned"> <button class="go small" id="brClosersGo" type="button">Update</button></span></div></div>
-        <div class="fc" id="br-closers"><div class="fc-h"><p class="fc-t">Closers <span class="fi" id="brProfitNote" tabindex="0">i</span></p><span class="fmuted">ranked by profit</span></div><div class="br-scroll" id="brCloserList"></div>
-          <div class="flegend"><span><i class="fdot profitable"></i>Profitable</span><span><i class="fdot break_even"></i>Break even</span><span><i class="fdot losing"></i>Losing money</span><span><i class="fdot ramping"></i>New (under 30 days, not judged yet)</span></div></div>
       </div>
       <div class="fc fx br-page" id="br-more">
         <details id="br-ops"><summary><span>Full performance table</span><span class="fmuted" id="brOpsNote"></span><i class="fchev"></i></summary><div class="fx-b">
@@ -316,10 +314,10 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
           <p class="fx-sub">Money <span class="fi" id="brFinNote" tabindex="0">i</span></p><div class="br-scroll"><table class="tt br-t" id="brFin"></table></div>
           <p class="fx-sub">Next month, every line <span class="fi" id="brNextNote" tabindex="0">i</span></p><div class="br-scroll"><table class="tt br-t" id="brNext"></table></div>
           <p class="fx-sub" id="br-lead">Lead sources: <span id="brLead"></span></p></div></details>
-        <details id="br-closers-full"><summary><span>Full closer table</span><span class="fmuted">calls from Vici, credit pulls from Forth</span><i class="fchev"></i></summary><div class="fx-b">
-          <div class="br-scroll"><table class="tt br-t br-small" id="brClosersT"></table></div><p class="fmuted" id="brClosersFoot"></p></div></details>
         <details id="br-qbo"><summary><span>QuickBooks P&amp;L by month</span><span class="fmuted" id="brQboWhen"></span><i class="fchev"></i></summary><div class="fx-b"><div class="br-scroll" id="brQbo"></div></div></details>
-        <details id="br-older"><summary><span>Older views</span><span class="fmuted">profit per rep, actual vs pro forma</span><i class="fchev"></i></summary><div class="fx-b">
+        <details id="br-older"><summary><span>Older views</span><span class="fmuted">closer activity, profit per rep, actual vs pro forma</span><i class="fchev"></i></summary><div class="fx-b">
+          <p class="fx-sub" id="br-closers-full">Closer activity (all Vici calls, credit pulls from Forth)</p>
+          <div class="br-scroll"><table class="tt br-t br-small" id="brClosersT"></table></div><p class="fmuted" id="brClosersFoot"></p>
           <p class="fx-sub">Profit per rep <b id="finMonth"></b></p>
           <p class="note" id="finRepNote" style="margin:0 0 10px"></p>
           <div id="finRepTotals"></div>
@@ -355,7 +353,7 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
     </div>
     <div id="callList">
       <p class="label"><span>Call QA</span><span id="callsN"></span></p>
-      <p class="note" id="callsNote" style="margin:0 0 10px">Closer calls from Vici, pulled after 6 PM Pacific, Monday to Saturday. Calls of 5 minutes or longer are transcribed and scored (up to 40 a night, shared across closers) on the CFN checks. Tap a call for the full review. Recordings are kept 90 days.</p>
+      <p class="note" id="callsNote" style="margin:0 0 10px">Closer calls from Vici, pulled after 6 PM Pacific, Monday to Saturday. Calls of 5 minutes or longer are transcribed and scored (up to 40 a night, shared across closers) on the CFN checks. Tap a call for the full review. Recordings are kept.</p>
       <div><table class="tt calls"><thead><tr><th>When</th><th>Closer</th><th>Result</th></tr></thead><tbody id="callRows"></tbody></table></div>
     </div>
     <div id="callDetail" hidden>
@@ -1146,7 +1144,7 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
     const mine = !!d.closer_view; // a closer's own calls: no scorecard tab, no closer column names, no calibration
     $("app").hidden = true; $("hello").textContent = mine ? "My calls" : "Manager view · calls"; $("callsMsg").textContent = "";
     $("callsTabList").hidden = mine; $("callsTabScore").hidden = mine;
-    $("callsNote").textContent = mine ? `Your scored calls from the last ${d.days} days. Tap a call for the full review: what to fix, what to work on, and your best line.` : "Closer calls from Vici, pulled after 6 PM Pacific, Monday to Saturday. Calls of 5 minutes or longer are transcribed and scored (up to 40 a night, shared across closers) on the CFN checks. Tap a call for the full review. Recordings are kept 90 days.";
+    $("callsNote").textContent = mine ? `Your scored calls from the last ${d.days} days. Tap a call for the full review: what to fix, what to work on, and your best line.` : "Closer calls from Vici, pulled after 6 PM Pacific, Monday to Saturday. Calls of 5 minutes or longer are transcribed and scored (up to 40 a night, shared across closers) on the CFN checks. Tap a call for the full review. Recordings are kept.";
     const sc = !mine && d.view === "scorecard";
     $("callsTabList").toggleAttribute("aria-current", !sc); $("callsTabScore").toggleAttribute("aria-current", sc);
     $("scoreView").hidden = !sc;
@@ -1278,7 +1276,7 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
   };
   const brK = (v) => brShort(v, "money");
   // Plain words for the server's short labels.
-  const brPlain = (t) => String(t || "").replace(/(-?)\$([\d,]+(?:\.\d+)?)/g, (_, m, n) => brK((m ? -1 : 1) * Number(n.replace(/,/g, "")))).replace(/ \(trending\)/g, " on pace for").replace(/^(\d+)% of decided deals cancelled before the 1st deposit/, "$1% of deals cancelled before the 1st deposit (counting only deals that cleared or cancelled)");
+  const brPlain = (t) => String(t || "").replace(/(-?)\$([\d,]+(?:\.\d+)?)/g, (_, m, n) => brK((m ? -1 : 1) * Number(n.replace(/,/g, "")))).replace(/ \(trending\)/g, " on pace for");
   const brBucket = { income: "Income", marketing: "Marketing", payroll: "Workforce", workforce: "Workforce", overhead: "Software and overhead", credit_pulls: "Credit pulls" };
   const brIdx = (m) => m.target_pct === null || m.target_pct === undefined ? '<span class="when">no target</span>'
     : `<span class="br-idx ${(m.lower_better ? m.target_pct <= 100 : m.target_pct >= 100) ? "good" : "bad"}">${m.target_pct}%</span>`;
@@ -1298,42 +1296,63 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
   };
   const brVal = (m, prog) => !m || m.tracked === false ? null : prog ? m.trending : m.at;
   const brDay = (iso, year) => new Date(iso + "T12:00:00Z").toLocaleDateString("en-US", { month: "short", day: "numeric", ...(year ? { year: "numeric" } : {}), timeZone: "UTC" });
-  const brTag = { profitable: "Profitable", break_even: "Break even", losing: "Losing money", ramping: "Ramping" };
-  const wlTag = { winning: "Winning", losing: "Losing", even: "Even", pending: "Calls pending" };
-  // Winners and losers: each closer's revenue against lead cost and pay, best net first, then the team total.
-  function renderWinLose(sc) {
-    const rows = sc ? sc.rows : [], t = sc && sc.total, rt = sc && sc.rates;
+  // The closer table (owner, 2026-11-19: one table, measurements only): every closer's calls, deals and revenue per call
+  // against the line, the no-closer row and the floor, then the real bill by week. The same numbers as scripts/rep-profitability.ts.
+  const rpTier = (t, ru) => t === "above" ? `Above $${ru.call_market_value}` : t === "below_covers_cost" ? `Covers $${ru.call_cost_bol}` : t === "below" ? `Below $${ru.call_cost_bol}` : t === "too_few_calls" ? "Too few calls" : "-";
+  function renderClosers(rp) {
+    const ru = rp && rp.rules, rows = rp ? rp.ranking : [];
     const n0 = (v) => v === null || v === undefined ? "-" : Number(v).toLocaleString("en-US");
-    const est = (r) => r.estimated ? "≈ " : "";
-    const estWhy = (r) => r.pending ? `${r.days_done} of ${r.days_total} days sorted into inbound and outbound so far` : "";
-    const estTip = (r) => r.estimated ? ` title="${esc(`Estimate: ${estWhy(r)}`)}"` : "";
-    const net = (r) => r.net === null || r.net === undefined ? '<span class="wl-pend">pending</span>' : `<span class="wl-net ${r.tag === "winning" ? "win" : r.tag === "losing" ? "lose" : ""}"${estTip(r)}>${est(r)}${esc(usd(r.net))}</span>`;
-    const dot = (r) => `<i class="fdot ${esc(r.tag)}" title="${esc(wlTag[r.tag] || r.tag)}"></i>`;
-    const payTip = (r) => r.overseas ? `Hourly ${usd(r.pay_base)} (${r.login_hours} h in Vici) + per deal ${usd(r.pay_deals)}` : `Salary and tax ${usd(r.pay_base)} + commission ${usd(r.pay_deals)}`;
-    const io = (n, o) => `${n0(n)} <small>(${n0(o)})</small>`;
-    const cells = (r) => (r.pending ? `<td colspan="2"><span class="wl-pend"${estTip(r)}>${esc(`≈ ${n0(r.in_120)} over 2 min · ${r.days_done} of ${r.days_total} days sorted`)}</span></td>` : `<td>${io(r.in_calls, r.in_120)}</td><td>${io(r.out_calls, r.out_120)}</td>`)
-      + `<td${estTip(r)}>${est(r)}${r.lead_cost === null ? "-" : esc(usd(r.lead_cost))}</td><td title="${esc(payTip(r))}">${esc(usd(r.pay))}</td><td>${n0(r.pulls)}</td><td>${n0(r.deals)}</td>`
-      + `<td>${esc(brShort(r.debt, "money"))}</td><td>${esc(usd(r.revenue))}</td><td>${net(r)}</td>`;
-    const none = "No closer calls or deals for this period yet.";
-    $("brWlT").innerHTML = rows.length
-      ? `<thead><tr><th>Closer</th><th>Inbound<small>calls (over 2 min)</small></th><th>Outbound<small>calls (over 2 min)</small></th><th>Lead cost<small>(paid)</small></th><th>Pay</th><th>Pulls</th><th>Deals</th><th>Debt</th><th>Revenue</th><th>Net</th></tr></thead><tbody>`
-        + rows.map((r) => `<tr><td>${dot(r)}${esc(r.closer)}</td>${cells(r)}</tr>`).join("") + `<tr class="wl-tot"><td>Team</td>${cells(t)}</tr></tbody>`
+    const p1 = (v) => v === null || v === undefined ? "-" : (v * 100).toFixed(1) + "%";
+    const c2 = (v) => v === null || v === undefined ? "-" : "$" + Number(v).toFixed(2);
+    const hrs = (s) => (s / 3600).toFixed(1);
+    const head = ["Closer", "Inbound calls over 2 min", "DNQ taken off", "Calls taken", "Net deals", "Revenue after cancels", "Revenue per call", "Tier", "Close rate", "Cancelled", "Returned", "At risk", "Cleared 1st payments", "Pause hours", "Pause share"];
+    const cells = (r, tier) => [esc(r.closer), n0(r.in_120), n0(r.deducted), n0(r.calls_taken), n0(r.net_deals), esc(usd(r.revenue)), c2(r.revenue_per_call), esc(tier ? rpTier(r.tier, ru) : "-"), p1(r.close_rate),
+      n0(r.cancelled), n0(r.returned), n0(r.at_risk), n0(r.cleared), hrs(r.pause_s), p1(r.pause_share)];
+    const tr = (r, cls, tier) => `<tr${cls ? ` class="${cls}"` : ""}>${cells(r, tier).map((c) => `<td>${c}</td>`).join("")}</tr>`;
+    const none = "No closer calls or deals for this period yet. Calls come in each evening after 6:15 PM Pacific.";
+    const any = !!(rows.length || (rp && rp.floor && (rp.floor.in_120 || rp.floor.deals)));
+    $("brRpSub").textContent = ru ? `revenue per call against $${ru.call_market_value} a call` : "";
+    $("brRpT").innerHTML = any
+      ? `<thead><tr>${head.map((h) => `<th>${h}</th>`).join("")}</tr></thead><tbody>` + rows.map((r) => tr(r, "", true)).join("")
+        + tr(rp.no_closer, "rp-none", false) + tr(rp.floor, "wl-tot", false) + "</tbody>"
       : `<tbody><tr><td><span class="empty">${none}</span></td></tr></tbody>`;
-    const small = (r) => [r.pending ? `≈ ${n0(r.in_120)} over 2 min (${r.days_done} of ${r.days_total} days sorted)` : `In ${n0(r.in_calls)} (${n0(r.in_120)} over 2 min) · Out ${n0(r.out_calls)} (${n0(r.out_120)})`, `${n0(r.deals)} deal${r.deals === 1 ? "" : "s"}`,
-      `${brShort(r.debt, "money")} debt`, `lead ${est(r)}${r.lead_cost === null ? "-" : usd(r.lead_cost)}`, `pay ${usd(r.pay)}`].map(esc).join(" · ");
-    $("brWlList").innerHTML = rows.length
-      ? rows.map((r) => `<div class="wl-r"><div class="wl-r1"><span>${dot(r)}${esc(r.closer)}</span>${net(r)}</div><div class="wl-r2">${small(r)}</div></div>`).join("")
-        + `<div class="wl-r wl-tot"><div class="wl-r1"><span>Team</span>${net(t)}</div><div class="wl-r2">${small(t)}</div></div>`
-      : `<p class="empty">${none}</p>`;
-    // Days the Vici pull does not cover yet (it began late October 2026): say so, or the net reads as complete.
-    const cover = sc && sc.vici && sc.vici.note ? sc.vici.note : "";
-    $("brWlCover").hidden = !cover; $("brWlCover").textContent = cover;
-    // What leads would cost at full price against what CFN paid: the gap is BOL's subsidy (owner, 2026-10-31).
-    const sub = t && rows.length ? `At full price leads would be ${usd(t.lead_cost_full)} (paid ${t.lead_cost_estimated ? "≈ " : ""}${usd(t.lead_cost)}). ${t.paid_over_full ? `Paid is ${usd(t.lead_cost - t.lead_cost_full)} over full price.` : `BOL is covering ${t.lead_cost_estimated ? "≈ " : ""}${usd(t.subsidy)}.`}` : "";
-    $("brWlSub").hidden = !sub; $("brWlSub").textContent = sub;
-    $("brWlFoot").textContent = rt ? `Lead cost: ${usd(rt.paid_price_per_inbound_120)} per inbound call over 2 min (the standard for now). Full price is ${usd(rt.full_price_per_inbound_120)}; the gap is BOL's subsidy. Revenue ${rt.revenue_pct}% of debt, if the deal clears. Pay: salary plus ${rt.employer_tax_pct}% tax per weekday plus ${rt.commission_pct}% commission; overseas hourly from Vici login plus per deal. Credit pulls are free. ≈ means some days are not sorted into inbound and outbound yet, so their calls are estimated.` : "";
-    $("brWlInfo").title = "Net = revenue minus lead cost (what CFN paid) minus pay, for the days shown (up to today). Green: winning. Red: losing. Calls are sorted into inbound and outbound each evening from 6:15 PM. Days not sorted yet are estimated (≈) from the closer's own share of inbound calls over 2 minutes, and firm up as they are sorted. Hover Pay for how it adds up.";
+    const line = (r, tier) => [`${n0(r.calls_taken)} calls taken (${n0(r.in_120)} inbound over 2 min, ${n0(r.deducted)} DNQ taken off)`, `${n0(r.net_deals)} net deals`, `${usd(r.revenue)} after cancels`,
+      ...(tier ? [rpTier(r.tier, ru)] : []), `close rate ${p1(r.close_rate)}`, `cancelled ${n0(r.cancelled)}`, `returned ${n0(r.returned)}`, `at risk ${n0(r.at_risk)}`, `cleared 1st ${n0(r.cleared)}`,
+      `pause ${hrs(r.pause_s)} h (${p1(r.pause_share)})`].map(esc).join(" · ");
+    const item = (r, cls, tier) => `<div class="wl-r${cls ? " " + cls : ""}"><div class="wl-r1"><span>${esc(r.closer)}</span><b>${esc(c2(r.revenue_per_call))} a call</b></div><div class="wl-r2">${line(r, tier)}</div></div>`;
+    $("brRpList").innerHTML = any ? rows.map((r) => item(r, "", true)).join("") + item(rp.no_closer, "", false) + item(rp.floor, "wl-tot", false) : `<p class="empty">${none}</p>`;
+    const ck = rp && rp.checks;
+    $("brRpFoot").textContent = !any ? "" : [
+      `${rp.tiers.above} above $${ru.call_market_value}, ${rp.tiers.below_covers_cost} covering $${ru.call_cost_bol}, ${rp.tiers.below} below $${ru.call_cost_bol}, ${rp.tiers.too_few_calls} with too few calls.`,
+      ck && ck.unsorted_days ? `${ck.unsorted_days} closer-day${ck.unsorted_days === 1 ? "" : "s"} not yet sorted into inbound and outbound count as 0 calls until they are.` : "",
+      ck && ck.long_days ? `${ck.long_days} day${ck.long_days === 1 ? "" : "s"} over ${ru.max_login_hours_per_day} hours logged in left out of pause.` : ""].filter(Boolean).join(" ");
+    $("brRpInfo").title = !ru ? "" : `Inbound calls over 2 min: inbound Vici calls longer than 2 minutes, the call the $${ru.call_market_value} price is for. `
+      + (ru.deduct_dnq_from_calls ? "DNQ taken off: callers marked not qualified in Forth (credit pull DNQ) on the same closer and day. Calls taken = inbound calls over 2 min minus DNQ. " : "")
+      + `Net deals: deals submitted in Forth in the period, less ${ru.revenue_excludes_cancelled ? "cancelled and " : ""}returned. Revenue after cancels: ${ru.revenue_rate_pct}% of the enrolled debt on those deals. It does not wait for the 1st deposit, so it is not the same as the Revenue tile above. `
+      + `Revenue per call = revenue after cancels / calls taken. Tier: above $${ru.call_market_value} (what a call is worth), covers $${ru.call_cost_bol} (what a call costs BOL), below $${ru.call_cost_bol}, or too few calls (under ${ru.min_calls_for_tier} calls taken). `
+      + `Close rate = net deals / calls taken. Pause: Vici pause hours and their share of logged-in time. No closer: deals and calls not on an active closer, so the floor adds up.`;
+    // The real bill: every call over 2 minutes (before DNQ, BOL delivered them) at the market value and at BOL's cost, against revenue.
+    const wk = rp ? rp.weeks : [], wd = (a, b) => a === b ? brDay(a) : brDay(a) + " to " + (a.slice(0, 7) === b.slice(0, 7) ? String(Number(b.slice(8))) : brDay(b));
+    const wHead = ["Week", "Inbound calls over 2 min", `At $${ru ? ru.call_market_value : ""} a call`, `At $${ru ? ru.call_cost_bol : ""} a call`, "Net deals", "Revenue after cancels", "Revenue per call"];
+    const tot = wk.reduce((t, w) => ({ in_120: t.in_120 + w.in_120, market: t.market + w.market, cost: t.cost + w.cost, net_deals: t.net_deals + w.net_deals, revenue: t.revenue + w.revenue }), { in_120: 0, market: 0, cost: 0, net_deals: 0, revenue: 0 });
+    const wCells = (label, w) => [esc(label), n0(w.in_120), esc(usd(w.market)), esc(usd(w.cost)), n0(w.net_deals), esc(usd(w.revenue)), c2(w.in_120 ? w.revenue / w.in_120 : null)];
+    const wLabel = (w) => wd(w.first, w.last) + (w.partial ? " (part)" : "");
+    $("brRpWeeks").innerHTML = wk.length
+      ? `<thead><tr>${wHead.map((h) => `<th>${h}</th>`).join("")}</tr></thead><tbody>` + wk.map((w) => `<tr>${wCells(wLabel(w), w).map((c) => `<td>${c}</td>`).join("")}</tr>`).join("")
+        + (wk.length > 1 ? `<tr class="wl-tot">${wCells("Total", tot).map((c) => `<td>${c}</td>`).join("")}</tr>` : "") + "</tbody>"
+      : `<tbody><tr><td><span class="empty">No weeks in this period yet.</span></td></tr></tbody>`;
+    const wItem = (label, w, cls) => `<div class="wl-r${cls ? " " + cls : ""}"><div class="wl-r1"><span>${esc(label)}</span><b>${esc(c2(w.in_120 ? w.revenue / w.in_120 : null))} a call</b></div>`
+      + `<div class="wl-r2">${[`${n0(w.in_120)} inbound calls over 2 min`, `${usd(w.market)} at $${ru.call_market_value}`, `${usd(w.cost)} at $${ru.call_cost_bol}`, `${n0(w.net_deals)} net deals`, `${usd(w.revenue)} after cancels`].map(esc).join(" · ")}</div></div>`;
+    $("brRpWeekList").innerHTML = wk.length ? wk.map((w) => wItem(wLabel(w), w, "")).join("") + (wk.length > 1 ? wItem("Total", tot, "wl-tot") : "") : '<p class="empty">No weeks in this period yet.</p>';
+    $("brRpWeekInfo").title = !ru ? "" : `Monday to Sunday, Pacific. Every inbound call over 2 minutes, before DNQ is taken off (BOL delivered them), at $${ru.call_market_value} (what a call is worth) and at $${ru.call_cost_bol} (what it costs BOL), against revenue after cancels on that week's deals. Part means the period cuts the week.`;
   }
+  // The tier list for the routing team: closer, calls taken, revenue per call, tier (the same file the script writes). Nothing is sent.
+  $("brRpCsv").onclick = () => {
+    const rp = brLast && brLast.rep_profit; if (!rp) return;
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob(["﻿" + rp.csv], { type: "text/csv" }));
+    a.download = `cfn-tiers-${rp.from}-to-${rp.to}.csv`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  };
   // Next payouts: what Cordoba should pay on the coming Mondays (expected from scheduled 1st payments) and what the last files paid.
   // Ken's (Verixa) bonus: 20% of each closed month's NOP once the running total passes its old high (src/verixa-bonus.ts).
   function renderVerixa(vx) {
@@ -1421,7 +1440,7 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
     if (p.kind === "custom") { $("brCustom").from.value = p.from; $("brCustom").to.value = p.to; }
     $("brPeriod").textContent = p.label; $("brPrintPeriod").textContent = p.label;
     $("finPrev").hidden = $("finNext").hidden = p.kind === "custom";
-    renderWinLose(rv.scorecard);
+    renderClosers(rv.rep_profit);
     renderPayouts(rv.payouts);
     renderVerixa(rv.verixa);
     // Header status: one quiet line.
@@ -1442,25 +1461,25 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
         + `<div class="fk-v" title="${esc(brNum(v, m && m.unit))}${m && m.target !== null && m.target !== undefined ? " vs " + esc(brNum(m.target, m.unit)) + " plan" : ""}">${brShort(v, m && m.unit)}</div>`
         + `${brChip(m)}<div class="fbar"><i class="${st}" style="width:${w}%"></i></div>${foot ? `<div class="fk-f">${foot}</div>` : ""}</div>`;
     };
-    const model = "Earned + expected: 8% of the debt sold, counted when the 1st deposit clears (earned) or at the plan clear rate while waiting (expected). This is not the money in the bank yet.";
+    const model = "The main revenue number. Earned + expected: 8% of the debt sold, counted when the 1st deposit clears (earned) or at the plan clear rate while waiting (expected). This is not the money in the bank yet. QuickBooks booked income is its own line under Money vs budget.";
     const qbRow = (l, v) => `<div class="qb"><span>${l}</span><b class="${v < 0 ? "neg" : ""}">${brShort(v, "money")}</b></div>`;
     $("brKpis").innerHTML = tile("Debt enrolled", om.debt) + tile("Deals", om.cordoba_deals, "Cordoba deals submitted, the same count as the team board. Nationwide loans are reported by the week and shown underneath, not added in.", om.nationwide_loans && om.nationwide_loans.at ? `<div><span>Nationwide loans${p.kind === "day" ? " this week" : ""}</span><b>${brShort(om.nationwide_loans.at, "count")}</b></div>` : "")
-      + tile("Revenue", mm.revenue, model, qbSome ? qbRow("In QuickBooks", mo.qbo_income) : "")
+      + tile("Revenue (earned + expected)", mm.revenue, model)
       + tile("Operating profit", mm.operating_profit, "Earned + expected revenue minus the costs below (costs from QuickBooks when it has the month). At full lead price: the same, if CFN paid BOL full price for leads instead of the subsidized price. " + model,
         (qbAll ? qbRow("QuickBooks net", qbNet) : "") + (mo.operating_profit_full === null || mo.operating_profit_full === undefined ? "" : `<div><span>At full lead price</span><b class="${mo.operating_profit_full < 0 ? "neg" : ""}">${brShort(mo.operating_profit_full, "money")}</b></div>`));
     // The honest line: the model counts money before it arrives; QuickBooks counts it when it lands.
-    $("brTruth").innerHTML = `<b>Revenue and profit above are earned + expected, not cash.</b> So far: ${esc(brK(mo.revenue_earned))} earned (1st deposit cleared) and ${esc(brK(mo.revenue_expected))} still expected. `
-      + (qbAll ? `QuickBooks has booked ${esc(brK(mo.qbo_income))} income and ${esc(brK(qbCosts))} costs, a net of <b class="${qbNet < 0 ? "neg" : ""}">${esc(brK(qbNet))}</b>.`
-        : (mo.partly_booked || []).length && srcs.every((s) => s === "QuickBooks") ? `QuickBooks has booked ${esc(brK(mo.qbo_income))} income and ${esc(brK(qbCosts))} costs so far, a net of <b class="${qbNet < 0 ? "neg" : ""}">${esc(brK(qbNet))}</b>. The month is still open, so costs above are month to date topped up to the plan rate for the days gone by.`
-        : qbSome ? `QuickBooks has booked ${esc(brK(mo.qbo_income))} income for the months it has so far.` : "QuickBooks has not reported this period yet, so costs are estimates.");
+    $("brTruth").innerHTML = `<b>Revenue and profit above are earned + expected, not cash.</b> Revenue so far is ${esc(brK(mo.revenue_earned))} earned (1st deposit cleared) plus ${esc(brK(mo.revenue_expected))} still expected. `
+      + (qbAll ? "What QuickBooks has booked is its own line under Money vs budget."
+        : (mo.partly_booked || []).length && srcs.every((s) => s === "QuickBooks") ? "What QuickBooks has booked is its own line under Money vs budget. The month is still open, so costs above are month to date topped up to the plan rate for the days gone by."
+        : qbSome ? "What QuickBooks has booked for the months it has is its own line under Money vs budget." : "QuickBooks has not reported this period yet, so costs are estimates.");
     // Small stats strip.
     const stat = (label, m, info, foot) => `<div><div class="fk-l">${esc(label)}${brInfo(info || (m && m.note))}</div><div class="fs-v">${brShort(brVal(m, pace), m && m.unit)}</div>${brChip(m)}${foot ? `<div class="fs-f">${esc(foot)}</div>` : ""}</div>`;
     $("brStats").innerHTML = stat("Average balance", om.abi, "Average debt per deal enrolled.") + stat("Credit pulls", om.credit_pulls) + stat("Cost per deal", om.cost_per_deal, "Leads plus credit pulls, divided by deals.")
-      + stat("Cancels before 1st deposit", om.cancel_pct, "Share of all deals sold in this period that cancelled before the 1st deposit. Most deals have not reached their 1st deposit yet, so this number rises over time. What's taking us down counts only deals that already cleared or cancelled.", "So far. Rises as 1st deposits come due.");
+      + stat("Cancels before 1st deposit", om.cancel_pct, "Cancelled before the 1st deposit, out of all deals in the period. Most deals have not reached their 1st deposit yet, so this number rises over time. The only cancel rate on this page: What's taking us down uses it too.", "Out of all deals. Rises as 1st deposits come due.");
     // What's taking us down: up to 3 gaps, each opens its detail.
-    $("brDown").innerHTML = rv.down.length
+    $("brDown").innerHTML = (rv.down.length
       ? rv.down.slice(0, 3).map((d) => `<a href="${esc(d.link)}" data-jump="${esc(d.link)}" title="About ${esc(usd(Math.abs(d.impact)))} less profit than at plan"><b>${esc(brK(d.impact))}</b><span>${esc(brPlain(d.text))}</span></a>`).join("")
-      : '<p class="fok">On or above budget</p>';
+      : '<p class="fok">On or above budget</p>') + (rv.down_notes || []).map((x) => `<p class="fdn">${esc(x.text)}</p>`).join("");
     // Money vs budget: solid bar = trending (or actual), dark tick = budget.
     const fm = rv.money.metrics;
     const bars = [["Revenue", mm.revenue, "earned + expected"], ["Marketing", mm.marketing, "leads"], ["Workforce", mm.workforce, "payroll"], ["Credit pulls", mm.credit_pulls_cost, ""], ["Software and overhead", mm.overhead, ""], ["Operating profit", mm.operating_profit, "earned + expected"]].filter(([, m]) => m);
@@ -1504,21 +1523,13 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
     $("brNext").innerHTML = `<thead><tr><th>${esc(n.label)}</th><th>Low</th><th>Likely</th><th>High</th><th>Target</th><th>Gap (likely)</th></tr></thead><tbody>` + nk.map(([l, k, u]) => {
       const t = tgt(k), g = n.gap && n.gap[k] !== undefined ? n.gap[k] : null;
       return `<tr><td class="l">${l}</td><td>${nf(n.low[k], u)}</td><td><b>${nf(n.likely[k], u)}</b></td><td>${nf(n.high[k], u)}</td><td>${t === null ? "" : brNum(t, u)}</td><td>${g === null ? "" : `<span class="${g < 0 ? "gap-neg" : "gap-pos"}">${brNum(g, u)}</span>`}</td></tr>`; }).join("") + "</tbody>";
-    // Closers ranked by profit, with debt and cancel % from the deck table.
-    const ct = rv.closers, pct = (v) => v === null || v === undefined ? "-" : v + "%", pr = rv.profit;
-    const deck = Object.fromEntries(ct.map((r) => [r.rep_id, r]));
-    const ranked = [...pr.rows, ...pr.ramping].sort((a, b) => b.profit - a.profit);
-    $("brProfitNote").title = `Profit after base pay, commission, a share of leads, credit pulls and overhead${ranked.some((r) => r.estimate) ? " (costs estimated)" : ""}. Break even = within ${usd(pr.band)}.${pr.by_whole_month ? " Whole months in the range." : ""}`;
-    $("brCloserList").innerHTML = ranked.length
-      ? `<table class="fcl"><thead><tr><th>Closer</th><th>Profit</th><th>Deals</th><th>Debt</th><th>Cancel %</th></tr></thead><tbody>` + ranked.map((r) => { const d = deck[r.rep_id];
-        return `<tr><td><i class="fdot ${esc(r.tag)}" title="${esc(brTag[r.tag] || r.tag)}"></i>${esc(r.closer)}${r.tag === "losing" && r.why ? `<span class="fwhy">${esc(r.why)}</span>` : ""}</td><td class="${r.profit < 0 ? "neg" : ""}">${esc(brK(r.profit))}</td><td>${r.deals}</td><td>${d ? brShort(d.clg_debt, "money") : "-"}</td><td>${d ? pct(d.cancel_pct) : "-"}</td></tr>`; }).join("") + "</tbody></table>"
-      : '<p class="empty">No closer profit for this period yet.</p>';
-    // Full closer table (collapsed): columns nobody has data for are hidden until they are tracked.
+    const ct = rv.closers, pct = (v) => v === null || v === undefined ? "-" : v + "%";
+    // Closer activity (in Older views): columns nobody has data for are hidden until they are tracked. Calls here are every Vici call.
     const nt = '<span class="br-nt" title="not tracked">-</span>', num = (v) => v === null || v === undefined ? "-" : Number(v).toLocaleString("en-US");
     const cols = [["Calls", (r) => r.calls, num], ["Over 2 min", (r) => r.calls_120, num], ["Call %", (r) => r.call_pct, pct], ["Credit pulls", (r) => r.credit_pulls, num], ["CP %", (r) => r.cp_pct, pct],
       ["Debt pulled", (r) => r.cp_debt, usd], ["Avg debt pulled", (r) => r.cp_abi, usd], ["Deals", (r) => r.clients, num], ...(pace ? [["Deals at pace", (r) => r.clients_trending, num]] : []), ["Debt enrolled", (r) => r.clg_debt, usd],
-      ...(pace ? [["Debt at pace", (r) => r.clg_debt_trending, usd]] : []), ["Avg balance", (r) => r.clg_abi, usd], ["Pull to deal", (r) => r.cp_to_client, pct], ["Call to deal", (r) => r.call_to_client, pct],
-      ["Not qualified %", (r) => r.nq_pct, pct], ["Bounced (NSF)", (r) => r.nsf, num], ["Cancels", (r) => r.cancels, num], ["Cancel %", (r) => r.cancel_pct, pct]];
+      ...(pace ? [["Debt at pace", (r) => r.clg_debt_trending, usd]] : []), ["Avg balance", (r) => r.clg_abi, usd], ["Pull to deal", (r) => r.cp_to_client, pct], ["Deals per Vici call", (r) => r.call_to_client, pct],
+      ["Not qualified %", (r) => r.nq_pct, pct], ["Bounced (NSF)", (r) => r.nsf, num], ["Cancels", (r) => r.cancels, num]];
     const shown = ct.length ? cols.filter(([, get]) => ct.some((r) => get(r) !== null && get(r) !== undefined)) : cols;
     $("brClosersT").innerHTML = `<thead><tr><th>Closer</th>${shown.map(([h]) => `<th>${h}</th>`).join("")}</tr></thead><tbody>`
       + (ct.length ? ct.map((r) => `<tr><td class="l">${esc(r.closer)}</td>${shown.map(([, get, f]) => `<td>${get(r) === null || get(r) === undefined ? nt : f(get(r))}</td>`).join("")}</tr>`).join("")
@@ -1987,6 +1998,6 @@ table.fpay-t td small{display:block;color:var(--muted);font-size:11.5px}
   else if (session) load(); else showSignIn();
 })();
 </script>
-<script src="coach.js?v=1792024-1795045379"></script>
+<script src="coach.js?v=75b227b-1795117482"></script>
 </body>
 </html>
